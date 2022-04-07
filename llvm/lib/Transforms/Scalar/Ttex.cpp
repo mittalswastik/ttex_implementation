@@ -1,82 +1,58 @@
-#include "llvm/Transforms/Scalar/Sample.h"
-#include "llvm/ADT/Statistic.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/Pass.h"
-#include "llvm/Analysis/LoopPass.h"
-#include "llvm/Analysis/LoopInfo.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/IR/Instruction.h"
-#include "llvm/Analysis/ScalarEvolution.h"
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/Type.h"
-#include <iostream>
-#include <bits/stdc++.h>
-#include "llvm/IR/GlobalVariable.h"
-#include "llvm/Transforms/Utils/BasicBlockUtils.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/ADT/APInt.h"
-#include "llvm/ADT/ArrayRef.h"
+#include "llvm/Transforms/Scalar/LoopUnrollPass.h"
+#include "llvm/IR/Argument.h"
 #include "llvm/ADT/DenseMap.h"
-#include "llvm/ADT/PointerIntPair.h"
+#include "llvm/ADT/DenseMapInfo.h"
+#include "llvm/ADT/DenseSet.h"
+#include "llvm/ADT/None.h"
+#include "llvm/ADT/Optional.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SetVector.h"
-#include "llvm/ADT/SmallBitVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
-#include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/StringRef.h"
-#include "llvm/ADT/Twine.h"
-#include "llvm/ADT/iterator.h"
-#include "llvm/ADT/iterator_range.h"
 #include "llvm/Analysis/AssumptionCache.h"
-#include "llvm/Analysis/GlobalsModRef.h"
-#include "llvm/Analysis/Loads.h"
-#include "llvm/Analysis/PtrUseVisitor.h"
-#include "llvm/Config/llvm-config.h"
+#include "llvm/Analysis/BlockFrequencyInfo.h"
+#include "llvm/Analysis/CodeMetrics.h"
+#include "llvm/Analysis/LazyBlockFrequencyInfo.h"
+#include "llvm/Analysis/LoopAnalysisManager.h"
+#include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Analysis/LoopPass.h"
+#include "llvm/Analysis/LoopUnrollAnalyzer.h"
+#include "llvm/Analysis/OptimizationRemarkEmitter.h"
+#include "llvm/Analysis/ProfileSummaryInfo.h"
+#include "llvm/Analysis/ScalarEvolution.h"
+#include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/CFG.h"
 #include "llvm/IR/Constant.h"
-#include "llvm/IR/ConstantFolder.h"
 #include "llvm/IR/Constants.h"
-#include "llvm/IR/DIBuilder.h"
-#include "llvm/IR/DataLayout.h"
-#include "llvm/IR/DebugInfoMetadata.h"
-#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/DiagnosticInfo.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/GetElementPtrTypeIterator.h"
-#include "llvm/IR/GlobalAlias.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/InstVisitor.h"
-#include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
-#include "llvm/IR/Intrinsics.h"
-#include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Metadata.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Operator.h"
 #include "llvm/IR/PassManager.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/Use.h"
-#include "llvm/IR/User.h"
-#include "llvm/IR/Value.h"
 #include "llvm/InitializePasses.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/Support/Compiler.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/Utils/Local.h"
-#include "llvm/Transforms/Utils/PromoteMemToReg.h"
+#include "llvm/Transforms/Scalar/LoopPassManager.h"
+#include "llvm/Transforms/Utils.h"
+#include "llvm/Transforms/Utils/LoopPeel.h"
+#include "llvm/Transforms/Utils/LoopSimplify.h"
+#include "llvm/Transforms/Utils/LoopUtils.h"
+#include "llvm/Transforms/Utils/SizeOpts.h"
+#include "llvm/Transforms/Utils/UnrollLoop.h"
+#include "llvm/IR/Attributes.h"
+#include "llvm/IR/Attributes.inc"
+#include <iostream>
+#include <bits/stdc++.h>
 #include "llvm/Transforms/Scalar/Ttex.h"
 #include "llvm/IR/DataLayout.h"
 using namespace llvm;
@@ -84,6 +60,11 @@ using namespace llvm;
 std::vector< std::vector<int> > astdata; //storing the sub region info -- but need to fix the id's to correct location
 std::vector<int> sizes;
 
+bool maxvuln_set = true;
+
+#define omp_for_ref -1
+#define omp_sections_ref 0
+#define omp_single_ref -2
 
 void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_context){
 
@@ -124,7 +105,7 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
   //allocsize_para_region = ConstantExpr::getTruncOrBitCast(allocsize_para_region, Type::getInt64Ty(B->getContext()));
   Instruction *malloced_para_region = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_1, allocsize_para_region, arraysize_para_region, nullptr, "malloced");
   
-  errs()<<"--------------------------- printing sizes---------------------------"<<"\n";
+ // errs()<<"--------------------------- printing sizes---------------------------"<<"\n";
 
   // std::string temp_string;
   // raw_string_ostream check(temp_string);
@@ -149,22 +130,22 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
     Instruction *load_para_region_1 = new LoadInst(T_1,M.getGlobalVariable("parallel_region"),"",B->getTerminator());
     // errs()<<"checking"<<"\n";
     //Instruction *loadinfo = new LoadInst(T_2,M.getGlobalVariable("info"),"",B->getTerminator());
-    errs()<<"ASTDATA SIZE IS "<<astdata.size()<<"\n";
+    //errs()<<"ASTDATA SIZE IS "<<astdata.size()<<"\n";
 
     for(int j = 0 ; j < astdata[i].size() ; j++){
-      errs()<<"ast value is "<<astdata[i][j]<<" "<<i<<" "<<j<<"\n";
+      //errs()<<"ast value is "<<astdata[i][j]<<" "<<i<<" "<<j<<"\n";
       std::vector<llvm::Value*> indices;
       indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
       GetElementPtrInst *gepinst_2 = GetElementPtrInst::Create(T_2,load_para_region_1,indices,"",B->getTerminator());
       Instruction *load_sub_para_region = new LoadInst(T_2, gepinst_2,"",B->getTerminator());
 
-      errs()<<"checking for error"<<"\n";
+      //errs()<<"checking for error"<<"\n";
 
       std::vector<llvm::Value*> indices_2;
       indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),j, false));
       GetElementPtrInst *gepinst_3 = GetElementPtrInst::Create(T_3,load_sub_para_region,indices_2,"",B->getTerminator());
 
-      errs()<<"checking for error2"<<"\n";
+      //errs()<<"checking for error2"<<"\n";
 
       std::vector<llvm::Value*> indices_3;
       indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
@@ -196,25 +177,50 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
   }
 }
 
-void setAstData(Module &M, Function &F, LLVMContext &CTX){
+void protectSections(Module &M, Function &F, LLVMContext &CTX, Function::iterator block_iter, int parallel_region_id, int sub_region_id){
+
+}
+
+void protectFor(Module &M, Function &F, LLVMContext &CTX, Function::iterator block_iter, int parallel_region_id, int sub_region_id){
+  DominatorTree DT = llvm::DominatorTree();
+  DT.recalculate(F);
+  LoopInfoBase<BasicBlock, Loop>* LInfo = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
+  LInfo->releaseMemory();
+  LInfo->analyze(DT);
+
+  for(LoopInfoBase<BasicBlock, Loop>::iterator loop_iter = LInfo->begin(), loop_iter_end = LInfo->end(); loop_iter != loop_iter_end; ++loop_iter){
+    //testing
+    Loop *ltemp = *loop_iter;
+    BasicBlock *ExitingBlock = ltemp->getExitingBlock();
+    errs()<<"!!!!!!!!!!!!!!!!!!!!!!!checking protect for"<<"\n";
+  }
+}
+
+void protectSingle(Module &M, Function &F, LLVMContext &CTX, Function::iterator block_iter, int parallel_region_id, int sub_region_id){
+
+}
+
+void setAstData(Module &M, Function &F, LLVMContext &CTX, int ctr, Function::iterator block_iter){
 
   std::vector<int> temp;
   MDNode* ttex_array = F.getMetadata("ttex_array");
   MDNode* parallel_id = F.getMetadata("parallel_id");
 
   if(ttex_array){
-     // errs()<<"Retreiving num elements for each outlined 1"<<n<<"\n";
+      //errs()<<"ttex array available"<<"\n";
     Value* v = dyn_cast<ValueAsMetadata> (ttex_array->getOperand(0))->getValue();
     if(v){
+      //errs()<<"value received from ttex array"<<"\n";
       // errs()<<"Retreiving num elements for each outlined 2"<<n<<"\n";
       ConstantDataArray* init = dyn_cast<ConstantDataArray> (v);
       if(init){
+        //errs()<<"array value of ttex array received"<<"\n";
         int n = init->getNumElements();
         for(unsigned i = 0 ; i < n ; i++){
           temp.push_back(init->getElementAsInteger(i));
         }
 
-        errs()<<"Retreiving num elements for each outlined "<<temp.size()<<"\n";
+        //errs()<<"Retreiving num elements for each outlined "<<temp.size()<<"\n";
       }
     }
   }
@@ -225,11 +231,25 @@ void setAstData(Module &M, Function &F, LLVMContext &CTX){
   Value* parallel_id_temp = dyn_cast<ValueAsMetadata>(parallel_id->getOperand(0))->getValue();
   auto* ci = dyn_cast<ConstantInt>(parallel_id_temp);
 
-  errs()<<"------------ parallel id value is------"<<ci->getZExtValue()<<"\n";
-  errs()<<"astdata size and sizes size: "<<astdata.size()<<" "<<sizes.size()<<"\n";
+  //errs()<<"------------ parallel id value is------"<<ci->getZExtValue()<<"\n";
+  //errs()<<"astdata size and sizes size: "<<astdata.size()<<" "<<sizes.size()<<"\n";
 
   astdata[ci->getZExtValue()-1] = temp;
   sizes[ci->getZExtValue()-1] = temp.size();
+
+  if(maxvuln_set){
+    if(astdata[ci->getZExtValue()-1][ctr-1] > omp_sections_ref){
+      protectSections(M,F,CTX,block_iter,ci->getZExtValue()-1,ctr-1);
+    }
+
+    else if(astdata[ci->getZExtValue()-1][ctr-1] == omp_for_ref){
+      protectFor(M,F,CTX,block_iter,ci->getZExtValue()-1,ctr-1);
+    }
+
+    else if(astdata[ci->getZExtValue()-1][ctr-1] == omp_single_ref){
+      protectSingle(M,F,CTX,block_iter,ci->getZExtValue()-1,ctr-1);
+    }
+  }
 
   // if(parallel_id){
   //   Value* parallel_id_temp = dyn_cast<ValueAsMetadata>(parallel_id->getOperand(0))->getValue();
@@ -250,20 +270,19 @@ void updateWorkId(Module &M, Function &F, LLVMContext &CTX){
     for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
       Instruction &I = *instr_iter;
       if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
-         Function* fn = call_inst->getCalledFunction();
-         if(fn->getName() == "__kmpc_for_static_init_4"){
-            llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
-            call_inst->setOperand(9,itr_ci);
-            ctr++;
-         }
+        Function* fn = call_inst->getCalledFunction();
+        if(fn->getName() == "__kmpc_for_static_init_4"){
+          llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
+          call_inst->setOperand(9,itr_ci);
+        }
 
-         else if(fn->getName() == "__kmpc_single"){
-            llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
-            call_inst->setOperand(2,itr_ci);
-            ctr++;
-         }
+        else if(fn->getName() == "__kmpc_single"){
+          llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
+          call_inst->setOperand(2,itr_ci);
+        }
 
-         setAstData(M,F,CTX);
+        setAstData(M,F,CTX,ctr, block_iter);
+        ctr++;
       }
     }
   }
@@ -275,6 +294,14 @@ namespace {
     static char ID; // Pass identification, replacement for typeid
     TtexPass() : ModulePass(ID) {
       initializeTtexPassPass(*PassRegistry::getPassRegistry());
+    }
+
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
+      AU.addRequired<DominatorTreeWrapperPass>();
+      AU.addRequired<LoopInfoWrapperPass>();
+      AU.addRequired<ScalarEvolutionWrapperPass>();
+      AU.addRequired<AssumptionCacheTracker>();
+      AU.addRequired<TargetTransformInfoWrapperPass>();
     }
 
     bool runOnModule(Module &M) override {
@@ -329,11 +356,6 @@ namespace {
       }
 
       return false;
-    }
-
-    void getAnalysisUsage(AnalysisUsage &AU) const override {
-      AU.setPreservesAll();
-      AU.addRequired<LoopInfoWrapperPass>();
     }
   };
 }

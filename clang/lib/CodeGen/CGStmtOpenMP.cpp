@@ -1585,7 +1585,7 @@ class TtexClass : public RecursiveASTVisitor<TtexClass> {
 
     bool TraverseStmt(Stmt *x) {
 
-       // if(x) std::cout<<"statement class name is: "<< x->getStmtClassName()<<std::endl;
+       //if(x) std::cout<<"------------------- statement class name is: ----------------- "<< x->getStmtClassName()<<std::endl;
 
         if(x && strcmp(x->getStmtClassName(),"OMPForDirective") == 0){
           //std::cout<<x->getStmtClassName();
@@ -1599,6 +1599,8 @@ class TtexClass : public RecursiveASTVisitor<TtexClass> {
           //   ctr = 0;
           // }
 
+          //std::cout<<"-------------------------------------------------------------------"<<std::endl;
+          //std::cout<<x->getStmtClassName()<<std::endl;
           values_temp.push_back(-1);
           //std::cout<<"For Directive Inserted value and new size: "<<values_temp[values_temp.size()-1]<<" "<<values_temp.size()<<std::endl;
         }
