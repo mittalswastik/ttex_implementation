@@ -2410,7 +2410,12 @@ These functions are all identical apart from the types of the arguments.
 
 void __kmpc_dispatch_init_4(ident_t *loc, kmp_int32 gtid,
                             enum sched_type schedule, kmp_int32 lb,
-                            kmp_int32 ub, kmp_int32 st, kmp_int32 chunk) {
+                            kmp_int32 ub, kmp_int32 st, kmp_int32 chunk
+                            #if OMPT_SUPPORT && OMPT_OPTIONAL
+                                   ,
+                                   kmp_int32 sub_parallel_id
+                            #endif
+                            ) {
   KMP_DEBUG_ASSERT(__kmp_init_serial);
 #if OMPT_SUPPORT && OMPT_OPTIONAL
   OMPT_STORE_RETURN_ADDRESS(gtid);
@@ -2422,7 +2427,12 @@ See @ref __kmpc_dispatch_init_4
 */
 void __kmpc_dispatch_init_4u(ident_t *loc, kmp_int32 gtid,
                              enum sched_type schedule, kmp_uint32 lb,
-                             kmp_uint32 ub, kmp_int32 st, kmp_int32 chunk) {
+                             kmp_uint32 ub, kmp_int32 st, kmp_int32 chunk
+                             #if OMPT_SUPPORT && OMPT_OPTIONAL
+                                   ,
+                                   kmp_int32 sub_parallel_id
+                              #endif
+                              ) {
   KMP_DEBUG_ASSERT(__kmp_init_serial);
 #if OMPT_SUPPORT && OMPT_OPTIONAL
   OMPT_STORE_RETURN_ADDRESS(gtid);
@@ -2435,7 +2445,12 @@ See @ref __kmpc_dispatch_init_4
 */
 void __kmpc_dispatch_init_8(ident_t *loc, kmp_int32 gtid,
                             enum sched_type schedule, kmp_int64 lb,
-                            kmp_int64 ub, kmp_int64 st, kmp_int64 chunk) {
+                            kmp_int64 ub, kmp_int64 st, kmp_int64 chunk
+                            #if OMPT_SUPPORT && OMPT_OPTIONAL
+                              ,
+                              kmp_int32 sub_parallel_id
+                            #endif
+                            ) {
   KMP_DEBUG_ASSERT(__kmp_init_serial);
 #if OMPT_SUPPORT && OMPT_OPTIONAL
   OMPT_STORE_RETURN_ADDRESS(gtid);
@@ -2448,7 +2463,12 @@ See @ref __kmpc_dispatch_init_4
 */
 void __kmpc_dispatch_init_8u(ident_t *loc, kmp_int32 gtid,
                              enum sched_type schedule, kmp_uint64 lb,
-                             kmp_uint64 ub, kmp_int64 st, kmp_int64 chunk) {
+                             kmp_uint64 ub, kmp_int64 st, kmp_int64 chunk
+                             #if OMPT_SUPPORT && OMPT_OPTIONAL
+                                   ,
+                                   kmp_int32 sub_parallel_id
+                              #endif
+                              ) {
   KMP_DEBUG_ASSERT(__kmp_init_serial);
 #if OMPT_SUPPORT && OMPT_OPTIONAL
   OMPT_STORE_RETURN_ADDRESS(gtid);

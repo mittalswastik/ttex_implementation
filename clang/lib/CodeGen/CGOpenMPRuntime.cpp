@@ -1605,7 +1605,8 @@ CGOpenMPRuntime::createDispatchInitFunction(unsigned IVSize, bool IVSigned) {
                                ITy,                   // lower
                                ITy,                   // upper
                                ITy,                   // stride
-                               ITy                    // chunk
+                               ITy,                    // chunk
+                               CGM.Int32Ty //id
   };
   auto *FnTy =
       llvm::FunctionType::get(CGM.VoidTy, TypeParams, /*isVarArg*/ false);
@@ -2779,7 +2780,8 @@ void CGOpenMPRuntime::emitForDispatchInit(
       DispatchValues.LB,                                     // Lower
       DispatchValues.UB,                                     // Upper
       CGF.Builder.getIntN(IVSize, 1),                        // Stride
-      Chunk                                                  // Chunk
+      Chunk,                                                  // Chunk
+      CGF.Builder.getInt32(0)
   };
   CGF.EmitRuntimeCall(createDispatchInitFunction(IVSize, IVSigned), Args);
 }

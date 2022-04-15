@@ -3467,20 +3467,22 @@ extern void __kmp_push_num_teams_51(ident_t *loc, int gtid, int num_teams_lb,
 
 extern void __kmp_yield();
 
-extern void __kmpc_dispatch_init_4(ident_t *loc, kmp_int32 gtid,
-                                   enum sched_type schedule, kmp_int32 lb,
-                                   kmp_int32 ub, kmp_int32 st, kmp_int32 chunk);
-extern void __kmpc_dispatch_init_4u(ident_t *loc, kmp_int32 gtid,
-                                    enum sched_type schedule, kmp_uint32 lb,
-                                    kmp_uint32 ub, kmp_int32 st,
-                                    kmp_int32 chunk);
-extern void __kmpc_dispatch_init_8(ident_t *loc, kmp_int32 gtid,
-                                   enum sched_type schedule, kmp_int64 lb,
-                                   kmp_int64 ub, kmp_int64 st, kmp_int64 chunk);
-extern void __kmpc_dispatch_init_8u(ident_t *loc, kmp_int32 gtid,
-                                    enum sched_type schedule, kmp_uint64 lb,
-                                    kmp_uint64 ub, kmp_int64 st,
-                                    kmp_int64 chunk);
+/*Commented by swastik: */
+
+// KMP_EXPORT void __kmpc_dispatch_init_4(ident_t *loc, kmp_int32 gtid,
+//                                    enum sched_type schedule, kmp_int32 lb,
+//                                    kmp_int32 ub, kmp_int32 st, kmp_int32 chunk);
+// KMP_EXPORT void __kmpc_dispatch_init_4u(ident_t *loc, kmp_int32 gtid,
+//                                     enum sched_type schedule, kmp_uint32 lb,
+//                                     kmp_uint32 ub, kmp_int32 st,
+//                                     kmp_int32 chunk);
+// KMP_EXPORT void __kmpc_dispatch_init_8(ident_t *loc, kmp_int32 gtid,
+//                                    enum sched_type schedule, kmp_int64 lb,
+//                                    kmp_int64 ub, kmp_int64 st, kmp_int64 chunk);
+// KMP_EXPORT void __kmpc_dispatch_init_8u(ident_t *loc, kmp_int32 gtid,
+//                                     enum sched_type schedule, kmp_uint64 lb,
+//                                     kmp_uint64 ub, kmp_int64 st,
+//                                     kmp_int64 chunk);
 
 extern int __kmpc_dispatch_next_4(ident_t *loc, kmp_int32 gtid,
                                   kmp_int32 *p_last, kmp_int32 *p_lb,
