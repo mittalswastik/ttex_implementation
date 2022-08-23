@@ -121,8 +121,6 @@ void LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, int parallel_id, 
     return;
   }
 
-
-
   for(llvm::BasicBlock::iterator I = Header->begin(), Iend = Header->end(); I != Iend ; ++I){
     if (isa <llvm::ICmpInst> (I)){
       std::cout<<"found compare instruction"<<std::endl;
@@ -397,7 +395,7 @@ void updateWorkId(Module &M, Function &F, LLVMContext &CTX){
     }
   }
 
-  if(maxvuln_set){ // for all loops in outlined function spit
+  if(maxvuln_set){ // for all loops in outlined function split
     DominatorTree DT = llvm::DominatorTree();
     DT.recalculate(F);
     LoopInfoBase<BasicBlock, Loop>* LInfo = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
@@ -407,7 +405,7 @@ void updateWorkId(Module &M, Function &F, LLVMContext &CTX){
     bool loop_split_flag;
 
     for(LoopInfoBase<BasicBlock, Loop>::iterator loop_iter = LInfo->begin(), loop_iter_end = LInfo->end(); loop_iter != loop_iter_end; ++loop_iter){
-      //testing
+      // testing
 
       loop_split_flag = true;
 
@@ -420,16 +418,16 @@ void updateWorkId(Module &M, Function &F, LLVMContext &CTX){
       std::vector<BasicBlock *> newLoopBlocks;
 
       for(int i = 0 ; i < OriginalLoopBlocks.size() ; i++){
-          // OriginalLoopBlocks[i]->printAsOperand(errs(),false);
-          std::string temp;
-          raw_string_ostream temp_stream(temp);
-          OriginalLoopBlocks[i]->printAsOperand(temp_stream,false);
-          temp_stream.flush();
-          if(OriginalLoopBlocks[i] != header && OriginalLoopBlocks[i] != LatchBlock){
-            std::cout<<"block added to new loop blocks "<<temp<<std::endl; 
-            newLoopBlocks.push_back(OriginalLoopBlocks[i]); // got blocks for new loop
-          }
+        // OriginalLoopBlocks[i]->printAsOperand(errs(),false);
+        std::string temp;
+        raw_string_ostream temp_stream(temp);
+        OriginalLoopBlocks[i]->printAsOperand(temp_stream,false);
+        temp_stream.flush();
+        if(OriginalLoopBlocks[i] != header && OriginalLoopBlocks[i] != LatchBlock){
+          std::cout<<"block added to new loop blocks "<<temp<<std::endl; 
+          newLoopBlocks.push_back(OriginalLoopBlocks[i]); // got blocks for new loop
         }
+      }
 
       for(BasicBlock::iterator instr_iter = Preheader->begin(), instr_iter_end = Preheader->end(); instr_iter != instr_iter_end; ++instr_iter){
         Instruction &I = *instr_iter;

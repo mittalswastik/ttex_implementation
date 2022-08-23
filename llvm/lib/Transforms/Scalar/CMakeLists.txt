@@ -79,7 +79,7 @@ add_llvm_component_library(LLVMScalarOpts
   TailRecursionElimination.cpp
   WarnMissedTransforms.cpp
   Sample.cpp
-  Ttex.cpp
+  Ttex_v1.cpp
 
   ADDITIONAL_HEADER_DIRS
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/Transforms

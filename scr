@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -d "/home/swastik/dev/realtimesys/ttex/llvm-project/build" ] 
+then
+    cd /home/swastik/dev/realtimesys/ttex/llvm-project/build
+else
+    mkdir /home/swastik/dev/realtimesys/ttex/llvm-project/build
+    cd /home/swastik/dev/realtimesys/ttex/llvm-project/build
+fi
+
+
+cmake -DCMAKE_C_COMPILER=gcc cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="lld;clang;openmp"  -DLLVM_ENABLE_RUNTIMES="libc;libcxx;libcxxabi;libunwind" LIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON -G "Unix Makefiles" ../llvm
+
+sudo make -j6
