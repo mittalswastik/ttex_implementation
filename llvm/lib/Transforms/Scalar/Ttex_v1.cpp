@@ -512,7 +512,6 @@ void setAstData(Module &M, Function &F, LLVMContext &CTX, int ctr, BasicBlock &c
         for(unsigned i = 0 ; i < n ; i++){
           temp.push_back(std::make_pair(init->getElementAsInteger(i),0));
         }
-
         //errs()<<"Retreiving num elements for each outlined "<<temp.size()<<"\n";
       }
     }

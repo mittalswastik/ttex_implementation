@@ -2,14 +2,14 @@
 
 if [ -d "/home/swastik/dev/realtimesys/ttex/llvm-project/build" ] 
 then
+    mkdir /home/swastik/dev/realtimesys/ttex/llvm-project/build
     cd /home/swastik/dev/realtimesys/ttex/llvm-project/build
 else
-    mkdir /home/swastik/dev/realtimesys/ttex/llvm-project/build
     cd /home/swastik/dev/realtimesys/ttex/llvm-project/build
 fi
 
 #-DLLVM_ENABLE_RUNTIMES="libc;libcxx;libcxxabi;libunwind"
 
-cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=/usr/lib/llvm-13/cmake -DLLVM_ENABLE_PROJECTS="lld;clang;openmp"  LIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON -G "Ninja" ../llvm
+CC='clang-13' CXX='clang++-13' cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=gold -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm
 
 sudo ninja -j4
