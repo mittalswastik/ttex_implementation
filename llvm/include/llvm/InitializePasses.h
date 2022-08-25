@@ -464,7 +464,7 @@ void initializeWriteThinLTOBitcodePass(PassRegistry&);
 void initializeXRayInstrumentationPass(PassRegistry&);
 
 /*swastik: insert code*/
-void initializeHelloNewPMPassPass(PassRegistry&);
+//void initializeHelloNewPMPassPass(PassRegistry&);
 void initializeTtexPassPass(PassRegistry&);
 /*swastik: exit code*/
 

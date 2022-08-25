@@ -1863,7 +1863,7 @@ void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
   // We can't add optnone in the following cases, it won't pass the verifier.
   ShouldAddOptNone &= !D->hasAttr<MinSizeAttr>();
   ShouldAddOptNone &= !D->hasAttr<AlwaysInlineAttr>();
-ShouldAddOptNone &= CodeGenOpts.ttexpass.empty();
+  ShouldAddOptNone &= CodeGenOpts.ttexpass.empty();
 
   // Add optnone, but do so only if the function isn't always_inline.
   if ((ShouldAddOptNone || D->hasAttr<OptimizeNoneAttr>()) &&

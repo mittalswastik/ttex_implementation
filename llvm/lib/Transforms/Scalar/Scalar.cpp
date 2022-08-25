@@ -117,7 +117,7 @@ void llvm::initializeScalarOpts(PassRegistry &Registry) {
   initializeLoopVersioningLegacyPassPass(Registry);
   initializeEntryExitInstrumenterPass(Registry);
   initializePostInlineEntryExitInstrumenterPass(Registry);
-  initializeHelloNewPMPassPass(Registry);
+  //initializeHelloNewPMPassPass(Registry);
   initializeTtexPassPass(Registry);
 }
 

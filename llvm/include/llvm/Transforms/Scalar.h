@@ -113,7 +113,7 @@ FunctionPass *createBitTrackingDCEPass();
 //
 FunctionPass *createSROAPass();
 
-FunctionPass *createHelloNewPMPass();
+//FunctionPass *createHelloNewPMPass();
 
 ModulePass *createTtexPass();
 
