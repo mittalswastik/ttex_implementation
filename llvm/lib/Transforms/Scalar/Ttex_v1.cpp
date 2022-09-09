@@ -58,6 +58,10 @@
 #include "llvm/IR/DataLayout.h"
 using namespace llvm;
 
+namespace llvm {
+void initializeTtexPassPass (PassRegistry&);
+} // end namespace llvm
+
 std::vector< std::vector< std::pair<int,int> > > astdata; //storing the sub region info -- but need to fix the id's to correct location
 std::vector<int> sizes;
 
@@ -89,7 +93,7 @@ void LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, int parallel_id, 
     OriginalLoopBlocks[i]->printAsOperand(temp_stream,false);
     temp_stream.flush();
     if(OriginalLoopBlocks[i] != Header && OriginalLoopBlocks[i] != LatchBlock){
-      std::cout<<"block added to new loop blocks "<<temp<<std::endl; 
+      std::cout<<"block added to new loop blocks "<<temp<<std::endl;
       newLoopBlocks.push_back(OriginalLoopBlocks[i]); // got blocks for new loop
     }
   }

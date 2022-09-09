@@ -334,7 +334,7 @@ void PassManagerBuilder::populateFunctionPassManager(
   FPM.add(createCFGSimplificationPass());
   FPM.add(createSROAPass());
   // FPM.add(createHelloNewPMPass()); //swastik
-  FPM.add(createTtexPass());
+  //FPM.add(createTtexPass());
   FPM.add(createEarlyCSEPass());
 }
 

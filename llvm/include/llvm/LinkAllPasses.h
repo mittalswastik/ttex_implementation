@@ -237,7 +237,7 @@ namespace {
       (void) llvm::createFixIrreduciblePass();
       (void)llvm::createFunctionSpecializationPass();
       // (void) llvm::createHelloNewPMPass();
-      (void) llvm::createTtexPass();
+      //(void) llvm::createTtexPass();
 
       (void)new llvm::IntervalPartition();
       (void)new llvm::ScalarEvolutionWrapperPass();
