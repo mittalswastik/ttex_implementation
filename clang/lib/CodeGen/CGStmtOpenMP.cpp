@@ -1556,22 +1556,27 @@ checkForLastprivateConditionalUpdate(CodeGenFunction &CGF,
       CGF, S, PrivateDecls);
 }
 
-std::vector< std::vector<int> >temp_val;
-std::vector<int> values_temp;
+std::vector< std::vector< int > > temp_val;
+std::vector< int > values_temp;
+std::vector< std::vector<int> > temp_sub_val;
+std::vector< int > values_sub_temp;
+std::map<SourceLocation, uint64_t> umap_loc;
+int sub_region_counter;
 
 class TtexClass : public RecursiveASTVisitor<TtexClass> {
     //llvm::LLVMContext &ctxt = *(new llvm::LLVMContext());
     llvm::LLVMContext *ctxt;
-    
+    SourceManager *SM;
 
   public:
-    //std::vector<llvm::Constant*> values;
+    //std::vector<llvm::Constant*> values
+    SourceLocation temp;
 
-    // TtexClass(llvm::LLVMContext &t){
-    //   ctxt = &t;
-    //   ctr = 0;
-    //   //std::cout<<"Calling constructor of TtexClass "<<values_temp.size()<<std::endl;
-    // }
+    TtexClass(llvm::LLVMContext &t, SourceManager &m){
+      ctxt = &t;
+      SM = &m;
+      //std::cout<<"Calling constructor of TtexClass "<<values_temp.size()<<std::endl;
+    }
 
     // ~TtexClass(){
     //   values_temp.clear();
@@ -1584,7 +1589,6 @@ class TtexClass : public RecursiveASTVisitor<TtexClass> {
     }
 
     bool TraverseStmt(Stmt *x) {
-
        //if(x) std::cout<<"------------------- statement class name is: ----------------- "<< x->getStmtClassName()<<std::endl;
 
         if(x && strcmp(x->getStmtClassName(),"OMPForDirective") == 0){
@@ -1601,17 +1605,29 @@ class TtexClass : public RecursiveASTVisitor<TtexClass> {
 
           //std::cout<<"-------------------------------------------------------------------"<<std::endl;
           //std::cout<<x->getStmtClassName()<<std::endl;
+          umap_loc[x->getBeginLoc()] = sub_region_counter;
+          std::cout<<"--------------------- source location in recursive api is -------------------- and id "<<umap_loc[x->getBeginLoc()]<<std::endl;
+          std::cout<<(x->getBeginLoc()).printToString(*SM)<<std::endl;
+          //std::pair<int,int> p(-1,sub_region_counter);
           values_temp.push_back(-1);
+          values_sub_temp.push_back(sub_region_counter);
+          sub_region_counter += 1;
           //std::cout<<"For Directive Inserted value and new size: "<<values_temp[values_temp.size()-1]<<" "<<values_temp.size()<<std::endl;
         }
 
         else if(x && strcmp(x->getStmtClassName(),"OMPSectionsDirective") == 0){
           // do nothing
+          umap_loc[x->getBeginLoc()] = sub_region_counter;
+          //std::pair<int,int> p(0,sub_region_counter);
           values_temp.push_back(0);
+          values_sub_temp.push_back(sub_region_counter);
+          sub_region_counter += 1;
+          temp = x->getBeginLoc();
           //std::cout<<"Sections Inserted value and new size: "<<values_temp[values_temp.size()-1]<<" "<<values_temp.size()<<std::endl;
         }
 
         else if(x && strcmp(x->getStmtClassName(),"OMPParallelDirective") == 0){
+          //umap_loc[x->getBeginLoc()] = sub_region_counter;
           //std::cout<<x->getStmtClassName();
           // if(ctr != 0){
           //   // llvm::Constant* c1 = llvm::ConstantInt::get(llvm::Type::getInt64Ty(*ctxt),ctr);
@@ -1630,19 +1646,31 @@ class TtexClass : public RecursiveASTVisitor<TtexClass> {
         }
 
         else if(x && strcmp(x->getStmtClassName(),"OMPSectionDirective") == 0){
-            //ctr += 1;
-            values_temp[values_temp.size()-1] += 1;
-            //std::cout<<"Section Directive Inserted value and new size: "<<values_temp[values_temp.size()-1]<<" "<<values_temp.size()<<std::endl;
+          //ctr += 1;
+          values_temp[values_temp.size()-1] += 1;
+          umap_loc[x->getBeginLoc()] = umap_loc[temp];
+          //std::cout<<"Section Directive Inserted value and new size: "<<values_temp[values_temp.size()-1]<<" "<<values_temp.size()<<std::endl;
         }
 
         else if(x && strcmp(x->getStmtClassName(),"OMPSingleDirective") == 0){
+          //std::pair<int,int> p(-2,sub_region_counter);
           values_temp.push_back(-2);
+          values_sub_temp.push_back(sub_region_counter);
+          umap_loc[x->getBeginLoc()] = sub_region_counter;
+          sub_region_counter += 1;
           //std::cout<<"Single Directive Inserted value and new size: "<<values_temp[values_temp.size()-1]<<" "<<values_temp.size()<<std::endl;
         }
 
+        /*CGStmtOpenMP.h maintains a mapping of source location to subregion id - use the subregionid stored here in emit calls in openmpruntime.cpp*/
+
+        // sub_region_ref.umap[x->getBeginLoc()] = sub_region_counter;
+        //umap[x->getBeginLoc()] = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(*ctxt),sub_region_counter, false);
+        //umap_temp[(x->getBeginLoc()).printToString(*SM)] = sub_region_counter;
+        //umap_temp.insert(std::pair< (x->getBeginLoc()).printToString(*SM), llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(*ctxt),sub_region_counter, false)>);
         RecursiveASTVisitor<TtexClass>::TraverseStmt(x);
         return true;
     }
+
     bool TraverseType(QualType x) {
         // your logic here
         RecursiveASTVisitor<TtexClass>::TraverseType(x);
@@ -1655,7 +1683,19 @@ static void emitCommonOMPParallelDirective(
     OpenMPDirectiveKind InnermostKind, const RegionCodeGenTy &CodeGen,
     const CodeGenBoundParametersTy &CodeGenBoundParameters) {
 
-  std::cout<<"---------------testing------------"<<std::endl;
+  std::cout<<"---------------testing emitCommonOMPParallelD------------"<<std::endl;
+
+  const ASTContext &AC = CGF.getContext();
+  llvm::LLVMContext& ctxt = CGF.getLLVMContext();
+  const Stmt *stmt_temp = S.getAssociatedStmt();
+  Stmt *stmt = const_cast<Stmt*>(stmt_temp);
+  sub_region_counter = 1;
+  TtexClass obj(ctxt,CGF.getContext().getSourceManager());
+  obj.TraverseStmt(stmt);
+  temp_val.push_back(values_temp);
+  temp_sub_val.push_back(values_sub_temp);
+  values_temp.clear();
+  values_sub_temp.clear();
 
   const CapturedStmt *CS = S.getCapturedStmt(OMPD_parallel);
   llvm::Value *NumThreads = nullptr;
@@ -1676,21 +1716,13 @@ static void emitCommonOMPParallelDirective(
   // llvm::Constant* init = llvm::ConstantArray::get(ar, obj.values);
   // std::cout<<"ttex array size is"<<(obj.values_temp).size()<<std::endl;
 
-  const ASTContext &AC = CGF.getContext();
-  llvm::LLVMContext& ctxt = CGF.getLLVMContext();
-  const Stmt *stmt_temp = S.getAssociatedStmt();
-  Stmt *stmt = const_cast<Stmt*>(stmt_temp);
-  TtexClass obj;
-  obj.TraverseStmt(stmt);
-
-  temp_val.push_back(values_temp);
-  values_temp.clear();
+  //umap_loc = {};
   // std::cout<<"ttex array size is"<<(obj->values_temp).size()<<std::endl;
-  std::cout<<"ttex array value is: ";
+  std::cout<<"ttex array value is: "<<std::endl;
   for(int i = 0 ; i < temp_val.size() ; i++){
     for (int j = 0; j < temp_val[i].size(); j++)
     {
-      std::cout<<temp_val[i][j]<<"  ";
+      std::cout<<temp_val[i][j]<<"  "<<temp_sub_val[i][j]<<"     ";
     }
 
     std::cout<<std::endl;
@@ -1729,11 +1761,14 @@ static void emitCommonOMPParallelDirective(
 
   std::cout<<"Temp val new size before removing last "<<temp_val.size()<<std::endl;
   llvm::Constant* init = llvm::ConstantDataArray::get(context, temp_val[temp_val.size()-1]);
+  llvm::Constant* init_sub = llvm::ConstantDataArray::get(context, temp_sub_val[temp_sub_val.size()-1]);
   temp_val.pop_back();
   std::cout<<"Temp val new size after removing last "<<temp_val.size()<<std::endl;
   llvm::MDNode* ttex_array = llvm::MDNode::get(context, llvm::ValueAsMetadata::get(init));
+  llvm::MDNode* ttex_sub_array = llvm::MDNode::get(context, llvm::ValueAsMetadata::get(init_sub));
   //llvm::ValueAsMetadata* ttex_array = llvm::ValueAsMetadata::get(obj.values); 
   OutlinedFn->setMetadata("ttex_array", ttex_array);
+  OutlinedFn->setMetadata("ttex_sub_array", ttex_sub_array);
 
   CodeGenBoundParameters(CGF, S, CapturedVars);
   CGF.GenerateOpenMPCapturedVars(*CS, CapturedVars);
@@ -2109,7 +2144,7 @@ CodeGenFunction::EmitOMPCollapsedCanonicalLoopNest(const Stmt *S, int Depth) {
   // directive to the stack. If the current loop-associated directive is a loop
   // transformation directive, it will push its generated loops onto the stack
   // such that together with the loops left here they form the combined loop
-  // nest for the parent loop-associated directive.
+  // nest for the parent loop-associated directive
   int ParentExpectedOMPLoopDepth = ExpectedOMPLoopDepth;
   ExpectedOMPLoopDepth = Depth;
 
@@ -4163,6 +4198,8 @@ void CodeGenFunction::EmitOMPSingleDirective(const OMPSingleDirective &S) {
                                             CopyprivateVars, DestExprs,
                                             SrcExprs, AssignmentOps);
   }
+
+  std::cout<<"-------------------------emit omp single region call executed and complete --------------------"<<std::endl;
   // Emit an implicit barrier at the end (to avoid data race on firstprivate
   // init or if no 'nowait' clause was specified and no 'copyprivate' clause).
   if (!S.getSingleClause<OMPNowaitClause>() && CopyprivateVars.empty()) {
@@ -4170,8 +4207,11 @@ void CodeGenFunction::EmitOMPSingleDirective(const OMPSingleDirective &S) {
         *this, S.getBeginLoc(),
         S.getSingleClause<OMPNowaitClause>() ? OMPD_unknown : OMPD_single);
   }
+
+  std::cout<<"-------------------------emit omp single directive barrier call --------------------"<<std::endl;
   // Check for outer lastprivate conditional update.
   checkForLastprivateConditionalUpdate(*this, S);
+  std::cout<<"-------------------------emit omp single directive executed and complete --------------------"<<std::endl;
 }
 
 static void emitMaster(CodeGenFunction &CGF, const OMPExecutableDirective &S) {

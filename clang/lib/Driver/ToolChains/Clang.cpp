@@ -46,6 +46,7 @@
 #include "llvm/Support/Process.h"
 #include "llvm/Support/TargetParser.h"
 #include "llvm/Support/YAMLParser.h"
+#include "bits/stdc++.h"
 
 using namespace clang::driver;
 using namespace clang::driver::tools;
@@ -4406,6 +4407,33 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-triple");
   CmdArgs.push_back(Args.MakeArgString(TripleStr));
 
+  std::cout<<"------------------------------------- Printing out all arg values ---------------------------------------"<<std::endl;
+
+  if(Args.hasArg(options::OPT_ttex_EQ)){
+    std::cout<<"ttex found"<<std::endl;
+  }
+
+  for(auto arg : Args.filtered(options::OPT_ttex_EQ)){
+    std::cout<<arg->getValue(0)<<std::endl;
+  }
+
+  for(ArgList::const_iterator iter = Args.begin() , iter_end = Args.end() ; iter != iter_end; ++iter){
+    Arg *ag = *iter;
+    const Option &op = ag->getOption();
+    std::cout<<"option name is: "<<op.getName().data()<<std::endl;
+  }
+
+  for(int i = 0 ; i < Args.size() ; i++){
+    std::cout<<Args.getArgString(i)<<std::endl;
+  }
+
+
+  if (const Arg *A = Args.getLastArg(options::OPT_ttex_EQ)) {
+    std::cout<<"-----------------------------------------------ttex pass value is: ------------------------------------"<< A->getValue()<<std::endl;
+    CmdArgs.push_back(Args.MakeArgString(Twine("-ttex=") + A->getValue()));
+    A->claim();
+  }
+
   if (const Arg *MJ = Args.getLastArg(options::OPT_MJ)) {
     DumpCompilationDatabase(C, MJ->getValue(), TripleStr, Output, Input, Args);
     Args.ClaimAllArgs(options::OPT_MJ);
@@ -7138,10 +7166,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   //   );
   // }
 
-    for (const Arg *A : Args.filtered(options::OPT_ttex_EQ)) {
-      CmdArgs.push_back(Args.MakeArgString(Twine("-ttex=") + A->getValue()));
-      A->claim();
-    }
+  // if (const Arg *A = Args.getLastArg(options::OPT_ttex_EQ)) {
+  //   std::cout<<"-----------------------------------------------ttex pass value is: -----------------------------------"<< A->getValue()<<std::endl;
+  //   CmdArgs.push_back(Args.MakeArgString(Twine("-ttex=") + A->getValue()));
+  //   A->claim();
+  // }
 
   /*
     Swastik: Added code ends

@@ -263,6 +263,8 @@ Do the actual fork and call the microtask in the relevant number of threads.
 void __kmpc_fork_call(ident_t *loc, kmp_int32 argc, kmpc_micro microtask, ...) {
   int gtid = __kmp_entry_gtid();
 
+  __kmp_printf("Checking for ompt support\n");
+
 #if (KMP_STATS_ENABLED)
   // If we were in a serial region, then stop the serial timer, record
   // the event, and start parallel region timer
@@ -1861,7 +1863,7 @@ kmp_int32 __kmpc_single(ident_t *loc, kmp_int32 global_tid, kmp_int32 sub_region
             ompt_work_single_executor, ompt_scope_begin,
             &(team->t.ompt_team_info.parallel_data),
             &(team->t.t_implicit_task_taskdata[tid].ompt_task_info.task_data),
-            1, OMPT_GET_RETURN_ADDRESS(0),sub_region_id);
+            1, OMPT_GET_RETURN_ADDRESS(0),0);//, sub_region_id);
       }
     } else {
       if (ompt_enabled.ompt_callback_work) {
@@ -1869,12 +1871,12 @@ kmp_int32 __kmpc_single(ident_t *loc, kmp_int32 global_tid, kmp_int32 sub_region
             ompt_work_single_other, ompt_scope_begin,
             &(team->t.ompt_team_info.parallel_data),
             &(team->t.t_implicit_task_taskdata[tid].ompt_task_info.task_data),
-            1, OMPT_GET_RETURN_ADDRESS(0),sub_region_id);
+            1, OMPT_GET_RETURN_ADDRESS(0),0);//, sub_region_id);
         ompt_callbacks.ompt_callback(ompt_callback_work)(
             ompt_work_single_other, ompt_scope_end,
             &(team->t.ompt_team_info.parallel_data),
             &(team->t.t_implicit_task_taskdata[tid].ompt_task_info.task_data),
-            1, OMPT_GET_RETURN_ADDRESS(0),sub_region_id);
+            1, OMPT_GET_RETURN_ADDRESS(0),0);// ,sub_region_id);
       }
     }
   }

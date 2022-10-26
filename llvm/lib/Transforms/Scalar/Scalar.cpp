@@ -118,7 +118,7 @@ void llvm::initializeScalarOpts(PassRegistry &Registry) {
   initializeEntryExitInstrumenterPass(Registry);
   initializePostInlineEntryExitInstrumenterPass(Registry);
   //initializeHelloNewPMPassPass(Registry);
-  //initializeTtexPassPass(Registry);
+  initializeTtexPassPass(Registry);
 }
 
 void LLVMAddLoopSimplifyCFGPass(LLVMPassManagerRef PM) {

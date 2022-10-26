@@ -2103,7 +2103,7 @@ void CGOpenMPRuntime::emitParallelCall(CodeGenFunction &CGF, SourceLocation Loc,
 
     //swastik
 
-    llvm::errs()<<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Check execution^^^^^^^^^^^^^^^^^^^^^^\n";
+    llvm::errs()<<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Check execution^^^^^^^^^^^^^^^^^^^^^^"<<parallel_id_ctr<<"\n";
     llvm::LLVMContext& context = OutlinedFn->getContext();
     llvm::Value *set_parallel_id_value =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(context),parallel_id_ctr);
     // llvm::MDNode* temp_meta = llvm::MDNode::get(context, llvm::MDString::get(context, "checking123"));
@@ -2475,21 +2475,29 @@ void CGOpenMPRuntime::emitSingleRegion(CodeGenFunction &CGF,
     CGF.Builder.CreateStore(CGF.Builder.getInt32(0), DidIt);
   }
   // Prepare arguments and build a call to __kmpc_single
+  std::cout<<"-------------- kmpc single first arg -----------------------------------"<<std::endl;
   llvm::Value *Args[] = {emitUpdateLocation(CGF, Loc), getThreadID(CGF, Loc), CGF.Builder.getInt32(0)}; //swastik: kmpc_single
+  llvm::Value *Args_temp[] = {emitUpdateLocation(CGF, Loc), getThreadID(CGF, Loc)};
   CommonActionTy Action(OMPBuilder.getOrCreateRuntimeFunction(
                             CGM.getModule(), OMPRTL___kmpc_single),
                         Args,
                         OMPBuilder.getOrCreateRuntimeFunction(
                             CGM.getModule(), OMPRTL___kmpc_end_single),
-                        Args,
+                        Args_temp,
                         /*Conditional=*/true);
+  std::cout<<"-------------- kmpc single after first arg -----------------------------------"<<std::endl;
   SingleOpGen.setAction(Action);
+  std::cout<<"------------------------------------- emit single action emitInlinedDirective complete ----------------------------------"<<std::endl;
   emitInlinedDirective(CGF, OMPD_single, SingleOpGen);
+  std::cout<<"------------------------- emit inline directive is complete -------------------------------"<<std::endl;
   if (DidIt.isValid()) {
     // did_it = 1;
     CGF.Builder.CreateStore(CGF.Builder.getInt32(1), DidIt);
   }
+  std::cout<<"----------------------- execute actions -----------------------------"<<std::endl;
   Action.Done(CGF);
+
+  std::cout<<"------------------ Call complete for single -----------------------------"<<std::endl;
   // call __kmpc_copyprivate(ident_t *, gtid, <buf_size>, <copyprivate list>,
   // <copy_func>, did_it);
   if (DidIt.isValid()) {
@@ -2518,6 +2526,7 @@ void CGOpenMPRuntime::emitSingleRegion(CodeGenFunction &CGF,
       CGF.Builder.CreatePointerBitCastOrAddrSpaceCast(CopyprivateList,
                                                       CGF.VoidPtrTy);
     llvm::Value *DidItVal = CGF.Builder.CreateLoad(DidIt);
+    std::cout<<"-------------- kmpc single second arg -----------------------------------"<<std::endl;
     llvm::Value *Args[] = {
         emitUpdateLocation(CGF, Loc), // ident_t *<loc>
         getThreadID(CGF, Loc),        // i32 <gtid>
@@ -2529,6 +2538,8 @@ void CGOpenMPRuntime::emitSingleRegion(CodeGenFunction &CGF,
     CGF.EmitRuntimeCall(OMPBuilder.getOrCreateRuntimeFunction(
                             CGM.getModule(), OMPRTL___kmpc_copyprivate),
                         Args);
+
+    std::cout<<"-------------- kmpc single after second arg -----------------------------------"<<std::endl;
   }
 }
 
@@ -2752,6 +2763,8 @@ static int addMonoNonMonoModifier(CodeGenModule &CGM, OpenMPSchedType Schedule,
   return Schedule | Modifier;
 }
 
+extern std::map<SourceLocation,uint64_t> umap_loc;
+
 void CGOpenMPRuntime::emitForDispatchInit(
     CodeGenFunction &CGF, SourceLocation Loc,
     const OpenMPScheduleTy &ScheduleKind, unsigned IVSize, bool IVSigned,
@@ -2790,9 +2803,11 @@ static void emitForStaticInitCall(
     CodeGenFunction &CGF, llvm::Value *UpdateLocation, llvm::Value *ThreadId,
     llvm::FunctionCallee ForStaticInitFunction, OpenMPSchedType Schedule,
     OpenMPScheduleClauseModifier M1, OpenMPScheduleClauseModifier M2,
-    const CGOpenMPRuntime::StaticRTInput &Values) {
+    const CGOpenMPRuntime::StaticRTInput &Values, uint64_t sub_id) {
   if (!CGF.HaveInsertPoint())
     return;
+
+  std::cout<<"------------------------------------ id value is ------------------------------"<<sub_id<<std::endl;
 
   assert(!Values.Ordered);
   assert(Schedule == OMP_sch_static || Schedule == OMP_sch_static_chunked ||
@@ -2837,8 +2852,8 @@ static void emitForStaticInitCall(
       Values.UB.getPointer(),                           // &UB
       Values.ST.getPointer(),                           // &Stride
       CGF.Builder.getIntN(Values.IVSize, 1),            // Incr
-      Chunk,                                             // Chunk
-      CGF.Builder.getInt32(0)                           // sub parallel id
+      Chunk,                                            // Chunk
+      CGF.Builder.getInt32(sub_id)                      // sub parallel id
   };
   CGF.EmitRuntimeCall(ForStaticInitFunction, Args);
 }
@@ -2860,8 +2875,11 @@ void CGOpenMPRuntime::emitForStaticInit(CodeGenFunction &CGF,
   llvm::FunctionCallee StaticInitFunction =
       createForStaticInitFunction(Values.IVSize, Values.IVSigned, false);
   auto DL = ApplyDebugLocation::CreateDefaultArtificial(CGF, Loc);
+  uint64_t id =  umap_loc[Loc];
+  std::cout<<"------------- source location in for static is -------------------- id value is "<<id<<std::endl;
+  std::cout<<Loc.printToString(CGF.getContext().getSourceManager())<<std::endl;
   emitForStaticInitCall(CGF, UpdatedLocation, ThreadId, StaticInitFunction,
-                        ScheduleNum, ScheduleKind.M1, ScheduleKind.M2, Values);
+                        ScheduleNum, ScheduleKind.M1, ScheduleKind.M2, Values, id);
 }
 
 void CGOpenMPRuntime::emitDistributeStaticInit(
@@ -2879,10 +2897,10 @@ void CGOpenMPRuntime::emitDistributeStaticInit(
       (CGM.getTriple().isAMDGCN() || CGM.getTriple().isNVPTX());
   StaticInitFunction = createForStaticInitFunction(
       Values.IVSize, Values.IVSigned, isGPUDistribute);
-
+  uint64_t id = umap_loc[Loc];
   emitForStaticInitCall(CGF, UpdatedLocation, ThreadId, StaticInitFunction,
                         ScheduleNum, OMPC_SCHEDULE_MODIFIER_unknown,
-                        OMPC_SCHEDULE_MODIFIER_unknown, Values);
+                        OMPC_SCHEDULE_MODIFIER_unknown, Values, id);
 }
 
 void CGOpenMPRuntime::emitForStaticFinish(CodeGenFunction &CGF,
@@ -6327,7 +6345,9 @@ void CGOpenMPRuntime::emitInlinedDirective(CodeGenFunction &CGF,
                                  InnerKind != OMPD_critical &&
                                      InnerKind != OMPD_master &&
                                      InnerKind != OMPD_masked);
+  std::cout<<"---------------before emit body in emitInlinedDirective--------------------"<<std::endl;
   CGF.CapturedStmtInfo->EmitBody(CGF, /*S=*/nullptr);
+  std::cout<<"---------------now working here in emit inlined directive--------------------"<<std::endl;
 }
 
 namespace {

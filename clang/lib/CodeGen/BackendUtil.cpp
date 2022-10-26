@@ -901,20 +901,25 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
     PMBuilder.PGOInstrUse = CodeGenOpts.ProfileInstrumentUsePath;
     PMBuilder.EnablePGOCSInstrUse = CodeGenOpts.hasProfileCSIRUse();
   }
-
   if (!CodeGenOpts.SampleProfileFile.empty())
     PMBuilder.PGOSampleUse = CodeGenOpts.SampleProfileFile;
 
   PMBuilder.populateFunctionPassManager(FPM);
   PMBuilder.populateModulePassManager(MPM);
 
-  //std::cout<<"backenutil.cpp executed-----------------"<<std::endl;
+  std::cout<<"backenutil.cpp executed again--------"<<CodeGenOpts.ttexdatapass.splitfactor.size()<<std::endl;
 
-  if(!CodeGenOpts.ttexpass.empty()) {
-    std::cout<<"backenutil.cpp executed-----------------"<<std::endl;
+  // if(CodeGenOpts.ttexdatapass.size() > 0) {
+  //   std::cout<<"+++++++++++++++++++++++++++ttex value passed is++++++++++++++++++:"<<CodeGenOpts.ttexpassfactor[0]<<std::endl;
+  // }
+
+  if(!CodeGenOpts.ttexdatapass.empty()) {
+    std::cout<<"Adding Ttex pass -----------------"<<std::endl;
     //FPM.add(createHelloNewPMPass());
-    MPM.add(createTtexPass());
+    MPM.add(createTtexPass(CodeGenOpts.ttexdatapass.splitfactor));
   }
+
+  //MPM.add(createTtexPass(CodeGenOpts.ttexdatapass.splitfactor));
 
  // if (!CodeGenOpts.ttexpass.empty()) {
  //  //MPM.add(createDataStructurePass());

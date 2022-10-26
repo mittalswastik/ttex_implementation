@@ -100,11 +100,13 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 using namespace clang;
 using namespace driver;
 using namespace options;
 using namespace llvm::opt;
+// using namespace std;
 
 //===----------------------------------------------------------------------===//
 // Initialization.
@@ -1550,9 +1552,15 @@ void CompilerInvocation::GenerateCodeGenArgs(
     break;
   }
 
-  //swastik
-  for (const std::string &ttexpass : Opts.ttexpass)
-    GenerateArg(Args, OPT_ttex_EQ, ttexpass, SA);
+  /*swastik
+  
+  
+  
+  for (const string &ttexpass : Opts.ttexpass)
+   // GenerateArg (Args, OPT_ttex_EQ, ttexpass, SA);
+  
+  
+  */
 }
 
 bool CompilerInvocation::ParseCodeGenArgs(CodeGenOptions &Opts, ArgList &Args,
@@ -1967,7 +1975,18 @@ bool CompilerInvocation::ParseCodeGenArgs(CodeGenOptions &Opts, ArgList &Args,
 //   }
 // }
 
-    Opts.ttexpass = Args.getAllArgValues(OPT_ttex_EQ);
+  std::cout<<"---------------------- compiler invocation --------------------------------"<<std::endl;
+
+  for(int i = 0 ; i <  (Args.getAllArgValues(options::OPT_ttex_EQ)).size() ; i++){
+    Opts.ttexdatapass.splitfactor.push_back((Args.getAllArgValues(options::OPT_ttex_EQ))[i]);
+  }
+
+  for(int i = 0 ; i < Opts.ttexdatapass.splitfactor.size() ; i++){
+    std::cout<<Opts.ttexdatapass.splitfactor[i]<<std::endl;
+  }
+
+  //Opts.ttexpassfactor = Args.getAllArgValues(options::OPT_ttex_EQ);
+
 
   /*
     Swastik: Code added ends

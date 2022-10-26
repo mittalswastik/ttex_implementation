@@ -60,5 +60,4 @@ namespace {
 }
 
 char Hello2::ID = 0;
-static RegisterPass<Hello2>
-Y("hello2", "Hello World Pass (with getAnalysisUsage implemented)");
+static RegisterPass<Hello2> Y("hello2", "Hello World Pass (with getAnalysisUsage implemented)");

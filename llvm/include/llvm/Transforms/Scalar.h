@@ -16,6 +16,7 @@
 
 #include "llvm/Transforms/Utils/SimplifyCFGOptions.h"
 #include <functional>
+#include <bits/stdc++.h>
 
 namespace llvm {
 
@@ -115,7 +116,7 @@ FunctionPass *createSROAPass();
 
 //FunctionPass *createHelloNewPMPass();
 
-ModulePass *createTtexPass();
+//ModulePass *createTtexPass(std::vector<std::string>);
 
 //===----------------------------------------------------------------------===//
 //

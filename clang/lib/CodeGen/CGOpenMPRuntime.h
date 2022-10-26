@@ -24,11 +24,16 @@
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringSet.h"
+#include "llvm/ADT/MapVector.h"
 #include "llvm/Frontend/OpenMP/OMPConstants.h"
 #include "llvm/Frontend/OpenMP/OMPIRBuilder.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/ValueHandle.h"
 #include "llvm/Support/AtomicOrdering.h"
+#include <bits/stdc++.h>
+
+//llvm::StringMap<std::string, uint64_t> umap_temp;
+//llvm::DenseMap<const clang::SourceLocation, llvm::ConstantInt*> umap; 
 
 namespace llvm {
 class ArrayType;
@@ -53,6 +58,12 @@ class Address;
 class CodeGenFunction;
 class CodeGenModule;
 
+//swastik
+// struct SubRegionId {
+//   public:
+//     std::unordered_map<SourceLocation, int> umap;
+// } sub_region_ref;
+
 /// A basic class for pre|post-action for advanced codegen sequence for OpenMP
 /// region.
 class PrePostActionTy {
@@ -62,6 +73,11 @@ public:
   virtual void Exit(CodeGenFunction &CGF) {}
   virtual ~PrePostActionTy() {}
 };
+
+// class LocationMap {
+//   public:
+//     std::map<clang::SourceLocation, uint64_t> umap_loc;
+// } loc_map;
 
 /// Class provides a way to call simple version of codegen for OpenMP region, or
 /// an advanced with possible pre|post-actions in codegen.

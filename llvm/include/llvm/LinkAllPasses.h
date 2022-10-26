@@ -56,6 +56,7 @@
 #include "llvm/Transforms/Utils/UnifyFunctionExitNodes.h"
 #include "llvm/Transforms/Vectorize.h"
 #include <cstdlib>
+#include <bits/stdc++.h>
 
 namespace {
   struct ForcePassLinking {
@@ -69,6 +70,8 @@ namespace {
       // registries.
       if (std::getenv("bar") != (char*) -1)
         return;
+
+      std::vector<std::string> s;
 
       (void) llvm::createAAEvalPass();
       (void) llvm::createAggressiveDCEPass();
@@ -237,7 +240,7 @@ namespace {
       (void) llvm::createFixIrreduciblePass();
       (void)llvm::createFunctionSpecializationPass();
       // (void) llvm::createHelloNewPMPass();
-      //(void) llvm::createTtexPass();
+     // (void) llvm::createTtexPass(s);
 
       (void)new llvm::IntervalPartition();
       (void)new llvm::ScalarEvolutionWrapperPass();

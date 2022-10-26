@@ -4,7 +4,7 @@
 #include "llvm/Pass.h"
 
 namespace llvm {
-ModulePass* createTtexPass();
+ModulePass* createTtexPass(std::vector<std::string>);
 } // end namespace llvm
 
 #endif

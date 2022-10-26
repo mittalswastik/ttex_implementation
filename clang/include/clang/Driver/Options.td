@@ -542,6 +542,11 @@ def ccc_print_phases : Flag<["-"], "ccc-print-phases">, InternalDebugOpt,
 def ccc_print_bindings : Flag<["-"], "ccc-print-bindings">, InternalDebugOpt,
   HelpText<"Show bindings of tools to actions">;
 
+// ttex Flags<[NoXarchOption]>,
+// swastik: add ttex flag to execute in the compiler pipeline by default
+def ttex_EQ : Joined<["-","--"], "ttex=">, Flags<[NoXarchOption, CC1Option]>,
+  HelpText<"provide the pass name">;
+
 def ccc_arcmt_check : Flag<["-"], "ccc-arcmt-check">, InternalDriverOpt,
   HelpText<"Check for ARC migration issues that need manual handling">;
 def ccc_arcmt_modify : Flag<["-"], "ccc-arcmt-modify">, InternalDriverOpt,
@@ -3959,6 +3964,7 @@ def : Separate<["--"], "no-system-header-prefix">, Alias<no_system_header_prefix
 def s : Flag<["-"], "s">, Group<Link_Group>;
 def target : Joined<["--"], "target=">, Flags<[NoXarchOption, CoreOption]>,
   HelpText<"Generate code for the given target">;
+
 def print_supported_cpus : Flag<["-", "--"], "print-supported-cpus">,
   Group<CompileOnly_Group>, Flags<[CC1Option, CoreOption]>,
   HelpText<"Print supported cpu models for the given target (if target is not specified,"
@@ -4760,7 +4766,6 @@ def target_abi : Separate<["-"], "target-abi">,
   MarshallingInfoString<TargetOpts<"ABI">>;
 def target_sdk_version_EQ : Joined<["-"], "target-sdk-version=">,
   HelpText<"The version of target SDK used for compilation">;
-
 }
 
 def target_linker_version : Separate<["-"], "target-linker-version">,
@@ -5982,10 +5987,6 @@ def load : Separate<["-"], "load">, MetaVarName<"<dsopath>">,
 def plugin : Separate<["-"], "plugin">, MetaVarName<"<name>">,
   HelpText<"Use the named plugin action instead of the default action (use \"help\" to list available options)">;
 
-//swastik: add ttex flag to execute in the compiler pipeline by default
-def ttex_EQ : Joined<["-"], "ttex=">,
-HelpText<"provide the pass name">;
-//def ttexpass : Flag<["-"], "ttex">, Flags<[NoDriverOption]>; 
 
 //def print_file_name_EQ : Joined<["-", "--"], "print-file-name=">,
 //  HelpText<"Print the full library path of <file>">, MetaVarName<"<file>">;

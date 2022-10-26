@@ -49,22 +49,6 @@ protected:
 class CodeGenOptions : public CodeGenOptionsBase {
 public:
 
-  /*swastik*/
-
-  struct ProteinAmount {
-    uint32_t Duplicate;
-    uint32_t Amend;
-    ProteinAmount() : Duplicate(0U), Amend(0U) {}
-    inline bool empty() const {
-      return !Duplicate && !Amend;
-    }
-  };
-  ProteinAmount ExtraProteinAmount;
-
-  std::vector<std::string> ttexpass;
-
-  /*swastik: end*/
-
   enum InliningMethod {
     NormalInlining,     // Use the standard function inlining pass.
     OnlyHintInlining,   // Inline only (implicitly) hinted functions.
@@ -316,6 +300,30 @@ public:
     RK_DisabledEverything, // Remark disabled via '-Rno-everything'.
     RK_WithPattern,        // Remark pattern specified via '-Rgroup=regexp'.
   };
+
+  /*swastik*/
+
+  // struct ProteinAmount {
+  //   uint32_t Duplicate;
+  //   uint32_t Amend;
+  //   ProteinAmount() : Duplicate(0U), Amend(0U) {}
+  //   inline bool empty() const {
+  //     return !Duplicate && !Amend;
+  //   }
+  // };
+  // ProteinAmount ExtraProteinAmount;
+
+  struct ttexdata {
+    std::vector<std::string> splitfactor;
+    inline bool empty() const {
+      return splitfactor.size();
+    }
+  };
+
+  struct ttexdata ttexdatapass;
+
+  //std::string ttexpass;
+  /*swastik: end*/
 
   /// Optimization remark with an optional regular expression pattern.
   struct OptRemark {
