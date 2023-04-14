@@ -466,6 +466,7 @@ void initializeXRayInstrumentationPass(PassRegistry&);
 /*swastik: insert code*/
 //void initializeHelloNewPMPassPass(PassRegistry&);
 void initializeTtexPassPass(PassRegistry&);
+//void initializeTestingNewPass(PassRegistry&);
 /*swastik: exit code*/
 
 } // end namespace llvm

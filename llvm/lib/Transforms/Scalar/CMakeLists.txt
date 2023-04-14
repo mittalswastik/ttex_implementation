@@ -78,6 +78,7 @@ add_llvm_component_library(LLVMScalarOpts
   StructurizeCFG.cpp
   TailRecursionElimination.cpp
   WarnMissedTransforms.cpp
+  TestingNewPass.cpp
   Ttex_v1.cpp
 
   ADDITIONAL_HEADER_DIRS

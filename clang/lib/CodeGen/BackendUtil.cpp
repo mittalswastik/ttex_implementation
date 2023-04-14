@@ -81,6 +81,7 @@
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/LowerMatrixIntrinsics.h"
 #include "llvm/Transforms/Scalar/Ttex.h"
+#include "llvm/Transforms/Scalar/TestingNewPass.h"
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/CanonicalizeAliases.h"
 #include "llvm/Transforms/Utils/Debugify.h"
@@ -916,8 +917,10 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
   if(!CodeGenOpts.ttexdatapass.empty()) {
     std::cout<<"Adding Ttex pass -----------------"<<std::endl;
     //FPM.add(createHelloNewPMPass());
-    MPM.add(createTtexPass(CodeGenOpts.ttexdatapass.splitfactor));
+    //MPM.add(createTtexPass(CodeGenOpts.ttexdatapass.splitfactor));
   }
+
+  //MPM.add(TestingNewPass());
 
   //MPM.add(createTtexPass(CodeGenOpts.ttexdatapass.splitfactor));
 
@@ -1260,6 +1263,8 @@ void EmitAssemblyHelper::RunOptimizationPipeline(
     std::unique_ptr<llvm::ToolOutputFile> &ThinLinkOS) {
   Optional<PGOOptions> PGOOpt;
 
+  std::cout<<"--------------- runnning optimization pipeline -----------------"<<std::endl;
+
   if (CodeGenOpts.hasProfileIRInstr())
     // -fprofile-generate.
     PGOOpt = PGOOptions(CodeGenOpts.InstrProfileOutput.empty()
@@ -1372,6 +1377,9 @@ void EmitAssemblyHelper::RunOptimizationPipeline(
   PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
   ModulePassManager MPM;
+
+  std::cout<<"--------------- adding new pass to the moudle pass pipeline ---------------"<<std::endl;
+  MPM.addPass(TestingNewPass());
 
   if (!CodeGenOpts.DisableLLVMPasses) {
     // Map our optimization levels into one of the distinct levels used to
@@ -1566,6 +1574,8 @@ void EmitAssemblyHelper::RunCodegenPipeline(
 void EmitAssemblyHelper::EmitAssembly(BackendAction Action,
                                       std::unique_ptr<raw_pwrite_stream> OS) {
   TimeRegion Region(CodeGenOpts.TimePasses ? &CodeGenerationTime : nullptr);
+
+  std::cout<<"---------------------- emit assembly called --------------"<<std::endl;
   setCommandLineOpts(CodeGenOpts);
 
   bool RequiresCodeGen = actionRequiresCodeGen(Action);
@@ -1742,7 +1752,8 @@ void clang::EmitBackendOutput(DiagnosticsEngine &Diags,
   EmitAssemblyHelper AsmHelper(Diags, HeaderOpts, CGOpts, TOpts, LOpts, M);
 
   if (!CGOpts.LegacyPassManager) // swastik: this option only works with opt ... however we want to set it with clang
-    AsmHelper.EmitAssemblyWithLegacyPassManager(Action, std::move(OS));
+    //AsmHelper.EmitAssemblyWithLegacyPassManager(Action, std::move(OS));
+    AsmHelper.EmitAssembly(Action, std::move(OS));
   else {
     std::cout<<"backenutil.cpp executed--)))))))))))))))))"<<std::endl;
     AsmHelper.EmitAssembly(Action, std::move(OS));

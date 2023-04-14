@@ -14,6 +14,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include <iostream>
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/BasicAliasAnalysis.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
@@ -111,6 +112,7 @@
 #include "llvm/Transforms/Scalar/SROA.h"
 #include "llvm/Transforms/Scalar/SimpleLoopUnswitch.h"
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
+#include "llvm/Transforms/Scalar/TestingNewPass.h"
 #include "llvm/Transforms/Scalar/SpeculativeExecution.h"
 #include "llvm/Transforms/Scalar/TailRecursionElimination.h"
 #include "llvm/Transforms/Scalar/WarnMissedTransforms.h"
@@ -1254,7 +1256,11 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   assert(Level != OptimizationLevel::O0 &&
          "Must request optimizations for the default pipeline!");
 
+  std::cout<<"---------------- per module default pipeline --------------"<<std::endl;
+
   ModulePassManager MPM;
+  
+  MPM.addPass(TestingNewPass());
 
   // Convert @llvm.global.annotations to !annotation metadata.
   MPM.addPass(Annotation2MetadataPass());
@@ -1280,6 +1286,8 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   if (PGOOpt && PGOOpt->PseudoProbeForProfiling &&
       PGOOpt->Action == PGOOptions::SampleUse)
     MPM.addPass(PseudoProbeUpdatePass());
+
+  //MPM.addPass(TestingNewPass());
 
   // Emit annotation remarks.
   addAnnotationRemarksPass(MPM);
