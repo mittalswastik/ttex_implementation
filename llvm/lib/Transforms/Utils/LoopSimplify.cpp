@@ -849,11 +849,15 @@ PreservedAnalyses LoopSimplifyPass::run(Function &F,
   }
 
 
+  errs()<<"--------------------- executing loop simplify pass --------------------\n";
+
   // Note that we don't preserve LCSSA in the new PM, if you need it run LCSSA
   // after simplifying the loops. MemorySSA is preserved if it exists.
-  for (auto *L : *LI)
+  for (auto *L : *LI) {
+    errs()<<"--------- loop found ----------------\n";
     Changed |=
         simplifyLoop(L, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
+  }
 
   if (!Changed)
     return PreservedAnalyses::all();

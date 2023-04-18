@@ -125,6 +125,7 @@
 #include "llvm/Transforms/Utils/NameAnonGlobals.h"
 #include "llvm/Transforms/Utils/RelLookupTableConverter.h"
 #include "llvm/Transforms/Utils/SimplifyCFGOptions.h"
+#include "llvm/Transforms/Utils/LoopSimplify.h"
 #include "llvm/Transforms/Vectorize/LoopVectorize.h"
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
@@ -1256,11 +1257,9 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   assert(Level != OptimizationLevel::O0 &&
          "Must request optimizations for the default pipeline!");
 
-  std::cout<<"---------------- per module default pipeline --------------"<<std::endl;
+  std::cout<<"---------------- per module default pipeline optimization --------------"<<std::endl;
 
   ModulePassManager MPM;
-  
-  MPM.addPass(TestingNewPass());
 
   // Convert @llvm.global.annotations to !annotation metadata.
   MPM.addPass(Annotation2MetadataPass());
@@ -1294,6 +1293,9 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
 
   if (LTOPreLink)
     addRequiredLTOPreLinkPasses(MPM);
+
+  MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+  MPM.addPass(TestingNewPass());
 
   return MPM;
 }
@@ -1792,6 +1794,11 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
     addRequiredLTOPreLinkPasses(MPM);
 
   MPM.addPass(createModuleToFunctionPassAdaptor(AnnotationRemarksPass()));
+
+  errs()<<"---------------- module pass being added to default pipeline O0 --------\n";
+
+  MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+  MPM.addPass(TestingNewPass());
 
   return MPM;
 }
