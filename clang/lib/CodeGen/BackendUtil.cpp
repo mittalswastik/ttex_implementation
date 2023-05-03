@@ -1379,7 +1379,7 @@ void EmitAssemblyHelper::RunOptimizationPipeline(
   ModulePassManager MPM;
 
   std::cout<<"--------------- adding new pass to the moudle pass pipeline ---------------"<<std::endl;
-  MPM.addPass(TestingNewPass());
+  //MPM.addPass(TestingNewPass());
 
   if (!CodeGenOpts.DisableLLVMPasses) {
     // Map our optimization levels into one of the distinct levels used to

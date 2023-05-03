@@ -113,6 +113,7 @@
 #include "llvm/Transforms/Scalar/SimpleLoopUnswitch.h"
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 #include "llvm/Transforms/Scalar/TestingNewPass.h"
+#include "llvm/Transforms/Scalar/TtexLoadToPhi.h"
 #include "llvm/Transforms/Scalar/SpeculativeExecution.h"
 #include "llvm/Transforms/Scalar/TailRecursionElimination.h"
 #include "llvm/Transforms/Scalar/WarnMissedTransforms.h"
@@ -129,6 +130,9 @@
 #include "llvm/Transforms/Vectorize/LoopVectorize.h"
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
+#include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Analysis/LoopAnalysisManager.h"
+#include "llvm/Transforms/Scalar/TtexGenerateLoopAnalysis.h"
 
 using namespace llvm;
 
@@ -184,6 +188,10 @@ static cl::opt<bool> EnableNoRerunSimplificationPipeline(
 static cl::opt<bool> EnableMergeFunctions(
     "enable-merge-functions", cl::init(false), cl::Hidden,
     cl::desc("Enable function merging as part of the optimization pipeline"));
+
+static cl::opt<bool> MyOption("ttex",
+  cl::desc("Description of my custom option"),
+  cl::init(false));
 
 PipelineTuningOptions::PipelineTuningOptions() {
   LoopInterleaving = true;
@@ -1294,8 +1302,17 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   if (LTOPreLink)
     addRequiredLTOPreLinkPasses(MPM);
 
-  MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
-  MPM.addPass(TestingNewPass());
+  auto &Options = cl::getRegisteredOptions();
+  if (Options.count("ttex") && MyOption) {
+    // Do something
+   // const FunctionToLoopPassAdaptor MyFunctionToLoopPass = createFunctionToLoopPassAdaptor(TtexLoadToPhi());
+    //const ModuleToFunctionPassAdaptor MyModuleToFunctionPass = createModuleToFunctionPassAdaptor(MyFunctionToLoopPass);
+    MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+    //MPM.addPass(MyModuleToFunctionPass);
+    //MPM.addPass(createModuleToFunctionPassAdaptor(TtexLoadToPhiPass()));
+    //MPM.addPass(TtexLoadToPhiPass());
+    MPM.addPass(TestingNewPass());
+  }
 
   return MPM;
 }
@@ -1797,8 +1814,21 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
 
   errs()<<"---------------- module pass being added to default pipeline O0 --------\n";
 
-  MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
-  MPM.addPass(TestingNewPass());
+  auto &Options = cl::getRegisteredOptions();
+  if (Options.count("ttex") && MyOption) {
+    // Do something
+   // const FunctionToLoopPassAdaptor MyFunctionToLoopPass = createFunctionToLoopPassAdaptor(TtexLoadToPhi());
+    //const ModuleToFunctionPassAdaptor MyModuleToFunctionPass = createModuleToFunctionPassAdaptor(MyFunctionToLoopPass);
+    //FunctionPassManager FPM;
+    //MPM.addPass(TtexGenerateLoopAnalysis()); // add a pass to run loop analysis for all the functions in the module as createModuleToFunctionPassAdaptor is not looking at all the functions
+    //MPM.addPass(createModuleToFunctionPassAdaptor(LoopAnalysis()));
+    //MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+    //MPM.addPass(MyModuleToFunctionPass);
+    //MPM.addPass(createModuleToFunctionPassAdaptor(createLoopSimplifyPass()));
+    
+    MPM.addPass(TtexLoadToPhiPass());
+    MPM.addPass(TestingNewPass());
+  }
 
   return MPM;
 }

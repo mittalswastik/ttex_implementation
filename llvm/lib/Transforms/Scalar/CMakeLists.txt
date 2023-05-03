@@ -79,6 +79,8 @@ add_llvm_component_library(LLVMScalarOpts
   TailRecursionElimination.cpp
   WarnMissedTransforms.cpp
   TestingNewPass.cpp
+  TtexLoadToPhi.cpp
+  TtexGenerateLoopAnalysis.cpp
   Ttex_v1.cpp
 
   ADDITIONAL_HEADER_DIRS
