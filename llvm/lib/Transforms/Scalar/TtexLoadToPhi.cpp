@@ -39,7 +39,7 @@ static cl::opt<bool> MyOption("loadtophi",
   cl::desc("Description of my custom option"),
   cl::init(false));
 
-Instruction* getInductionVariable(Loop *L) {
+std::vector<Instruction*> getInductionVariable(Loop *L) {
   // Get the header block of the loop
   BasicBlock *header = L->getHeader();
 
@@ -47,111 +47,78 @@ Instruction* getInductionVariable(Loop *L) {
   // and stored at the end of the loop with an increment or decrement operation
   //Instruction *loadInstr = nullptr;
   std::vector<Instruction*> loadInstr; 
-  Instruction *storeInstr = nullptr;
-   for(llvm::BasicBlock::iterator I_iter = header->begin(), Iend = header->end(); I_iter != Iend ; ++I_iter){
+  std::vector<Instruction*> storeInstr;
+  for(llvm::BasicBlock::iterator I_iter = header->begin(), Iend = header->end(); I_iter != Iend ; ++I_iter){
     Instruction &I = *I_iter;
     if (auto *load = dyn_cast<LoadInst>(&I)) {
       errs()<<"---------- found a load instruction ----------------\n";
-      if (load->getNumUses() == 1) {
-        errs()<<" -------------- why do we just need one use ---------------\n";
-        for (auto *user : load->users()){
-          if (auto *Inst = dyn_cast<Instruction>(user)) {
-            BasicBlock *BB = Inst->getParent();
-            if(BB == header){
-              errs()<<"--------------- load instruction found ----------------\n";
-              loadInstr.push_back(load);
-              break;
-            }
-          }
-        }
-      }
+      loadInstr.push_back(load);
     }
   }
 
   if (loadInstr.size() == 0) {
     errs()<<"---- no load instruction -----\n";
-    return nullptr;
+    return loadInstr;
   }
 
-  int index = 0;
+  std::vector<int> index;
 
-  for(llvm::BasicBlock::iterator I_iter = L->getExitingBlock()->begin(), Iend = L->getExitingBlock()->end(); I_iter != Iend ; ++I_iter){
-    Instruction &I = *I_iter;
-    if (auto *store = dyn_cast<StoreInst>(&I)) {
-      errs()<<"---- found the store instruction in the exiting block -----\n";
-      for(int i = 0 ; i < loadInstr.size() ; i++){
-        if (store->getPointerOperand() == loadInstr[i]->getOperand(0)) {
-          index = i;
-          storeInstr = store;
+  for(int i=0 ; i < loadInstr.size() ; i++){
+    for(llvm::BasicBlock::iterator I_iter = L->getLoopLatch()->begin(), Iend = L->getLoopLatch()->end(); I_iter != Iend ; ++I_iter){
+      Instruction &I = *I_iter;
+      if (auto *store = dyn_cast<StoreInst>(&I)) {
+        if (store->getPointerOperand() == loadInstr[i]->getOperand(0)){
+          storeInstr.push_back(store);
           errs()<<"---------------- found corresponding store inst ---------------\n";
           break;
         }
       }
     }
-  }
 
-  if(!storeInstr){
-    for(llvm::BasicBlock::iterator I_iter = L->getLoopLatch()->begin(), Iend = L->getLoopLatch()->end(); I_iter != Iend ; ++I_iter){
-      Instruction &I = *I_iter;
-      if (auto *store = dyn_cast<StoreInst>(&I)) {
-        errs()<<"---- found the store instruction in the latch block -----\n";
-        for(int i = 0 ; i < loadInstr.size() ; i++){
-          if (store->getPointerOperand() == loadInstr[i]->getOperand(0)) {
-            index = i;
-            storeInstr = store;
-            errs()<<"---------------- found corresponding store inst in the latch block ---------------\n";
-            break;
-          }
-        }
-      }
+    if(storeInstr.size() < i+1){
+      errs()<<"----- corresponding store not found ------\n";
+      loadInstr.erase(loadInstr.begin()+i); // remove the loadInst without corresponding store in the latch block
     }
-  }
 
-  if (!storeInstr) {
-    errs()<<"----- no store instruction found -----\n";
-    return nullptr;
-  }
-
-  // Check that the variable is not used outside the loop
-  for (auto *user : loadInstr[index]->users()) {
-    if (auto *I = dyn_cast<Instruction>(user)) {
-        BasicBlock *BB = I->getParent();
-        if (BB != header && !L->contains(BB)) {
-          errs()<<"--------------- used outside loop -------------\n";
-          return nullptr;
-        }
-    }
+    // this eliminates all load instructions for upper bound as they would not have store instructions as upper 
+    // values do not change    
   }
 
   // Check that the variable is not modified inside the loop except for the increment or decrement operation
-  for(llvm::BasicBlock::iterator I_iter = header->begin(), Iend = header->end(); I_iter != Iend ; ++I_iter){
-    Instruction &I = *I_iter;
-    if (&I == loadInstr[index]) {
-      continue;
-    }
-
-    if (&I == storeInstr) {
-      continue;
-    }
-
-    if (I.getOperand(0) == loadInstr[index]) {
-      if (!I.isBinaryOp() || I.getNumOperands() != 2 || !I.getOperand(1)->getType()->isIntegerTy()) {
-        errs()<<"-------------- found operation other than increment operation ------------------\n";
-        return nullptr;
-      }
-    } else {
-      for (unsigned i = 0; i < I.getNumOperands(); ++i) {
-        if (I.getOperand(i) == loadInstr[index]) {
-          errs()<<"----------- loadinstr found in one of the instruction other than increment or decrement -------------\n";
-          return nullptr;
+  bool check = false;
+  for(int i = 0 ; i < loadInstr.size() ; i++){
+    for(llvm::BasicBlock::iterator I_iter = L->getLoopLatch()->begin(), Iend = L->getLoopLatch()->end(); I_iter != Iend ; ++I_iter){
+      Instruction &I = *I_iter;
+      if(I.getOpcode() == Instruction::Add || I.getOpcode() == Instruction::Sub){
+        LoadInst *ltemp = dyn_cast<LoadInst>(loadInstr[i]);
+        errs()<<ltemp<<"\n";
+        if(LoadInst *ltemp_2 = dyn_cast<LoadInst>(I.getOperand(0))){
+          errs()<<"------ get operand(0) is a load inst ------\n";
+          if(ltemp->getPointerOperand() == ltemp_2->getPointerOperand()){
+            errs()<<"------ pointer operand are the same ------\n";
+            if(ConstantInt *Itemp = dyn_cast<ConstantInt>(I.getOperand(0))){
+              errs()<<"---- constant add found -----\n";
+              check = true;
+              break;
+            }
+          }
         }
       }
+    }  
+      
+    if(!check){
+      errs()<<"---- load not an induction variable for load Inst ----"<<loadInstr[i]<<"\n";
+      loadInstr.erase(loadInstr.begin()+i);
     }
+
+    check = false;
   }
 
   // The variable is an induction variable
-  errs() << "############## Found induction variable: #########" << *loadInstr[index] << "\n";
-  return loadInstr[index];
+  for(int i = 0 ; i < loadInstr.size() ; i++){
+    errs() << "############## Found induction variable: #########" << *loadInstr[i] << "\n";
+  }
+  return loadInstr;
 }
 
 PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
@@ -221,11 +188,11 @@ PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
                 errs()<<"--------------- found a loop to evaluate load instruction ------------\n";
                 //Loop *L = *loop_iter;
                 //Instruction *I = nullptr;
-                Instruction *I = getInductionVariable(L);
+                std::vector<Instruction *> I = getInductionVariable(L);
 
-                if(I != nullptr){
+                for(int i = 0 ; i < I.size() ; i++){
                   errs()<<"----------- replace load with phi------------\n";
-                  I->replaceAllUsesWith(PHINode::Create(I->getType(),0,"",I)); // create a phi node replacement here -- this would help reducing the issue with load and store
+                  I[i]->replaceAllUsesWith(PHINode::Create(I[i]->getType(),0,"",I[i])); // create a phi node replacement here -- this would help reducing the issue with load and store
                 }
             }
           
