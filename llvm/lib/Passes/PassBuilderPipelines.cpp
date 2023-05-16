@@ -1307,10 +1307,10 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
     // Do something
    // const FunctionToLoopPassAdaptor MyFunctionToLoopPass = createFunctionToLoopPassAdaptor(TtexLoadToPhi());
     //const ModuleToFunctionPassAdaptor MyModuleToFunctionPass = createModuleToFunctionPassAdaptor(MyFunctionToLoopPass);
-    MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+    //MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
     //MPM.addPass(MyModuleToFunctionPass);
     //MPM.addPass(createModuleToFunctionPassAdaptor(TtexLoadToPhiPass()));
-    //MPM.addPass(TtexLoadToPhiPass());
+    MPM.addPass(TtexLoadToPhiPass());
     MPM.addPass(TestingNewPass());
   }
 

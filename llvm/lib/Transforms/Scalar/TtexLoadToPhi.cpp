@@ -39,6 +39,107 @@ static cl::opt<bool> MyOption("loadtophi",
   cl::desc("Description of my custom option"),
   cl::init(false));
 
+void findCorrespondingInductionVar(Loop *L, Instruction *I, BasicBlock * B){
+  
+}
+
+void getInductionVariableUsingCmp(Loop *L){
+  BasicBlock *header = L->getHeader();
+  BasicBlock *latch = L->getLoopLatch();
+
+  if(BranchInst *BI = dyn_cast<BranchInst>(header->getTerminator())){
+    if(BI->isConditional()){
+      SmallVector<BasicBlock*> SuccsExiting;
+      L->getExitingBlocks(SuccsExiting);
+      SmallVector<BasicBlock*, 8> SuccsExit;
+      L->getExitBlocks(SuccsExit);
+
+      for(int i = 0 ; i < SuccsExiting.size(); i++){
+         if(BI->getSuccessor(1) == SuccsExiting[i]){
+          // found an icmp instruction
+          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
+          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
+          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
+            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+          }
+
+          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
+            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+          }
+          return;
+         }
+      }
+
+      for(int i = 0 ; i < SuccsExit.size(); i++){
+         if(BI->getSuccessor(1) == SuccsExit[i]){
+          // found an icmp instruction
+          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
+          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
+          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
+            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+          }
+
+          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
+            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+          }
+          return;
+         }
+      }
+    }
+
+    else {
+        return;
+    }  
+  }
+
+  else if(BranchInst *BI = dyn_cast<BranchInst>(latch->getTerminator())){
+    if(BI->isConditional()){
+      SmallVector<BasicBlock*> SuccsExiting;
+      L->getExitingBlocks(SuccsExiting);
+      SmallVector<BasicBlock*, 8> SuccsExit;
+      L->getExitBlocks(SuccsExit);
+
+      for(int i = 0 ; i < SuccsExiting.size(); i++){
+         if(BI->getSuccessor(1) == SuccsExiting[i]){
+          // found an icmp instruction
+          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
+          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
+          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
+            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+          }
+
+          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
+            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+          }
+          return;
+         }
+      }
+
+      for(int i = 0 ; i < SuccsExit.size(); i++){
+         if(BI->getSuccessor(1) == SuccsExit[i]){
+          // found an icmp instruction
+          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
+          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
+          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
+            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+          }
+
+          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
+            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+          }
+          return;
+         }
+      }
+    }
+
+    else {
+        return;
+    }  
+  }
+
+  return;
+}
+
 std::vector<Instruction*> getInductionVariable(Loop *L) {
   // Get the header block of the loop
   BasicBlock *header = L->getHeader();
@@ -154,15 +255,15 @@ PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
         LIB->analyze(*DT);
 
         if(LIB){
-          if(LIB->begin() == LIB->end()){
-            errs()<<"no loop info\n";
-          }
-
-          // else {
-          //   errs()<<"\n";
+          // if(LIB->begin() == LIB->end()){
+          //   errs()<<"no loop info\n";
           // }
 
-          else {
+          // // else {
+          // //   errs()<<"\n";
+          // // }
+
+          // else {
             FM.invalidate(F,PreservedAnalyses::none());
             LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
             DT = &FM.getResult<DominatorTreeAnalysis>(F);
@@ -188,30 +289,33 @@ PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
                 errs()<<"--------------- found a loop to evaluate load instruction ------------\n";
                 //Loop *L = *loop_iter;
                 //Instruction *I = nullptr;
-                std::vector<Instruction *> I = getInductionVariable(L);
+                // std::vector<Instruction *> I = getInductionVariable(L);
 
-                for(int i = 0 ; i < I.size() ; i++){
-                  errs()<<"----------- replace load with phi------------\n";
-                  I[i]->replaceAllUsesWith(PHINode::Create(I[i]->getType(),0,"",I[i])); // create a phi node replacement here -- this would help reducing the issue with load and store
-                }
+                // for(int i = 0 ; i < I.size() ; i++){
+                //   errs()<<"----------- replace load with phi------------\n";
+                //   I[i]->replaceAllUsesWith(PHINode::Create(I[i]->getType(),0,"",I[i])); // create a phi node replacement here -- this would help reducing the issue with load and store
+                // }
+
+              getInductionVariableUsingCmp(L); 
+
             }
           
-            PreservedAnalyses PA;
-            PA.preserve<DominatorTreeAnalysis>();
-            PA.preserve<LoopAnalysis>();
-            PA.preserve<ScalarEvolutionAnalysis>();
-            PA.preserve<DependenceAnalysis>();
-            if (MSSAAnalysis)
-              PA.preserve<MemorySSAAnalysis>();
-            // BPI maps conditional terminators to probabilities, LoopSimplify can insert
-            // blocks, but it does so only by splitting existing blocks and edges. This
-            // results in the interesting property that all new terminators inserted are
-            // unconditional branches which do not appear in BPI. All deletions are
-            // handled via ValueHandle callbacks w/in BPI.
-            PA.preserve<BranchProbabilityAnalysis>();
-            return PA;
+            // PreservedAnalyses PA;
+            // PA.preserve<DominatorTreeAnalysis>();
+            // PA.preserve<LoopAnalysis>();
+            // PA.preserve<ScalarEvolutionAnalysis>();
+            // PA.preserve<DependenceAnalysis>();
+            // if (MSSAAnalysis)
+            //   PA.preserve<MemorySSAAnalysis>();
+            // // BPI maps conditional terminators to probabilities, LoopSimplify can insert
+            // // blocks, but it does so only by splitting existing blocks and edges. This
+            // // results in the interesting property that all new terminators inserted are
+            // // unconditional branches which do not appear in BPI. All deletions are
+            // // handled via ValueHandle callbacks w/in BPI.
+            // PA.preserve<BranchProbabilityAnalysis>();
+            // return PA;
 
-          }
+          //}
         }
       }
     }
