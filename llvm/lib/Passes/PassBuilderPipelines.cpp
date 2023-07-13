@@ -1311,7 +1311,7 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
     //MPM.addPass(MyModuleToFunctionPass);
     //MPM.addPass(createModuleToFunctionPassAdaptor(TtexLoadToPhiPass()));
     MPM.addPass(TtexLoadToPhiPass());
-    MPM.addPass(TestingNewPass());
+    //MPM.addPass(TestingNewPass());
   }
 
   return MPM;
