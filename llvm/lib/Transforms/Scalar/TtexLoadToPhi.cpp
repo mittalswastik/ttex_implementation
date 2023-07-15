@@ -43,14 +43,14 @@ void findCorrespondingInductionVar(Loop *L, Instruction *I, BasicBlock * B){
   
 }
 
-bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_inst, Instruction* upper_inst, bool upper_bound_phi, bool lower_bound_phi){
+bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_inst, Instruction* upper_inst, Instruction *cmp_inst, bool upper_bound_phi, bool lower_bound_phi){
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
   BasicBlock *LatchBlock = L->getLoopLatch();
   //BasicBlock *ExitingBlock = L->getExitingBlock();
   //BasicBlock *ExitBlock;
 
-  llvm::Value* temp_v;
+  llvm::Value* temp_v = cmp_inst;
   llvm::Value* originalInd;
   llvm::Value* upperBound;
 
@@ -89,36 +89,12 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
 
   /*assigning iteration range*/
 
-  //llvm::ConstantInt *start_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false); // starting value
+  // llvm::ConstantInt *start_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false); // starting value
   llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false); // iteration value
   llvm::ConstantInt *end_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count-1, false);
   llvm::ConstantInt *end_ci_outer = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
 
 
-  /*Header block*/
-
-  // load and store induction variable values
-  std::string str2;
-  raw_string_ostream stream2(str2);
-  originalInd->getType()->print(stream2,false);
-
-  if(originalInd->getType()->isIntegerTy()){
-    errs()<<"--- is an integer ---\n";
-  }
-
-  else {
-    errs()<<"-------- not and integer -------\n";
-  }
-
-  if(originalInd->getType()->isPointerTy()){
-    errs()<<"---- is a pointer ---- \n";
-  }
-
-  else {
-    errs()<<" ------ not a pointer -----\n";
-  }
-
-  errs()<<"------------type of original induction is ================:"<<str2<<"\n";
   errs()<<"------------- this works------------\n";
   IRBuilder<> prehead(InnerLoopPreheader);
   errs()<<"------------- this works 1------------\n";
@@ -147,6 +123,15 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   if(!lower_bound_phi){
     phi_ind_node = prehead.CreatePHI(ind_inst->getType(), 0, "indvar");
     phi_ind_node->addIncoming(ind_inst, Header);
+    phi_ind_node->addIncoming(ind_inst, InnerLoopHeader);
+    if(!upper_bound_phi) {
+      phi_upper_node = prehead.CreatePHI(upper_inst->getType(), 0 , "upper");
+      phi_upper_node->addIncoming(upper_inst, Header);
+    }
+
+    else {
+      phi_upper_node = dyn_cast<PHINode>(upper_inst);
+    }
     errs()<<"original ind is a memory\n";
     //load_original = prehead.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), originalInd, "check");
     errs()<<"------------- this works 2------------\n";
@@ -168,13 +153,26 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   }
 
   else {
+
+    phi_ind_node = dyn_cast<PHINode>(ind_inst);
+
+    if(!upper_bound_phi) {
+      phi_upper_node = prehead.CreatePHI(upper_inst->getType(), 0 , "upper");
+      phi_upper_node->addIncoming(upper_inst, Header);
+      phi_upper_node->addIncoming(ind_inst, InnerLoopHeader);
+    }
+
+    else {
+      phi_upper_node = dyn_cast<PHINode>(upper_inst);
+    }
+
     allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX), nullptr ,"iterator");
     allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX),nullptr, "iterator_bound");
     errs()<<"--- alloca works---\n";
-    llvm::StoreInst* store_start = prehead.CreateStore(ind_inst,allocate_start,false);
+    llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
     // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
     errs()<<"---- store works----\n";
-    llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, ind_inst,"");
+    llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, phi_ind_node,"");
     errs()<<"------ create NSWADD works----\n";
     std::string str10;
     raw_string_ostream stream10(str10);
@@ -184,15 +182,18 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
     errs()<<"this is the end \n";
   }
 
-  prehead.CreateBr(InnerLoopHeader);
+  Value* boolValue = ConstantInt::get(Type::getInt1Ty(CTX), 1);
+  //Value* cmpvalue = prehead.CreateICmp
+  //prehead.CreateBr(InnerLoopHeader);
+  prehead.CreateCondBr(boolValue, InnerLoopHeader, InnerLoopPreheader);
 
   errs()<<"------------- this works------------\n";
 
   IRBuilder<> head(InnerLoopHeader);
 
   llvm::Value* compare;
-  llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_start");
-  llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"inner_itr_end");
+  llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_start,"inner_itr_start");
+  llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_end,"inner_itr_end");
   // inner loop iterator is new so has to be loaded irrespective of outer loop iterator
   //llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, originalInd,"");
   compare = head.CreateICmpSLE(load_ind,load_ind_end);
@@ -204,15 +205,16 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   llvm::Value* check;
   llvm::LoadInst* load_ind_start;
 
-  load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_end");
+  
+  load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_start,"inner_itr_end");
 
   std::string str12;
   raw_string_ostream stream12(str12);
-  upperBound->getType()->print(stream12,false);
+  phi_upper_node->getType()->print(stream12,false);
   errs()<<"upper bound type is "<<str12<<"\n";
 
-  load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), upperBound,"");
-  check = tempblock.CreateICmpSLE(load_ind_start,load_outer_bound,"");
+  // load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), upperBound,"");
+  check = tempblock.CreateICmpSLE(load_ind_start,phi_upper_node,"");
 
   // else {
   //   load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upperBound,"");
@@ -346,7 +348,14 @@ void getInductionVariableUsingCmp(Loop *L){
           if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
             errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
             if(LI->getParent() == header){
-              ind_var_list.push_back(LI);
+              //ind_var_list.push_back(LI);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],LI,LI_2,I,false,false);
+              }
+
+              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],LI,PN,I,false,true);
+              }
             }
           }
 
@@ -354,7 +363,13 @@ void getInductionVariableUsingCmp(Loop *L){
             errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
             if(PN->getParent() == header){
               ind_var_list.push_back(PN);
-              // call loop splits here
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],PN,LI_2,I,true,false);
+              }
+
+              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],PN,PN_2,I,true,true);
+              }
             }
           }
 
@@ -369,10 +384,30 @@ void getInductionVariableUsingCmp(Loop *L){
           errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
           if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
             errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+            if(LI->getParent() == header){
+              //ind_var_list.push_back(LI);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],LI,LI_2,I,false,false);
+              }
+
+              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],LI,PN,I,false,true);
+              }
+            }
           }
 
           else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
             errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+            if(PN->getParent() == header){
+              ind_var_list.push_back(PN);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],PN,LI_2,I,true,false);
+              }
+
+              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],PN,PN_2,I,true,true);
+              }
+            }
           }
           return;
          }
@@ -393,15 +428,35 @@ void getInductionVariableUsingCmp(Loop *L){
 
       for(int i = 0 ; i < SuccsExiting.size(); i++){
          if(BI->getSuccessor(1) == SuccsExiting[i]){
-          // found an icmp instruction
+          //found an icmp instruction
           Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
           errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
           if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
             errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+            if(LI->getParent() == header){
+              //ind_var_list.push_back(LI);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],LI,LI_2,I,false,false);
+              }
+
+              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],LI,PN,I,false,true);
+              }
+            }
           }
 
           else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
             errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+            if(PN->getParent() == header){
+              ind_var_list.push_back(PN);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],PN,LI_2,I,false,false);
+              }
+
+              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExiting[i],PN,PN_2,I,false,true);
+              }
+            }
           }
           return;
          }
@@ -414,10 +469,30 @@ void getInductionVariableUsingCmp(Loop *L){
           errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
           if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
             errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
+            if(LI->getParent() == header){
+              //ind_var_list.push_back(LI);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],LI,LI_2,I,false,false);
+              }
+
+              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],LI,PN,I,false,true);
+              }
+            }
           }
 
           else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
             errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
+            if(PN->getParent() == header){
+              ind_var_list.push_back(PN);
+              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],PN,LI_2,I,false,false);
+              }
+
+              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
+                LoopSplit(L,2,SuccsExit[i],PN,PN_2,I,false,true);
+              }
+            }
           }
           return;
          }
@@ -523,94 +598,96 @@ PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
     Function &F = *func_iter;
 
     if(!F.isDeclaration()){
-      auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
-      //FM.registerPass(DominatorTreeAnalysis());
-      FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
-      FunctionPassManager FPM;
-      //FPM.run(createLoopSimplifyPass());
-      // FPM.addPass(createLoopSimplifyPass());
+        auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
+        //FM.registerPass(DominatorTreeAnalysis());
+        FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
+        FunctionPassManager FPM;
+        //FPM.run(createLoopSimplifyPass());
+        // FPM.addPass(createLoopSimplifyPass());
 
-      if(!FM.empty()){
-        errs()<<"---- Is function analysis manager empty ------- for Function: "<<F.getName()<<"\n";
-        //errs()<<FAM.getResult<LoopAnalysis>(F);
-      }
-
-      //if(F.getName() != "_ZNSt8ios_base4InitD1Ev" && F.getName() != "_ZNSt8ios_base4InitC1Ev" && F.getName() != "__cxx_global_var_init" && F.getName() != "__cxa_atexit"){
-
-        DominatorTree* DT = &FM.getResult<DominatorTreeAnalysis>(F);
-        //DominatorTree DT = llvm::DominatorTree();
-        //DT.recalculate(F);
-        errs()<<"We get the dominator tree\n";
-        // DT->recalculate(F);
-        LoopInfoBase<BasicBlock, Loop>* LIB = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
-        // //LIB->releaseMemory();
-        LIB->analyze(*DT);
-
-        if(LIB){
-          // if(LIB->begin() == LIB->end()){
-          //   errs()<<"no loop info\n";
-          // }
-
-          // // else {
-          // //   errs()<<"\n";
-          // // }
-
-          // else {
-            FM.invalidate(F,PreservedAnalyses::none());
-            LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
-            DT = &FM.getResult<DominatorTreeAnalysis>(F);
-            //auto &AC = FM.getResult<AssumptionAnalysis>(F);
-            auto &ORE = FM.getResult<OptimizationRemarkEmitterAnalysis>(F);
-            ScalarEvolution *SE = FM.getCachedResult<ScalarEvolutionAnalysis>(F);
-            AssumptionCache *AC = &FM.getResult<AssumptionAnalysis>(F);
-            auto *MSSAAnalysis = FM.getCachedResult<MemorySSAAnalysis>(F);
-            std::unique_ptr<MemorySSAUpdater> MSSAU;
-            if (MSSAAnalysis) {
-              auto *MSSA = &MSSAAnalysis->getMSSA();
-              MSSAU = std::make_unique<MemorySSAUpdater>(MSSA);
-            }
-            errs()<<"--------------- Loop details evaluated ------------\n";
-          
-            for (Loop *L : *LI) {
-
-              simplifyLoop(L, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
-              formLCSSARecursively(*L, *DT, LI, SE);
-
-              //for(LoopInfo::iterator loop_iter = LIB->begin(), loop_iter_end = LIB->end(); loop_iter != loop_iter_end; ++loop_iter){ 
-              //for (auto *ltemp :
-              errs()<<"--------------- found a loop to evaluate load instruction ------------\n";
-                //Loop *L = *loop_iter;
-                //Instruction *I = nullptr;
-                // std::vector<Instruction *> I = getInductionVariable(L);
-
-                // for(int i = 0 ; i < I.size() ; i++){
-                //   errs()<<"----------- replace load with phi------------\n";
-                //   I[i]->replaceAllUsesWith(PHINode::Create(I[i]->getType(),0,"",I[i])); // create a phi node replacement here -- this would help reducing the issue with load and store
-                // }
-
-              getInductionVariableUsingCmp(L); 
-
-            }
-          
-            // PreservedAnalyses PA;
-            // PA.preserve<DominatorTreeAnalysis>();
-            // PA.preserve<LoopAnalysis>();
-            // PA.preserve<ScalarEvolutionAnalysis>();
-            // PA.preserve<DependenceAnalysis>();
-            // if (MSSAAnalysis)
-            //   PA.preserve<MemorySSAAnalysis>();
-            // // BPI maps conditional terminators to probabilities, LoopSimplify can insert
-            // // blocks, but it does so only by splitting existing blocks and edges. This
-            // // results in the interesting property that all new terminators inserted are
-            // // unconditional branches which do not appear in BPI. All deletions are
-            // // handled via ValueHandle callbacks w/in BPI.
-            // PA.preserve<BranchProbabilityAnalysis>();
-            // return PA;
-
-          //}
+        if(!FM.empty()){
+          errs()<<"---- Is function analysis manager empty ------- for Function: "<<F.getName()<<"\n";
+          //errs()<<FAM.getResult<LoopAnalysis>(F);
         }
-      }
+
+        if(F.getName().contains(".omp_outlined.") && F.getName() != ".omp_outlined._debug__"){
+          //if(F.getName() != "_ZNSt8ios_base4InitD1Ev" && F.getName() != "_ZNSt8ios_base4InitC1Ev" && F.getName() != "__cxx_global_var_init" && F.getName() != "__cxa_atexit"){
+
+          DominatorTree* DT = &FM.getResult<DominatorTreeAnalysis>(F);
+          //DominatorTree DT = llvm::DominatorTree();
+          //DT.recalculate(F);
+          errs()<<"We get the dominator tree\n";
+          // DT->recalculate(F);
+          LoopInfoBase<BasicBlock, Loop>* LIB = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
+          // //LIB->releaseMemory();
+          LIB->analyze(*DT);
+
+          if(LIB){
+            // if(LIB->begin() == LIB->end()){
+            //   errs()<<"no loop info\n";
+            // }
+
+            // // else {
+            // //   errs()<<"\n";
+            // // }
+
+            // else {
+              FM.invalidate(F,PreservedAnalyses::none());
+              LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
+              DT = &FM.getResult<DominatorTreeAnalysis>(F);
+              //auto &AC = FM.getResult<AssumptionAnalysis>(F);
+              auto &ORE = FM.getResult<OptimizationRemarkEmitterAnalysis>(F);
+              ScalarEvolution *SE = FM.getCachedResult<ScalarEvolutionAnalysis>(F);
+              AssumptionCache *AC = &FM.getResult<AssumptionAnalysis>(F);
+              auto *MSSAAnalysis = FM.getCachedResult<MemorySSAAnalysis>(F);
+              std::unique_ptr<MemorySSAUpdater> MSSAU;
+              if (MSSAAnalysis) {
+                auto *MSSA = &MSSAAnalysis->getMSSA();
+                MSSAU = std::make_unique<MemorySSAUpdater>(MSSA);
+              }
+              errs()<<"--------------- Loop details evaluated ------------\n";
+            
+              for (Loop *L : *LI) {
+
+                simplifyLoop(L, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
+                formLCSSARecursively(*L, *DT, LI, SE);
+
+                //for(LoopInfo::iterator loop_iter = LIB->begin(), loop_iter_end = LIB->end(); loop_iter != loop_iter_end; ++loop_iter){ 
+                //for (auto *ltemp :
+                errs()<<"--------------- found a loop to evaluate load instruction ------------\n";
+                  //Loop *L = *loop_iter;
+                  //Instruction *I = nullptr;
+                  // std::vector<Instruction *> I = getInductionVariable(L);
+
+                  // for(int i = 0 ; i < I.size() ; i++){
+                  //   errs()<<"----------- replace load with phi------------\n";
+                  //   I[i]->replaceAllUsesWith(PHINode::Create(I[i]->getType(),0,"",I[i])); // create a phi node replacement here -- this would help reducing the issue with load and store
+                  // }
+
+                getInductionVariableUsingCmp(L); 
+
+              }
+            
+              // PreservedAnalyses PA;
+              // PA.preserve<DominatorTreeAnalysis>();
+              // PA.preserve<LoopAnalysis>();
+              // PA.preserve<ScalarEvolutionAnalysis>();
+              // PA.preserve<DependenceAnalysis>();
+              // if (MSSAAnalysis)
+              //   PA.preserve<MemorySSAAnalysis>();
+              // // BPI maps conditional terminators to probabilities, LoopSimplify can insert
+              // // blocks, but it does so only by splitting existing blocks and edges. This
+              // // results in the interesting property that all new terminators inserted are
+              // // unconditional branches which do not appear in BPI. All deletions are
+              // // handled via ValueHandle callbacks w/in BPI.
+              // PA.preserve<BranchProbabilityAnalysis>();
+              // return PA;
+
+            //}
+          }
+        }
     }
+  }
 
   return PreservedAnalyses::all();
 

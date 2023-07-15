@@ -1827,7 +1827,7 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
     //MPM.addPass(createModuleToFunctionPassAdaptor(createLoopSimplifyPass()));
     
     MPM.addPass(TtexLoadToPhiPass());
-    MPM.addPass(TestingNewPass());
+    //MPM.addPass(TestingNewPass());
   }
 
   return MPM;
