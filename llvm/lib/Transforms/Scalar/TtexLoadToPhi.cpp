@@ -56,6 +56,11 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
 
   errs()<<"---- inside loop split -----\n";
 
+  std::string str;
+  raw_string_ostream stream_1(str);
+  ind_inst->getType()->print(stream_1,false);
+  errs()<<"in to ptr worked type "<<str<<"\n";
+
   if(count == 0){
     return false;
   }
@@ -90,9 +95,9 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   /*assigning iteration range*/
 
   // llvm::ConstantInt *start_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false); // starting value
-  llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false); // iteration value
-  llvm::ConstantInt *end_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count-1, false);
-  llvm::ConstantInt *end_ci_outer = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
+  llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),1, false); // iteration value
+  llvm::ConstantInt *end_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),count-1, false);
+  llvm::ConstantInt *end_ci_outer = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),count, false);
 
 
   errs()<<"------------- this works------------\n";
@@ -123,21 +128,24 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   if(!lower_bound_phi){
     phi_ind_node = prehead.CreatePHI(ind_inst->getType(), 0, "indvar");
     phi_ind_node->addIncoming(ind_inst, Header);
-    phi_ind_node->addIncoming(ind_inst, InnerLoopHeader);
+    phi_ind_node->addIncoming(ind_inst, InnerLoopPreheader);
     if(!upper_bound_phi) {
       phi_upper_node = prehead.CreatePHI(upper_inst->getType(), 0 , "upper");
       phi_upper_node->addIncoming(upper_inst, Header);
+      phi_upper_node->addIncoming(upper_inst, InnerLoopPreheader);
+      errs()<<"upper instruction is load and lower is also a load node\n";
     }
 
     else {
       phi_upper_node = dyn_cast<PHINode>(upper_inst);
+      errs()<<"upper instruction is a phi node and lower is a load node\n";
     }
     errs()<<"original ind is a memory\n";
     //load_original = prehead.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), originalInd, "check");
     errs()<<"------------- this works 2------------\n";
     //llvm::AllocaInst* allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX), nullptr ,"iterator");
-    allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX), nullptr ,"iterator");
-    allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX),nullptr, "iterator_bound");
+    allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX), nullptr ,"iterator");
+    allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX),nullptr, "iterator_bound");
     errs()<<"--- alloca works---\n";
     llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
     // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
@@ -157,19 +165,22 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
     phi_ind_node = dyn_cast<PHINode>(ind_inst);
 
     if(!upper_bound_phi) {
-      phi_upper_node = prehead.CreatePHI(upper_inst->getType(), 0 , "upper");
-      phi_upper_node->addIncoming(upper_inst, Header);
-      phi_upper_node->addIncoming(ind_inst, InnerLoopHeader);
+      Value* sextInst = prehead.CreateSExt(upper_inst, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
+      phi_upper_node = prehead.CreatePHI(sextInst->getType(), 0 , "upper");
+      phi_upper_node->addIncoming(sextInst, Header);
+      phi_upper_node->addIncoming(sextInst, InnerLoopPreheader);
+      errs()<<"upper instruction is load and lower is phi node\n";
     }
 
     else {
       phi_upper_node = dyn_cast<PHINode>(upper_inst);
+      errs()<<"upper instruction is already a phi node with lower a phi node\n";
     }
 
-    allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX), nullptr ,"iterator");
-    allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX),nullptr, "iterator_bound");
+    allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX), nullptr ,"iterator");
+    allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX),nullptr, "iterator_bound");
     errs()<<"--- alloca works---\n";
-    llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
+    //llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
     // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
     errs()<<"---- store works----\n";
     llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, phi_ind_node,"");
@@ -192,8 +203,8 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   IRBuilder<> head(InnerLoopHeader);
 
   llvm::Value* compare;
-  llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_start,"inner_itr_start");
-  llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_end,"inner_itr_end");
+  llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_start");
+  llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"inner_itr_end");
   // inner loop iterator is new so has to be loaded irrespective of outer loop iterator
   //llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, originalInd,"");
   compare = head.CreateICmpSLE(load_ind,load_ind_end);
@@ -206,7 +217,7 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   llvm::LoadInst* load_ind_start;
 
   
-  load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_start,"inner_itr_end");
+  load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_end");
 
   std::string str12;
   raw_string_ostream stream12(str12);
@@ -298,7 +309,7 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   std::cout<<"----------------------------------works till here--------------------"<<std::endl;
 
   IRBuilder<> latch(InnerLoopLatch);
-  llvm::LoadInst *ind_var = latch.CreateLoad(llvm::IntegerType::getInt32Ty(CTX),allocate_start,"store_start");
+  llvm::LoadInst *ind_var = latch.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"store_start");
   std::cout<<"----------------------------------works till here--------------------"<<std::endl;
   llvm::Value* bio = latch.CreateNSWAdd(ind_var, itr_ci,"increment");
   latch.CreateStore(bio,allocate_start,false);
@@ -326,273 +337,56 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   return true;
 }
 
-void getInductionVariableUsingCmp(Loop *L){
+void getInductionVariableUsingCmp(Loop *L, ScalarEvolution *SE){
   BasicBlock *header = L->getHeader();
   BasicBlock *latch = L->getLoopLatch();
 
-  SmallVector<Instruction*> ind_var_list;
-  SmallVector<Instruction*> upper_bound_list;
+  errs() << "executing get induction variable\n";
 
-  if(BranchInst *BI = dyn_cast<BranchInst>(header->getTerminator())){
-    if(BI->isConditional()){
-      SmallVector<BasicBlock*> SuccsExiting;
-      L->getExitingBlocks(SuccsExiting);
-      SmallVector<BasicBlock*, 8> SuccsExit;
-      L->getExitBlocks(SuccsExit);
+  PHINode *IndVar = L->getInductionVariable(*SE);
 
-      for(int i = 0 ; i < SuccsExiting.size(); i++){
-         if(BI->getSuccessor(1) == SuccsExiting[i]){
-          // found an icmp instruction
-          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
-          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
-          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
-            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
-            if(LI->getParent() == header){
-              //ind_var_list.push_back(LI);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],LI,LI_2,I,false,false);
-              }
+  errs() << "executed get induction variable\n";
 
-              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],LI,PN,I,false,true);
-              }
-            }
-          }
-
-          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
-            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
-            if(PN->getParent() == header){
-              ind_var_list.push_back(PN);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],PN,LI_2,I,true,false);
-              }
-
-              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],PN,PN_2,I,true,true);
-              }
-            }
-          }
-
-          return;
-         }
-      }
-
-      for(int i = 0 ; i < SuccsExit.size(); i++){
-         if(BI->getSuccessor(1) == SuccsExit[i]){
-          // found an icmp instruction
-          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
-          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
-          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
-            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
-            if(LI->getParent() == header){
-              //ind_var_list.push_back(LI);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],LI,LI_2,I,false,false);
-              }
-
-              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],LI,PN,I,false,true);
-              }
-            }
-          }
-
-          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
-            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
-            if(PN->getParent() == header){
-              ind_var_list.push_back(PN);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],PN,LI_2,I,true,false);
-              }
-
-              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],PN,PN_2,I,true,true);
-              }
-            }
-          }
-          return;
-         }
-      }
-    }
-
-    else {
-        return;
-    }  
+  if(IndVar == nullptr){
+    errs() <<"null ptr received\n";
+    return;
   }
 
-  else if(BranchInst *BI = dyn_cast<BranchInst>(latch->getTerminator())){
+  if(BranchInst *BI = dyn_cast<BranchInst>(latch->getTerminator())){
+    errs()<<"latch branch instruction found\n";
     if(BI->isConditional()){
-      SmallVector<BasicBlock*> SuccsExiting;
-      L->getExitingBlocks(SuccsExiting);
-      SmallVector<BasicBlock*, 8> SuccsExit;
-      L->getExitBlocks(SuccsExit);
+      errs()<<"conditional branch\n";
+      Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
+      if(SExtInst *se = dyn_cast<SExtInst>(I->getOperand(1))){
+        if(LoadInst *LI = dyn_cast<LoadInst>(se->getOperand(0))){
+          errs() <<"loop split with signed extension\n";
+          LoopSplit(L, 2, L->getExitBlock(), IndVar, LI, I, false, true);
+        }
 
-      for(int i = 0 ; i < SuccsExiting.size(); i++){
-         if(BI->getSuccessor(1) == SuccsExiting[i]){
-          //found an icmp instruction
-          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
-          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
-          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
-            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
-            if(LI->getParent() == header){
-              //ind_var_list.push_back(LI);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],LI,LI_2,I,false,false);
-              }
-
-              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],LI,PN,I,false,true);
-              }
-            }
-          }
-
-          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
-            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
-            if(PN->getParent() == header){
-              ind_var_list.push_back(PN);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],PN,LI_2,I,false,false);
-              }
-
-              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExiting[i],PN,PN_2,I,false,true);
-              }
-            }
-          }
-          return;
-         }
+        else {
+          errs() <<"invalid upper bound format\n";
+        }
       }
 
-      for(int i = 0 ; i < SuccsExit.size(); i++){
-         if(BI->getSuccessor(1) == SuccsExit[i]){
-          // found an icmp instruction
-          Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
-          errs() << "Found the latch compare instruction for the loop: "<<*I<<"\n";
-          if(LoadInst *LI = dyn_cast<LoadInst>(I->getOperand(0))){
-            errs() <<"Found the corresponding load instruction of the value "<<*LI<<"\n";
-            if(LI->getParent() == header){
-              //ind_var_list.push_back(LI);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],LI,LI_2,I,false,false);
-              }
+      else if (PHINode *UpperVar = dyn_cast<PHINode>(I->getOperand(1))){
+       errs() <<"upper bound is a phi node\n"; 
+       LoopSplit(L, 2, L->getExitBlock(), IndVar, UpperVar, I, true, true);
+      }
 
-              else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],LI,PN,I,false,true);
-              }
-            }
-          }
-
-          else if(PHINode *PN = dyn_cast<PHINode>(I->getOperand(0))){
-            errs() <<"Found the corresponding PHI node of the value "<<*PN<<"\n";
-            if(PN->getParent() == header){
-              ind_var_list.push_back(PN);
-              if(LoadInst *LI_2 = dyn_cast<LoadInst>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],PN,LI_2,I,false,false);
-              }
-
-              else if(PHINode *PN_2 = dyn_cast<PHINode>(I->getOperand(1))){
-                LoopSplit(L,2,SuccsExit[i],PN,PN_2,I,false,true);
-              }
-            }
-          }
-          return;
-         }
+      else {
+        errs() <<"invalid upper bound format no sext and phi\n";
       }
     }
-
-    else {
-        return;
-    }  
   }
 
   return;
-}
-
-std::vector<Instruction*> getInductionVariable(Loop *L) {
-  // Get the header block of the loop
-  BasicBlock *header = L->getHeader();
-
-  // Look for a variable that is loaded at the beginning of the loop
-  // and stored at the end of the loop with an increment or decrement operation
-  //Instruction *loadInstr = nullptr;
-  std::vector<Instruction*> loadInstr; 
-  std::vector<Instruction*> storeInstr;
-  for(llvm::BasicBlock::iterator I_iter = header->begin(), Iend = header->end(); I_iter != Iend ; ++I_iter){
-    Instruction &I = *I_iter;
-    if (auto *load = dyn_cast<LoadInst>(&I)) {
-      errs()<<"---------- found a load instruction ----------------\n";
-      loadInstr.push_back(load);
-    }
-  }
-
-  if (loadInstr.size() == 0) {
-    errs()<<"---- no load instruction -----\n";
-    return loadInstr;
-  }
-
-  std::vector<int> index;
-
-  for(int i=0 ; i < loadInstr.size() ; i++){
-    for(llvm::BasicBlock::iterator I_iter = L->getLoopLatch()->begin(), Iend = L->getLoopLatch()->end(); I_iter != Iend ; ++I_iter){
-      Instruction &I = *I_iter;
-      if (auto *store = dyn_cast<StoreInst>(&I)) {
-        if (store->getPointerOperand() == loadInstr[i]->getOperand(0)){
-          storeInstr.push_back(store);
-          errs()<<"---------------- found corresponding store inst ---------------\n";
-          break;
-        }
-      }
-    }
-
-    if(storeInstr.size() < i+1){
-      errs()<<"----- corresponding store not found ------\n";
-      loadInstr.erase(loadInstr.begin()+i); // remove the loadInst without corresponding store in the latch block
-    }
-
-    // this eliminates all load instructions for upper bound as they would not have store instructions as upper 
-    // values do not change    
-  }
-
-  // Check that the variable is not modified inside the loop except for the increment or decrement operation
-  bool check = false;
-  for(int i = 0 ; i < loadInstr.size() ; i++){
-    for(llvm::BasicBlock::iterator I_iter = L->getLoopLatch()->begin(), Iend = L->getLoopLatch()->end(); I_iter != Iend ; ++I_iter){
-      Instruction &I = *I_iter;
-      if(I.getOpcode() == Instruction::Add || I.getOpcode() == Instruction::Sub){
-        LoadInst *ltemp = dyn_cast<LoadInst>(loadInstr[i]);
-        errs()<<ltemp<<"\n";
-        if(LoadInst *ltemp_2 = dyn_cast<LoadInst>(I.getOperand(0))){
-          errs()<<"------ get operand(0) is a load inst ------\n";
-          if(ltemp->getPointerOperand() == ltemp_2->getPointerOperand()){
-            errs()<<"------ pointer operand are the same ------\n";
-            if(ConstantInt *Itemp = dyn_cast<ConstantInt>(I.getOperand(0))){
-              errs()<<"---- constant add found -----\n";
-              check = true;
-              break;
-            }
-          }
-        }
-      }
-    } 
-      
-    if(!check){
-      errs()<<"---- load not an induction variable for load Inst ----"<<loadInstr[i]<<"\n";
-      loadInstr.erase(loadInstr.begin()+i);
-    }
-
-    check = false;
-  }
-
-  // The variable is an induction variable
-  for(int i = 0 ; i < loadInstr.size() ; i++){
-    errs() << "############## Found induction variable: #########" << *loadInstr[i] << "\n";
-  }
-  return loadInstr;
 }
 
 PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
 
   errs()<<"----------------- ttex load to phi found-------------\n";
 
+  int optioValue = MyOption;
 
   for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
     Function &F = *func_iter;
@@ -663,8 +457,7 @@ PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
                   //   errs()<<"----------- replace load with phi------------\n";
                   //   I[i]->replaceAllUsesWith(PHINode::Create(I[i]->getType(),0,"",I[i])); // create a phi node replacement here -- this would help reducing the issue with load and store
                   // }
-
-                getInductionVariableUsingCmp(L); 
+                getInductionVariableUsingCmp(L,SE); 
 
               }
             
@@ -688,6 +481,8 @@ PreservedAnalyses TtexLoadToPhiPass::run(Module &M, ModuleAnalysisManager &MA) {
         }
     }
   }
+
+  errs() <<"---------- completed the execution of the pass ----------- next is analysis ----------------\n";
 
   return PreservedAnalyses::all();
 

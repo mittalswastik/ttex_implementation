@@ -1324,12 +1324,20 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
   // Now we handle also FP induction but not trying to make a
   // recurrent expression from the PHI node in-place.
 
+  errs() << "inside is induction phi\n";
+
   if (!PhiTy->isIntegerTy() && !PhiTy->isPointerTy() && !PhiTy->isFloatTy() &&
-      !PhiTy->isDoubleTy() && !PhiTy->isHalfTy())
-    return false;
+      !PhiTy->isDoubleTy() && !PhiTy->isHalfTy()) {
+        errs() <<"first check \n";
+        return false;
+      }
+
+  errs() <<"check for fpi induction next\n";
 
   if (PhiTy->isFloatingPointTy())
     return isFPInductionPHI(Phi, TheLoop, PSE.getSE(), D);
+
+  errs() <<"no error fpi\n";
 
   const SCEV *PhiScev = PSE.getSCEV(Phi);
   const auto *AR = dyn_cast<SCEVAddRecExpr>(PhiScev);
@@ -1339,6 +1347,7 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
     AR = PSE.getAsAddRec(Phi);
 
   if (!AR) {
+    errs() << "is AR\n";
     LLVM_DEBUG(dbgs() << "LV: PHI is not a poly recurrence.\n");
     return false;
   }
@@ -1350,11 +1359,16 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
   // cast instructions that required adding a runtime check in order to
   // guarantee the correctness of the AddRecurrence respresentation of the
   // induction.
+
+  errs()<<"symbolic phi check next\n";
+
   if (PhiScev != AR && SymbolicPhi) {
     SmallVector<Instruction *, 2> Casts;
     if (getCastsForInductionPHI(PSE, SymbolicPhi, AR, Casts))
       return isInductionPHI(Phi, TheLoop, PSE.getSE(), D, AR, &Casts);
   }
+
+  errs() << "last check\n";
 
   return isInductionPHI(Phi, TheLoop, PSE.getSE(), D, AR);
 }
@@ -1363,14 +1377,21 @@ bool InductionDescriptor::isInductionPHI(
     PHINode *Phi, const Loop *TheLoop, ScalarEvolution *SE,
     InductionDescriptor &D, const SCEV *Expr,
     SmallVectorImpl<Instruction *> *CastsToIgnore) {
+
+    errs() << "inside induction descriptor\n";  
   Type *PhiTy = Phi->getType();
+   errs() << "get type issues an error\n";
   // We only handle integer and pointer inductions variables.
   if (!PhiTy->isIntegerTy() && !PhiTy->isPointerTy())
     return false;
 
+  errs() <<"not a type error\n";
+
   // Check that the PHI is consecutive.
   const SCEV *PhiScev = Expr ? Expr : SE->getSCEV(Phi);
   const SCEVAddRecExpr *AR = dyn_cast<SCEVAddRecExpr>(PhiScev);
+
+  errs()<<"SCEV evaluation worked\n";
 
   if (!AR) {
     LLVM_DEBUG(dbgs() << "LV: PHI is not a poly recurrence.\n");

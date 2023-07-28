@@ -544,10 +544,10 @@ const NativeProcessLinux &NativeThreadLinux::GetProcess() const {
 llvm::Expected<std::unique_ptr<llvm::MemoryBuffer>>
 NativeThreadLinux::GetSiginfo() const {
   auto siginfo_buf =
-      llvm::WritableMemoryBuffer::getNewUninitMemBuffer(sizeof(siginfo_t));
+      std::move(llvm::WritableMemoryBuffer::getNewUninitMemBuffer(sizeof(siginfo_t)));
   Status error =
       GetProcess().GetSignalInfo(GetID(), siginfo_buf->getBufferStart());
   if (!error.Success())
     return error.ToError();
-  return siginfo_buf;
+  return llvm::Expected<std::unique_ptr<llvm::MemoryBuffer>>(std::move(siginfo_buf));
 }

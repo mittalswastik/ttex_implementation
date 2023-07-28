@@ -301,17 +301,26 @@ PHINode *Loop::getInductionVariable(ScalarEvolution &SE) const {
   if (!CmpInst)
     return nullptr;
 
+  errs() << "header  and icmp instruction executed\n";
+
   Value *LatchCmpOp0 = CmpInst->getOperand(0);
   Value *LatchCmpOp1 = CmpInst->getOperand(1);
 
+  errs() << "Starting for loop for all phi nodes\n";
+
   for (PHINode &IndVar : Header->phis()) {
     InductionDescriptor IndDesc;
-    if (!InductionDescriptor::isInductionPHI(&IndVar, this, &SE, IndDesc))
-      continue;
+    errs()<<"check if induction is a phi node\n";
+    // if (!InductionDescriptor::isInductionPHI(&IndVar, this, &SE, IndDesc))
+    //   continue;
+
+    errs() <<"retreive the latch block\n";
 
     BasicBlock *Latch = getLoopLatch();
-    Value *StepInst = IndVar.getIncomingValueForBlock(Latch);
 
+    errs()<< "retreived latch block\n";
+    Value *StepInst = IndVar.getIncomingValueForBlock(Latch);
+    errs() <<"retreiving incoming phi value for the block\n";
     // case 1:
     // IndVar = phi[{InitialValue, preheader}, {StepInst, latch}]
     // StepInst = IndVar + step
