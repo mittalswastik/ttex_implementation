@@ -539,7 +539,10 @@ bool clang::isOpenMPTargetExecutionDirective(OpenMPDirectiveKind DKind) {
          DKind == OMPD_target_teams || DKind == OMPD_target_teams_distribute ||
          DKind == OMPD_target_teams_distribute_parallel_for ||
          DKind == OMPD_target_teams_distribute_parallel_for_simd ||
-         DKind == OMPD_target_teams_distribute_simd;
+         DKind == OMPD_target_teams_distribute_simd ;
+        //  ||
+        //  /*swastik - upper*/
+        //  DKind == OMPD_upper;
 }
 
 bool clang::isOpenMPTargetDataManagementDirective(OpenMPDirectiveKind DKind) {
@@ -703,6 +706,7 @@ void clang::getOpenMPCaptureRegions(
   case OMPD_simd:
   case OMPD_for:
   case OMPD_for_simd:
+ // case OMPD_upper:
   case OMPD_sections:
   case OMPD_section:
   case OMPD_single:

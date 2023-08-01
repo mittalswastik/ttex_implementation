@@ -1765,6 +1765,16 @@ public:
   }
 };
 
+/*Swastik*/
+
+class OMPUpperDirective: public OMPExecutableDirective {
+  friend class ASTStmtReader;
+  friend class OMPExecutableDirective;
+
+  public:
+  int upperbound;
+};
+
 /// This represents '#pragma omp sections' directive.
 ///
 /// \code

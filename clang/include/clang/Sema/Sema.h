@@ -10728,6 +10728,10 @@ public:
   ActOnOpenMPForSimdDirective(ArrayRef<OMPClause *> Clauses, Stmt *AStmt,
                               SourceLocation StartLoc, SourceLocation EndLoc,
                               VarsWithInheritedDSAType &VarsWithImplicitDSA);
+
+  /*swastik custom upper bound pragma for ttex*/
+  StmtResult ActOnOpenMPUpperDirective(Stmt *AStmt, SourceLocation StartLoc, SourceLocation EndLoc);
+
   /// Called on well-formed '\#pragma omp sections' after parsing
   /// of the associated statement.
   StmtResult ActOnOpenMPSectionsDirective(ArrayRef<OMPClause *> Clauses,

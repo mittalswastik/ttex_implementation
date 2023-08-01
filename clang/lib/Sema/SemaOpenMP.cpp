@@ -38,6 +38,7 @@
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Frontend/OpenMP/OMPAssume.h"
 #include "llvm/Frontend/OpenMP/OMPConstants.h"
+#include <bits/stdc++.h>
 #include <set>
 
 using namespace clang;
@@ -5976,6 +5977,9 @@ StmtResult Sema::ActOnOpenMPExecutableDirective(
     if (LangOpts.OpenMP >= 50)
       AllowedNameModifiers.push_back(OMPD_simd);
     break;
+  // case OMPD_upper:
+  //   Res = ActOnOpenMPUpperDirective(AStmt, StartLoc, EndLoc);
+  //   break;
   case OMPD_sections:
     Res = ActOnOpenMPSectionsDirective(ClausesWithImplicit, AStmt, StartLoc,
                                        EndLoc);
@@ -9986,6 +9990,12 @@ StmtResult Sema::ActOnOpenMPForSimdDirective(
   return OMPForSimdDirective::Create(Context, StartLoc, EndLoc, NestedLoopCount,
                                      Clauses, AStmt, B);
 }
+
+/**swastik - swastik*/
+
+// StmtResult Sema::ActOnOpenMPUpperDirective(Stmt* pStmt, SourceLoc startLoc, SourceLoc endLoc){
+//   std::cout<<"----------- created a upper directive ------------"<<std::endl;
+// }
 
 StmtResult Sema::ActOnOpenMPSectionsDirective(ArrayRef<OMPClause *> Clauses,
                                               Stmt *AStmt,

@@ -43,12 +43,16 @@ void findCorrespondingInductionVar(Loop *L, Instruction *I, BasicBlock * B){
   
 }
 
-bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_inst, Instruction* upper_inst, Instruction *cmp_inst, bool upper_bound_phi, bool lower_bound_phi){
+bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_inst, Value* upper_inst, Instruction *cmp_inst, bool upper_bound_phi, bool lower_bound_phi){
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
   BasicBlock *LatchBlock = L->getLoopLatch();
   //BasicBlock *ExitingBlock = L->getExitingBlock();
   //BasicBlock *ExitBlock;
+
+  if(!ExitBlock){
+    errs() <<"---- no exit block found ----\n";
+  }
 
   llvm::Value* temp_v = cmp_inst;
   llvm::Value* originalInd;
@@ -108,106 +112,58 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   llvm::AllocaInst* allocate_end;
   llvm::LoadInst* load_original;
 
-  // if(originalIndTypeConst){
-  //   errs()<<"inside this if\n";
-  //   llvm::Value *intptroriginal = prehead.CreateIntToPtr(originalInd, llvm::Type::getInt32PtrTy(CTX),"");
-  //   load_original = prehead.CreateLoad(llvm::Type::getInt32Ty(CTX), intptroriginal, "check");
-  //   std::string str10;
-  //   raw_string_ostream stream10(str10);
-  //   load_original->getType()->print(stream10,false);
-  //   errs()<<"in to ptr worked type "<<str10<<"\n";
-  // }
+  Value* phi_ind_node;
+  Value* phi_upper_node;
 
-  // else {
-    
-  // }
+  phi_ind_node = dyn_cast<PHINode>(ind_inst);
 
-  llvm::PHINode* phi_ind_node;
-  llvm::PHINode* phi_upper_node;
-
-  if(!lower_bound_phi){
-    phi_ind_node = prehead.CreatePHI(ind_inst->getType(), 0, "indvar");
-    phi_ind_node->addIncoming(ind_inst, Header);
-    phi_ind_node->addIncoming(ind_inst, InnerLoopPreheader);
-    if(!upper_bound_phi) {
-      phi_upper_node = prehead.CreatePHI(upper_inst->getType(), 0 , "upper");
-      phi_upper_node->addIncoming(upper_inst, Header);
-      phi_upper_node->addIncoming(upper_inst, InnerLoopPreheader);
-      errs()<<"upper instruction is load and lower is also a load node\n";
-    }
-
-    else {
-      phi_upper_node = dyn_cast<PHINode>(upper_inst);
-      errs()<<"upper instruction is a phi node and lower is a load node\n";
-    }
-    errs()<<"original ind is a memory\n";
-    //load_original = prehead.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), originalInd, "check");
-    errs()<<"------------- this works 2------------\n";
-    //llvm::AllocaInst* allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt32Ty(CTX), nullptr ,"iterator");
-    allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX), nullptr ,"iterator");
-    allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX),nullptr, "iterator_bound");
-    errs()<<"--- alloca works---\n";
-    llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
-    // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
-    errs()<<"---- store works----\n";
-    llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, phi_ind_node,"");
-    errs()<<"------ create NSWADD works----\n";
-    std::string str10;
-    raw_string_ostream stream10(str10);
-    ind_end->getType()->print(stream10,false);
-    errs()<<"ind end type is "<<str10<<"\n";
-    prehead.CreateStore(ind_end, allocate_end, false);
-    errs()<<"this is the end \n";
-  }
-
-  else {
-
-    phi_ind_node = dyn_cast<PHINode>(ind_inst);
-
-    if(!upper_bound_phi) {
-      Value* sextInst = prehead.CreateSExt(upper_inst, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
-      phi_upper_node = prehead.CreatePHI(sextInst->getType(), 0 , "upper");
-      phi_upper_node->addIncoming(sextInst, Header);
-      phi_upper_node->addIncoming(sextInst, InnerLoopPreheader);
-      errs()<<"upper instruction is load and lower is phi node\n";
-    }
-
-    else {
-      phi_upper_node = dyn_cast<PHINode>(upper_inst);
-      errs()<<"upper instruction is already a phi node with lower a phi node\n";
-    }
-
-    allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX), nullptr ,"iterator");
-    allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX),nullptr, "iterator_bound");
-    errs()<<"--- alloca works---\n";
-    //llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
-    // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
-    errs()<<"---- store works----\n";
-    llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, phi_ind_node,"");
-    errs()<<"------ create NSWADD works----\n";
-    std::string str10;
-    raw_string_ostream stream10(str10);
-    ind_end->getType()->print(stream10,false);
-    errs()<<"ind end type is "<<str10<<"\n";
-    prehead.CreateStore(ind_end, allocate_end, false);
-    errs()<<"this is the end \n";
-  }
-
-  Value* boolValue = ConstantInt::get(Type::getInt1Ty(CTX), 1);
-  //Value* cmpvalue = prehead.CreateICmp
-  //prehead.CreateBr(InnerLoopHeader);
-  prehead.CreateCondBr(boolValue, InnerLoopHeader, InnerLoopPreheader);
-
-  errs()<<"------------- this works------------\n";
+  allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX), nullptr ,"iterator");
+  allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX),nullptr, "iterator_bound");
+  prehead.CreateBr(InnerLoopHeader);
 
   IRBuilder<> head(InnerLoopHeader);
 
+  if(!upper_bound_phi) {
+    Value* upper_bound_val = head.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upper_inst, "");
+    phi_upper_node = head.CreateSExt(upper_bound_val, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
+    // phi_upper_node = prehead.CreatePHI(sextInst->getType(), 0 , "upper");
+    // phi_upper_node->addIncoming(sextInst, Header);
+    // phi_upper_node->addIncoming(sextInst, InnerLoopPreheader);
+    // errs()<<"upper instruction is load and lower is phi node\n";
+  }
+
+  else {
+    phi_upper_node = dyn_cast<PHINode>(upper_inst);
+    errs()<<"upper instruction is already a phi node with lower a phi node\n";
+  }
+
+  
+  errs()<<"--- alloca works---\n";
+  //llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
+  // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
+  errs()<<"---- store works----\n";
+  llvm::Value* ind_end = head.CreateNSWAdd(end_ci, phi_ind_node,"");
+  errs()<<"------ create NSWADD works----\n";
+  std::string str10;
+  raw_string_ostream stream10(str10);
+  ind_end->getType()->print(stream10,false);
+  errs()<<"ind end type is "<<str10<<"\n";
+  //head.CreateStore(ind_end, allocate_end, false);
+  errs()<<"this is the end \n";
+
+  // Value* boolValue = ConstantInt::get(Type::getInt1Ty(CTX), 1);
+  // //Value* cmpvalue = prehead.CreateICmp
+  // //prehead.CreateBr(InnerLoopHeader);
+  // prehead.CreateCondBr(boolValue, InnerLoopHeader, InnerLoopPreheader);
+
+  // errs()<<"------------- this works------------\n";
+
   llvm::Value* compare;
-  llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_start");
-  llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"inner_itr_end");
+  //llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_start");
+  //llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"inner_itr_end");
   // inner loop iterator is new so has to be loaded irrespective of outer loop iterator
   //llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, originalInd,"");
-  compare = head.CreateICmpSLE(load_ind,load_ind_end);
+  compare = head.CreateICmpSLE(phi_ind_node,ind_end);
   head.CreateCondBr(compare, TempCompare, LatchBlock); // if true execute the original body of loop else move to latch of original
   //newLoopBlocks[0],
 
@@ -217,15 +173,16 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   llvm::LoadInst* load_ind_start;
 
   
-  load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_end");
+  //load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_end");
 
   std::string str12;
   raw_string_ostream stream12(str12);
   phi_upper_node->getType()->print(stream12,false);
   errs()<<"upper bound type is "<<str12<<"\n";
 
-  // load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), upperBound,"");
-  check = tempblock.CreateICmpSLE(load_ind_start,phi_upper_node,"");
+  load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upper_inst,"");
+  phi_upper_node = tempblock.CreateSExt(load_outer_bound, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
+  check = tempblock.CreateICmpSLE(phi_ind_node,phi_upper_node,"");
 
   // else {
   //   load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upperBound,"");
@@ -238,16 +195,31 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
 
   llvm::Instruction *Linst = Header->getTerminator();
   if(Linst){
-    Linst->eraseFromParent();
-    // llvm::Instruction *Linst_temp = Header->getTerminator();
-    // if(Linst_temp){ // this will remain NULL not the previous Instruction
-    //   cout<<"works"<<endl;
-    //   //Value* v = LI->getOperand(0);  
-    // }
+    if(BranchInst* BTerm = dyn_cast<BranchInst> (Linst)){
+      BasicBlock *exit;
+      if(BTerm->isConditional()){
+        exit = BTerm->getSuccessor(1);
+      }
 
-    llvm::BranchInst::Create(InnerLoopPreheader,ExitBlock,temp_v,Header);
-    //llvm::BranchInst::Create(InnerLoopPreheader,Header);
-    //Header->getInstList.push_back(I)
+      else {
+        exit = BTerm->getSuccessor(0);
+      }
+
+      Linst->eraseFromParent();
+      // llvm::Instruction *Linst_temp = Header->getTerminator();
+      // if(Linst_temp){ // this will remain NULL not the previous Instruction
+      //   cout<<"works"<<endl;
+      //   //Value* v = LI->getOperand(0);  
+      // }
+
+      llvm::BranchInst::Create(InnerLoopPreheader,exit,temp_v,Header);
+      //llvm::BranchInst::Create(InnerLoopPreheader,Header);
+      //Header->getInstList.push_back(I)
+    }
+
+    else {
+      errs() <<" ----- not a branch instruction ----\n";
+    }
   }
 
   for(llvm::BasicBlock::iterator I = LatchBlock->begin(), Iend = LatchBlock->end(); I != Iend ; ++I){
@@ -309,22 +281,22 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   std::cout<<"----------------------------------works till here--------------------"<<std::endl;
 
   IRBuilder<> latch(InnerLoopLatch);
-  llvm::LoadInst *ind_var = latch.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"store_start");
+  //llvm::LoadInst *ind_var = latch.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"store_start");
   std::cout<<"----------------------------------works till here--------------------"<<std::endl;
-  llvm::Value* bio = latch.CreateNSWAdd(ind_var, itr_ci,"increment");
-  latch.CreateStore(bio,allocate_start,false);
+  llvm::Value* bio = latch.CreateNSWAdd(phi_ind_node, itr_ci,"increment");
+  //latch.CreateStore(bio,allocate_start,false);
   latch.CreateBr(InnerLoopHeader);  // this is created to maintain systematic loop formation of llvm
 
-  for(int i = 0 ; i < newLoopBlocks.size(); i++){
-    for(llvm::BasicBlock::iterator I = newLoopBlocks[i]->begin(), Iend = newLoopBlocks[i]->end(); I != Iend ; ++I){
-      if(isa<llvm::LoadInst> (I)){
-        if(I->getOperand(0) == originalInd){
-          llvm::Value *val = &*I;
-          I->setOperand(0,allocate_start);
-        }
-      }
-    }
-  }
+  // for(int i = 0 ; i < newLoopBlocks.size(); i++){
+  //   for(llvm::BasicBlock::iterator I = newLoopBlocks[i]->begin(), Iend = newLoopBlocks[i]->end(); I != Iend ; ++I){
+  //     if(isa<llvm::LoadInst> (I)){
+  //       if(I->getOperand(0) == originalInd){
+  //         llvm::Value *val = &*I;
+  //         I->setOperand(0,allocate_start);
+  //       }
+  //     }
+  //   }
+  // }
 
   BranchInst *LatchBI = dyn_cast<BranchInst>(LatchBlock->getTerminator());
   
@@ -359,8 +331,9 @@ void getInductionVariableUsingCmp(Loop *L, ScalarEvolution *SE){
       Instruction *I = dyn_cast<ICmpInst>(BI->getCondition());
       if(SExtInst *se = dyn_cast<SExtInst>(I->getOperand(1))){
         if(LoadInst *LI = dyn_cast<LoadInst>(se->getOperand(0))){
+          Value *upper_val = LI->getOperand(0);
           errs() <<"loop split with signed extension\n";
-          LoopSplit(L, 2, L->getExitBlock(), IndVar, LI, I, false, true);
+          LoopSplit(L, 2, L->getExitBlock(), IndVar, upper_val, I, false, true);
         }
 
         else {
