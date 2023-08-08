@@ -12,6 +12,7 @@ int main() {
 
     int sum = 0;
     int j = 20;
+    int upper_bound = 10;
     // int local_sum = 0;
 
     // for (int i = 0; i < j; ++i) {
@@ -32,7 +33,7 @@ int main() {
         int local_sum = 0;
 
         #pragma omp for
-        for (int i = 0; i < j; ++i) {
+        for (int i = 0; i < upper_bound; ++i) { // what if upper bound was j which keeps changing
             int thread_id = omp_get_thread_num();
             int local_i = i;
 

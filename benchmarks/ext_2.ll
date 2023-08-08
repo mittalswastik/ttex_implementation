@@ -49,7 +49,6 @@ entry:
   %array = alloca [30 x i32], align 16
   %sum = alloca i32, align 4
   %j = alloca i32, align 4
-  %upper_bound = alloca i32, align 4
   %0 = bitcast [30 x i32]* %array to i8*
   call void @llvm.lifetime.start.p0i8(i64 120, i8* nonnull %0) #6
   %1 = bitcast [30 x i32]* %array to <4 x i32>*
@@ -82,24 +81,21 @@ entry:
   %9 = bitcast i32* %j to i8*
   call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %9) #6
   store i32 20, i32* %j, align 4, !tbaa !4
-  %10 = bitcast i32* %upper_bound to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %10) #6
-  store i32 10, i32* %upper_bound, align 4, !tbaa !4
-  call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull @3, i32 4, void (i32*, i32*, ...)* bitcast (void (i32*, i32*, i32*, i32*, [30 x i32]*, i32*)* @.omp_outlined. to void (i32*, i32*, ...)*), i32 1, i32* nonnull %upper_bound, i32* nonnull %j, [30 x i32]* nonnull %array, i32* nonnull %sum)
+  call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull @3, i32 3, void (i32*, i32*, ...)* bitcast (void (i32*, i32*, i32*, [30 x i32]*, i32*)* @.omp_outlined. to void (i32*, i32*, ...)*), i32 1, i32* nonnull %j, [30 x i32]* nonnull %array, i32* nonnull %sum)
   %call1.i = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([6 x i8], [6 x i8]* @.str.1, i64 0, i64 0), i64 noundef 5)
-  %11 = load i32, i32* %sum, align 4, !tbaa !4
-  %call1 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSolsEi(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i32 noundef %11)
-  %12 = bitcast %"class.std::basic_ostream"* %call1 to i8**
-  %vtable.i = load i8*, i8** %12, align 8, !tbaa !8
+  %10 = load i32, i32* %sum, align 4, !tbaa !4
+  %call1 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSolsEi(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i32 noundef %10)
+  %11 = bitcast %"class.std::basic_ostream"* %call1 to i8**
+  %vtable.i = load i8*, i8** %11, align 8, !tbaa !8
   %vbase.offset.ptr.i = getelementptr i8, i8* %vtable.i, i64 -24
-  %13 = bitcast i8* %vbase.offset.ptr.i to i64*
-  %vbase.offset.i = load i64, i64* %13, align 8
-  %14 = bitcast %"class.std::basic_ostream"* %call1 to i8*
-  %add.ptr.i = getelementptr inbounds i8, i8* %14, i64 %vbase.offset.i
+  %12 = bitcast i8* %vbase.offset.ptr.i to i64*
+  %vbase.offset.i = load i64, i64* %12, align 8
+  %13 = bitcast %"class.std::basic_ostream"* %call1 to i8*
+  %add.ptr.i = getelementptr inbounds i8, i8* %13, i64 %vbase.offset.i
   %_M_ctype.i.i = getelementptr inbounds i8, i8* %add.ptr.i, i64 240
-  %15 = bitcast i8* %_M_ctype.i.i to %"class.std::ctype"**
-  %16 = load %"class.std::ctype"*, %"class.std::ctype"** %15, align 8, !tbaa !10
-  %tobool.not.i.i.i = icmp eq %"class.std::ctype"* %16, null
+  %14 = bitcast i8* %_M_ctype.i.i to %"class.std::ctype"**
+  %15 = load %"class.std::ctype"*, %"class.std::ctype"** %14, align 8, !tbaa !10
+  %tobool.not.i.i.i = icmp eq %"class.std::ctype"* %15, null
   br i1 %tobool.not.i.i.i, label %if.then.i.i.i, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
 
 if.then.i.i.i:                                    ; preds = %entry
@@ -107,30 +103,29 @@ if.then.i.i.i:                                    ; preds = %entry
   unreachable
 
 _ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i: ; preds = %entry
-  %_M_widen_ok.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %16, i64 0, i32 8
-  %17 = load i8, i8* %_M_widen_ok.i.i.i, align 8, !tbaa !14
-  %tobool.not.i3.i.i = icmp eq i8 %17, 0
+  %_M_widen_ok.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %15, i64 0, i32 8
+  %16 = load i8, i8* %_M_widen_ok.i.i.i, align 8, !tbaa !14
+  %tobool.not.i3.i.i = icmp eq i8 %16, 0
   br i1 %tobool.not.i3.i.i, label %if.end.i.i.i, label %if.then.i4.i.i
 
 if.then.i4.i.i:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
-  %arrayidx.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %16, i64 0, i32 9, i64 10
-  %18 = load i8, i8* %arrayidx.i.i.i, align 1, !tbaa !16
+  %arrayidx.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %15, i64 0, i32 9, i64 10
+  %17 = load i8, i8* %arrayidx.i.i.i, align 1, !tbaa !16
   br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
 
 if.end.i.i.i:                                     ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
-  call void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %16)
-  %19 = bitcast %"class.std::ctype"* %16 to i8 (%"class.std::ctype"*, i8)***
-  %vtable.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %19, align 8, !tbaa !8
+  call void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %15)
+  %18 = bitcast %"class.std::ctype"* %15 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %18, align 8, !tbaa !8
   %vfn.i.i.i = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i, i64 6
-  %20 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i, align 8
-  %call.i.i.i = call noundef signext i8 %20(%"class.std::ctype"* noundef nonnull %16, i8 noundef signext 10)
+  %19 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i, align 8
+  %call.i.i.i = call noundef signext i8 %19(%"class.std::ctype"* noundef nonnull %15, i8 noundef signext 10)
   br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
 
 _ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit: ; preds = %if.then.i4.i.i, %if.end.i.i.i
-  %retval.0.i.i.i = phi i8 [ %18, %if.then.i4.i.i ], [ %call.i.i.i, %if.end.i.i.i ]
+  %retval.0.i.i.i = phi i8 [ %17, %if.then.i4.i.i ], [ %call.i.i.i, %if.end.i.i.i ]
   %call1.i8 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull %call1, i8 noundef signext %retval.0.i.i.i)
   %call.i.i9 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i8)
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %10) #6
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %9) #6
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %8) #6
   call void @llvm.lifetime.end.p0i8(i64 120, i8* nonnull %0) #6
@@ -144,13 +139,13 @@ declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #4
 declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #4
 
 ; Function Attrs: alwaysinline norecurse nounwind uwtable
-define internal void @.omp_outlined.(i32* noalias nocapture noundef readonly %.global_tid., i32* noalias nocapture noundef readnone %.bound_tid., i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %upper_bound, i32* nocapture noundef nonnull align 4 dereferenceable(4) %j, [30 x i32]* nocapture noundef nonnull readonly align 4 dereferenceable(120) %array, i32* nocapture noundef nonnull align 4 dereferenceable(4) %sum) #5 personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*) !ttex_array !17 !ttex_sub_array !18 !parallel_id !19 {
+define internal void @.omp_outlined.(i32* noalias nocapture noundef readonly %.global_tid., i32* noalias nocapture noundef readnone %.bound_tid., i32* nocapture noundef nonnull align 4 dereferenceable(4) %j, [30 x i32]* nocapture noundef nonnull readonly align 4 dereferenceable(120) %array, i32* nocapture noundef nonnull align 4 dereferenceable(4) %sum) #5 personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*) !ttex_array !17 !ttex_sub_array !18 !parallel_id !19 {
 entry:
   %.omp.lb = alloca i32, align 4
   %.omp.ub = alloca i32, align 4
   %.omp.stride = alloca i32, align 4
   %.omp.is_last = alloca i32, align 4
-  %0 = load i32, i32* %upper_bound, align 4, !tbaa !4
+  %0 = load i32, i32* %j, align 4, !tbaa !4
   %sub2 = add nsw i32 %0, -1
   %cmp = icmp sgt i32 %0, 0
   br i1 %cmp, label %omp.precond.then, label %entry.omp.precond.end_crit_edge
@@ -199,7 +194,7 @@ omp.inner.for.body:                               ; preds = %omp.inner.for.body.
   %call1.i49 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([40 x i8], [40 x i8]* @.str, i64 0, i64 0), i64 noundef 39)
           to label %invoke.cont8 unwind label %lpad7.loopexit
 
-invoke.cont8:                                     ; preds = %omp.inner.for.body
+invoke.cont8:                                     ; preds = %CheckOverShoot, %omp.inner.for.body
   %vtable.i = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !8
   %vbase.offset.ptr.i = getelementptr i8, i8* %vtable.i, i64 -24
   %11 = bitcast i8* %vbase.offset.ptr.i to i64*
@@ -246,17 +241,16 @@ _ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i: ; preds = %.noexc52, %if.t
           to label %call1.i.noexc unwind label %lpad7.loopexit
 
 call1.i.noexc:                                    ; preds = %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i
-  %call.i.i5155 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i54)
-          to label %invoke.cont10 unwind label %lpad7.loopexit
+  br label %SplitLoopLatch
 
-invoke.cont10:                                    ; preds = %call1.i.noexc
-  %indvars.iv.next = add nsw i64 %indvars.iv, 1
+invoke.cont10:                                    ; preds = %CheckOverShoot, %SplitLoopHeader
+  %indvars.iv.next = add nsw i64 %indvars.iv, 2
   %18 = load i32, i32* %.omp.ub, align 4, !tbaa !4
   %19 = sext i32 %18 to i64
   %cmp5.not.not = icmp slt i64 %indvars.iv, %19
-  br i1 %cmp5.not.not, label %omp.inner.for.body, label %omp.loop.exit
+  br i1 %cmp5.not.not, label %omp.inner.for.body, label %omp.loop.exit.loopexit
 
-lpad7.loopexit:                                   ; preds = %omp.inner.for.body, %if.end.i.i.i, %.noexc52, %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i, %call1.i.noexc
+lpad7.loopexit:                                   ; preds = %omp.inner.for.body, %if.end.i.i.i, %.noexc52, %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i
   %lpad.loopexit = landingpad { i8*, i32 }
           catch i8* null
   br label %lpad7
@@ -276,8 +270,12 @@ lpad7:                                            ; preds = %lpad7.loopexit.spli
   call void @__clang_call_terminate(i8* %20) #12
   unreachable
 
-omp.loop.exit:                                    ; preds = %invoke.cont10, %omp.precond.then
-  %local_sum.0.lcssa = phi i32 [ 0, %omp.precond.then ], [ %add6, %invoke.cont10 ]
+omp.loop.exit.loopexit:                           ; preds = %invoke.cont10
+  %add6.lcssa73 = phi i32 [ %add6, %invoke.cont10 ]
+  br label %omp.loop.exit
+
+omp.loop.exit:                                    ; preds = %omp.loop.exit.loopexit, %omp.precond.then
+  %local_sum.0.lcssa = phi i32 [ 0, %omp.precond.then ], [ %add6.lcssa73, %omp.loop.exit.loopexit ]
   call void @__kmpc_for_static_fini(%struct.ident_t* nonnull @1, i32 %5)
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %4) #6
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %3) #6
@@ -295,6 +293,28 @@ omp.precond.end:                                  ; preds = %entry.omp.precond.e
   store i32 %add21, i32* %sum, align 4, !tbaa !4
   call void @__kmpc_end_critical(%struct.ident_t* nonnull @3, i32 %21, [8 x i32]* nonnull @.gomp_critical_user_.var)
   ret void
+
+SplitLoopPreheader:                               ; No predecessors!
+  %iterator = alloca i64, align 8
+  %iterator_bound = alloca i64, align 8
+  br label %SplitLoopHeader
+
+SplitLoopHeader:                                  ; preds = %SplitLoopLatch, %SplitLoopPreheader
+  %23 = load i32, i32* %.omp.ub, align 4
+  %value_sext = sext i32 %23 to i64
+  %24 = add nsw i64 1, %indvars.iv
+  %25 = icmp sle i64 %indvars.iv, %24
+  br i1 %25, label %CheckOverShoot, label %invoke.cont10
+
+SplitLoopLatch:                                   ; preds = %call1.i.noexc
+  %increment = add nsw i64 %indvars.iv, 1
+  br label %SplitLoopHeader
+
+CheckOverShoot:                                   ; preds = %SplitLoopHeader
+  %26 = load i32, i32* %.omp.ub, align 4
+  %value_sext74 = sext i32 %26 to i64
+  %27 = icmp sle i64 %indvars.iv, %value_sext74
+  br i1 %27, label %invoke.cont8, label %invoke.cont10
 }
 
 declare dso_local void @__kmpc_for_static_init_4(%struct.ident_t*, i32, i32, i32*, i32*, i32*, i32*, i32, i32, i32) local_unnamed_addr
@@ -372,7 +392,7 @@ attributes #12 = { noreturn nounwind }
 !0 = !{i32 1, !"wchar_size", i32 4}
 !1 = !{i32 7, !"openmp", i32 50}
 !2 = !{i32 7, !"uwtable", i32 1}
-!3 = !{!"clang version 14.0.0 (https://github.ncsu.edu/smittal6/ttex_implementation.git ed376897764464880cd392fd4a1c297ea9bc6d24)"}
+!3 = !{!"clang version 14.0.0 (https://github.ncsu.edu/smittal6/ttex_implementation.git 5cf560fb1511853a44367f07dcc73bf5237305e8)"}
 !4 = !{!5, !5, i64 0}
 !5 = !{!"int", !6, i64 0}
 !6 = !{!"omnipotent char", !7, i64 0}

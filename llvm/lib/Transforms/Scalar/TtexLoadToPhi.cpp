@@ -113,83 +113,87 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   llvm::LoadInst* load_original;
 
   Value* phi_ind_node;
+  PHINode* phi_ind_var;
   Value* phi_upper_node;
+  Value* phi_ind_var_next;
 
   phi_ind_node = dyn_cast<PHINode>(ind_inst);
 
   allocate_start = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX), nullptr ,"iterator");
   allocate_end = prehead.CreateAlloca(llvm::IntegerType::getInt64Ty(CTX),nullptr, "iterator_bound");
-  prehead.CreateBr(InnerLoopHeader);
-
-  IRBuilder<> head(InnerLoopHeader);
-
-  if(!upper_bound_phi) {
-    Value* upper_bound_val = head.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upper_inst, "");
-    phi_upper_node = head.CreateSExt(upper_bound_val, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
-    // phi_upper_node = prehead.CreatePHI(sextInst->getType(), 0 , "upper");
-    // phi_upper_node->addIncoming(sextInst, Header);
-    // phi_upper_node->addIncoming(sextInst, InnerLoopPreheader);
-    // errs()<<"upper instruction is load and lower is phi node\n";
+  prehead.CreateStore(phi_ind_node, allocate_start, false);
+  if(!upper_bound_phi){
+    Value* upper_bound_val = prehead.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upper_inst, "");
+    phi_upper_node = prehead.CreateSExt(upper_bound_val, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
+    prehead.CreateStore(phi_upper_node, allocate_end, false);
   }
 
   else {
     phi_upper_node = dyn_cast<PHINode>(upper_inst);
-    errs()<<"upper instruction is already a phi node with lower a phi node\n";
+    prehead.CreateStore(phi_upper_node, allocate_end, false);
   }
 
-  
+  prehead.CreateBr(InnerLoopHeader);
+
+  IRBuilder<> head(InnerLoopHeader);
+
+  phi_ind_var = head.CreatePHI(llvm::IntegerType::getInt64Ty(CTX), 0, "");
+  phi_ind_var->addIncoming(phi_ind_node, InnerLoopPreheader);
+  //Value* upper_var = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_end, "");
   errs()<<"--- alloca works---\n";
-  //llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
-  // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
-  errs()<<"---- store works----\n";
-  llvm::Value* ind_end = head.CreateNSWAdd(end_ci, phi_ind_node,"");
-  errs()<<"------ create NSWADD works----\n";
-  std::string str10;
-  raw_string_ostream stream10(str10);
-  ind_end->getType()->print(stream10,false);
-  errs()<<"ind end type is "<<str10<<"\n";
-  //head.CreateStore(ind_end, allocate_end, false);
-  errs()<<"this is the end \n";
+  // //llvm::StoreInst* store_start = prehead.CreateStore(phi_ind_node,allocate_start,false);
+  // // llvm::LoadInst* load_start =  prehead.CreateLoad(llvm::IntegerType::getInt64Ty(CTX), allocate_start, "");
+  // errs()<<"---- store works----\n";
+  // llvm::Value* ind_end = head.CreateNSWAdd(end_ci, phi_ind_node,"");
+  // errs()<<"------ create NSWADD works----\n";
+  // std::string str10;
+  // raw_string_ostream stream10(str10);
+  // ind_end->getType()->print(stream10,false);
+  // errs()<<"ind end type is "<<str10<<"\n";
+  // //head.CreateStore(ind_end, allocate_end, false);
+  // errs()<<"this is the end \n";
 
-  // Value* boolValue = ConstantInt::get(Type::getInt1Ty(CTX), 1);
-  // //Value* cmpvalue = prehead.CreateICmp
-  // //prehead.CreateBr(InnerLoopHeader);
-  // prehead.CreateCondBr(boolValue, InnerLoopHeader, InnerLoopPreheader);
+  // // Value* boolValue = ConstantInt::get(Type::getInt1Ty(CTX), 1);
+  // // //Value* cmpvalue = prehead.CreateICmp
+  // // //prehead.CreateBr(InnerLoopHeader);
+  // // prehead.CreateCondBr(boolValue, InnerLoopHeader, InnerLoopPreheader);
 
-  // errs()<<"------------- this works------------\n";
+  // // errs()<<"------------- this works------------\n";
 
-  llvm::Value* compare;
-  //llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_start");
-  //llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"inner_itr_end");
-  // inner loop iterator is new so has to be loaded irrespective of outer loop iterator
-  //llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, originalInd,"");
-  compare = head.CreateICmpSLE(phi_ind_node,ind_end);
-  head.CreateCondBr(compare, TempCompare, LatchBlock); // if true execute the original body of loop else move to latch of original
-  //newLoopBlocks[0],
+  // llvm::Value* compare;
+  // //llvm::LoadInst* load_ind = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_start");
+  // //llvm::LoadInst* load_ind_end = head.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"inner_itr_end");
+  // // inner loop iterator is new so has to be loaded irrespective of outer loop iterator
+  // //llvm::Value* ind_end = prehead.CreateNSWAdd(end_ci, originalInd,"");
+  // compare = head.CreateICmpSLE(upper_var,ind_end);
+  // head.CreateCondBr(compare, TempCompare, LatchBlock); // if true execute the original body of loop else move to latch of original
+  // //newLoopBlocks[0],
 
-  IRBuilder<> tempblock(TempCompare);
-  llvm::LoadInst* load_outer_bound;
-  llvm::Value* check;
-  llvm::LoadInst* load_ind_start;
+  // IRBuilder<> tempblock(TempCompare);
+  // llvm::LoadInst* load_outer_bound;
+  // llvm::Value* check;
+  // llvm::LoadInst* load_ind_start;
 
   
-  //load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_end");
+  // //load_ind_start = tempblock.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"inner_itr_end");
 
-  std::string str12;
-  raw_string_ostream stream12(str12);
-  phi_upper_node->getType()->print(stream12,false);
-  errs()<<"upper bound type is "<<str12<<"\n";
+  // std::string str12;
+  // raw_string_ostream stream12(str12);
+  // phi_upper_node->getType()->print(stream12,false);
+  // errs()<<"upper bound type is "<<str12<<"\n";
 
-  load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upper_inst,"");
-  phi_upper_node = tempblock.CreateSExt(load_outer_bound, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
-  check = tempblock.CreateICmpSLE(phi_ind_node,phi_upper_node,"");
+  // load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upper_inst,"");
+  // phi_upper_node = tempblock.CreateSExt(load_outer_bound, llvm::IntegerType::getInt64Ty(CTX), "value_sext");
+  // check = tempblock.CreateICmpSLE(phi_ind_node,phi_upper_node,"");
 
-  // else {
-  //   load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upperBound,"");
-  // }
+  // // else {
+  // //   load_outer_bound = tempblock.CreateLoad(llvm::IntegerType::getInt32Ty(CTX), upperBound,"");
+  // // }
 
-  tempblock.CreateCondBr(check, newLoopBlocks[0], LatchBlock);
-  errs()<<"--------- still an issue 2 ------------\n";
+  // tempblock.CreateCondBr(check, newLoopBlocks[0], LatchBlock);
+  // errs()<<"--------- still an issue 2 ------------\n";
+
+  head.CreateBr(newLoopBlocks[0]);
 
   // change the branch instruction of last block of newloopblocks also add 1 to iterator and also the original header (also value of the header)
 
@@ -283,20 +287,28 @@ bool LoopSplit(Loop *L, unsigned count, BasicBlock *ExitBlock, Instruction* ind_
   IRBuilder<> latch(InnerLoopLatch);
   //llvm::LoadInst *ind_var = latch.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_start,"store_start");
   std::cout<<"----------------------------------works till here--------------------"<<std::endl;
-  llvm::Value* bio = latch.CreateNSWAdd(phi_ind_node, itr_ci,"increment");
+  phi_ind_var_next = latch.CreateNSWAdd(phi_ind_var, itr_ci,"increment");
   //latch.CreateStore(bio,allocate_start,false);
-  latch.CreateBr(InnerLoopHeader);  // this is created to maintain systematic loop formation of llvm
+  Value *upper_bound_var = latch.CreateLoad(llvm::IntegerType::getInt64Ty(CTX),allocate_end,"store_start");
+  Value *check = latch.CreateICmpSLE(phi_ind_var_next,upper_bound_var,"");
+  latch.CreateCondBr(check, TempCompare, LatchBlock);  // this is created to maintain systematic loop formation of llvm
 
-  // for(int i = 0 ; i < newLoopBlocks.size(); i++){
-  //   for(llvm::BasicBlock::iterator I = newLoopBlocks[i]->begin(), Iend = newLoopBlocks[i]->end(); I != Iend ; ++I){
-  //     if(isa<llvm::LoadInst> (I)){
-  //       if(I->getOperand(0) == originalInd){
-  //         llvm::Value *val = &*I;
-  //         I->setOperand(0,allocate_start);
-  //       }
-  //     }
-  //   }
-  // }
+  IRBuilder<> tempblock(TempCompare);
+  Value* ind_end = tempblock.CreateNSWAdd(end_ci, phi_ind_var,"");
+  Value *check_2 = tempblock.CreateICmpSLE(phi_ind_var_next,ind_end,"");
+  tempblock.CreateCondBr(check_2, InnerLoopHeader, LatchBlock);
+  phi_ind_var->addIncoming(phi_ind_var_next, TempCompare);
+
+
+  for(int i = 0 ; i < newLoopBlocks.size(); i++){
+    for(llvm::BasicBlock::iterator I = newLoopBlocks[i]->begin(), Iend = newLoopBlocks[i]->end(); I != Iend ; ++I){
+      for(Use &operand: I->operands()){
+        if(operand.get() == phi_ind_node){
+          operand.set(phi_ind_var); // or allocate_start?
+        }
+      }
+    }
+  }
 
   BranchInst *LatchBI = dyn_cast<BranchInst>(LatchBlock->getTerminator());
   
