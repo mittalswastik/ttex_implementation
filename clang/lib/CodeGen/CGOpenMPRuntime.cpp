@@ -596,7 +596,7 @@ void RegionCodeGenTy::operator()(CodeGenFunction &CGF) const {
   CodeGenFunction::RunCleanupsScope Scope(CGF);
   if (PrePostAction) {
     CGF.EHStack.pushCleanup<CleanupTy>(NormalAndEHCleanup, PrePostAction);
-    Callback(CodeGen, CGF, *PrePostAction);
+    Callback(CodeGen, CGF, *PrePostAction); // swastik:: error tracing
   } else {
     PrePostActionTy Action;
     Callback(CodeGen, CGF, Action);
@@ -2390,6 +2390,8 @@ static Address emitAddrOfVarFromArray(CodeGenFunction &CGF, Address Array,
   return Addr;
 }
 
+extern std::map<SourceLocation,uint64_t> umap_loc;
+
 static llvm::Value *emitCopyprivateCopyFunction(
     CodeGenModule &CGM, llvm::Type *ArgsType,
     ArrayRef<const Expr *> CopyprivateVars, ArrayRef<const Expr *> DestExprs,
@@ -2527,13 +2529,17 @@ void CGOpenMPRuntime::emitSingleRegion(CodeGenFunction &CGF,
                                                       CGF.VoidPtrTy);
     llvm::Value *DidItVal = CGF.Builder.CreateLoad(DidIt);
     std::cout<<"-------------- kmpc single second arg -----------------------------------"<<std::endl;
+    uint64_t id =  umap_loc[Loc];
+    std::cout<<"------------- source location in for static is -------------------- id value is "<<id<<std::endl;
+    std::cout<<Loc.printToString(CGF.getContext().getSourceManager())<<std::endl;
     llvm::Value *Args[] = {
         emitUpdateLocation(CGF, Loc), // ident_t *<loc>
         getThreadID(CGF, Loc),        // i32 <gtid>
         BufSize,                      // size_t <buf_size>
         CL.getPointer(),              // void *<copyprivate list>
         CpyFn,                        // void (*) (void *, void *) <copy_func>
-        DidItVal                      // i32 did_it
+        DidItVal,                     // i32 did_it
+        CGF.Builder.getInt32(id)
     };
     CGF.EmitRuntimeCall(OMPBuilder.getOrCreateRuntimeFunction(
                             CGM.getModule(), OMPRTL___kmpc_copyprivate),
@@ -2763,7 +2769,7 @@ static int addMonoNonMonoModifier(CodeGenModule &CGM, OpenMPSchedType Schedule,
   return Schedule | Modifier;
 }
 
-extern std::map<SourceLocation,uint64_t> umap_loc;
+//extern std::map<SourceLocation,uint64_t> umap_loc;
 
 void CGOpenMPRuntime::emitForDispatchInit(
     CodeGenFunction &CGF, SourceLocation Loc,

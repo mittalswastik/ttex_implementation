@@ -2438,7 +2438,10 @@ OpenMPIRBuilder::createSingle(const LocationDescription &Loc,
   Constant *SrcLocStr = getOrCreateSrcLocStr(Loc, SrcLocStrSize);
   Value *Ident = getOrCreateIdent(SrcLocStr, SrcLocStrSize);
   Value *ThreadId = getOrCreateThreadID(Ident);
-  Value *Args[] = {Ident, ThreadId};
+  //swastik:: adding a parameter to single
+  uint32_t sub_id;
+  Value *sub_region_id = Builder.getInt32(sub_id);
+  Value *Args[] = {Ident, ThreadId, sub_region_id};
 
   Function *EntryRTLFn = getOrCreateRuntimeFunctionPtr(OMPRTL___kmpc_single);
   Instruction *EntryCall = Builder.CreateCall(EntryRTLFn, Args);

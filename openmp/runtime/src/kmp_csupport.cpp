@@ -1845,6 +1845,8 @@ kmp_int32 __kmpc_single(ident_t *loc, kmp_int32 global_tid, kmp_int32 sub_region
   __kmp_assert_valid_gtid(global_tid);
   kmp_int32 rc = __kmp_enter_single(global_tid, loc, TRUE);
 
+  __kmp_printf("-- kmp single id is ---: %d\n", sub_region_id);
+
   if (rc) {
     // We are going to execute the single statement, so we should count it.
     KMP_COUNT_BLOCK(OMP_SINGLE);
