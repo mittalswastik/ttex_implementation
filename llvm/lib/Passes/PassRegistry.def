@@ -119,6 +119,7 @@ MODULE_PASS("poison-checking", PoisonCheckingPass())
 MODULE_PASS("pseudo-probe-update", PseudoProbeUpdatePass())
 //MODULE_PASS("ttex-pass", TestingNewPass())
 MODULE_PASS("ttexloadtophi", TtexLoadToPhiPass())
+MODULE_PASS("ttexupdate", TtexUpdatePass())
 #undef MODULE_PASS
 
 #ifndef MODULE_PASS_WITH_PARAMS

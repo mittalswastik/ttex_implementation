@@ -80,6 +80,7 @@ add_llvm_component_library(LLVMScalarOpts
   WarnMissedTransforms.cpp
   TestingNewPass.cpp
   TtexLoadToPhi.cpp
+  TtexUpdate.cpp
   TtexGenerateLoopAnalysis.cpp
   Ttex_v1.cpp
 

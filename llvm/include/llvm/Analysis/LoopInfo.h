@@ -741,6 +741,7 @@ public:
   ///
   /// Note: the induction variable doesn't need to be canonical, i.e. starts at
   /// zero and increments by one each time through the loop (but it can be).
+  PHINode *getInductionVariableTemp(ScalarEvolution &SE) const;
   PHINode *getInductionVariable(ScalarEvolution &SE) const;
 
   /// Get the loop induction descriptor for the loop induction variable. Return

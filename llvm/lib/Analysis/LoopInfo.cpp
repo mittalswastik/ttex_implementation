@@ -291,6 +291,54 @@ Optional<Loop::LoopBounds> Loop::getBounds(ScalarEvolution &SE) const {
   return None;
 }
 
+PHINode *Loop::getInductionVariableTemp(ScalarEvolution &SE) const {
+  if (!isLoopSimplifyForm())
+    return nullptr;
+
+  BasicBlock *Header = getHeader();
+  assert(Header && "Expected a valid loop header");
+  ICmpInst *CmpInst = getLatchCmpInst();
+  if (!CmpInst)
+    return nullptr;
+
+  errs() << "header  and icmp instruction executed\n";
+
+  Value *LatchCmpOp0 = CmpInst->getOperand(0);
+  Value *LatchCmpOp1 = CmpInst->getOperand(1);
+
+  errs() << "Starting for loop for all phi nodes\n";
+
+  for (PHINode &IndVar : Header->phis()) {
+    InductionDescriptor IndDesc;
+    // errs()<<"check if induction is a phi node\n";
+    // if (!InductionDescriptor::isInductionPHI(&IndVar, this, &SE, IndDesc))
+    //   continue;
+
+    errs() <<"retreive the latch block\n";
+
+    BasicBlock *Latch = getLoopLatch();
+
+    errs()<< "retreived latch block\n";
+    Value *StepInst = IndVar.getIncomingValueForBlock(Latch);
+    errs() <<"retreiving incoming phi value for the block\n";
+    // case 1:
+    // IndVar = phi[{InitialValue, preheader}, {StepInst, latch}]
+    // StepInst = IndVar + step
+    // cmp = StepInst < FinalValue
+    if (StepInst == LatchCmpOp0)
+      return &IndVar;
+
+    // case 2:
+    // IndVar = phi[{InitialValue, preheader}, {StepInst, latch}]
+    // StepInst = IndVar + step
+    // cmp = IndVar < FinalValue
+    if (&IndVar == LatchCmpOp0)
+      return &IndVar;
+  }
+
+  return nullptr;
+}
+
 PHINode *Loop::getInductionVariable(ScalarEvolution &SE) const {
   if (!isLoopSimplifyForm())
     return nullptr;
@@ -311,8 +359,8 @@ PHINode *Loop::getInductionVariable(ScalarEvolution &SE) const {
   for (PHINode &IndVar : Header->phis()) {
     InductionDescriptor IndDesc;
     errs()<<"check if induction is a phi node\n";
-    // if (!InductionDescriptor::isInductionPHI(&IndVar, this, &SE, IndDesc))
-    //   continue;
+    if (!InductionDescriptor::isInductionPHI(&IndVar, this, &SE, IndDesc))
+      continue;
 
     errs() <<"retreive the latch block\n";
 

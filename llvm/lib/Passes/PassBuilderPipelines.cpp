@@ -114,6 +114,7 @@
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 #include "llvm/Transforms/Scalar/TestingNewPass.h"
 #include "llvm/Transforms/Scalar/TtexLoadToPhi.h"
+#include "llvm/Transforms/Scalar/TtexUpdate.h"
 #include "llvm/Transforms/Scalar/SpeculativeExecution.h"
 #include "llvm/Transforms/Scalar/TailRecursionElimination.h"
 #include "llvm/Transforms/Scalar/WarnMissedTransforms.h"
@@ -191,6 +192,10 @@ static cl::opt<bool> EnableMergeFunctions(
 
 static cl::opt<bool> MyOption("ttex",
   cl::desc("Description of my custom option"),
+  cl::init(false));
+
+static cl::opt<bool> MyTtex("ttex_update",
+  cl::desc("Description of my custom option for ttex_update"),
   cl::init(false));
 
 PipelineTuningOptions::PipelineTuningOptions() {
@@ -1314,6 +1319,10 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
     //MPM.addPass(TestingNewPass());
   }
 
+  if (Options.count("ttex_update") && MyTtex) {
+    MPM.addPass(TtexUpdatePass());
+  }
+
   return MPM;
 }
 
@@ -1828,6 +1837,10 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
     
     MPM.addPass(TtexLoadToPhiPass());
     //MPM.addPass(TestingNewPass());
+  }
+
+  if (Options.count("ttex_update") && MyTtex) {
+    MPM.addPass(TtexUpdatePass());
   }
 
   return MPM;
