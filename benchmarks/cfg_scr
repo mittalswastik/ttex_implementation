@@ -1,0 +1,17 @@
+#!/bin/bash
+
+rm -f /tmp/cfg*
+
+../build/bin/opt $1 --passes="view-cfg-only" -o cfg.dot 
+
+findval()
+{
+	find /tmp -name "*outlined*"
+}
+
+regex = $(findval)
+
+mv $regex  $pwd
+
+dot -Tpng $regex -o $2
+

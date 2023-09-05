@@ -20,7 +20,7 @@ int main() {
     int upper_bound = 10;
     // int local_sum = 0;
 
-    std::cout << "tesing" << std::endl;    
+    std::cout << "tesing" << std::endl;
 
     // for (int i = 0; i < j; ++i) {
     //         int thread_id = omp_get_thread_num();
@@ -39,24 +39,30 @@ int main() {
     {
         int local_sum = 0;
 
+        for(int i = 0 ; i < 30 ; i++) {
+            for(int j = 0 ; j < 20 ; j++) {
+                check();
+            }
+        }
+
         // #pragma omp single
         // {
         //     std::cout << "tesing single" << std::endl;
         // }
 
-        // #pragma omp for
-        // for (int i = 0; i < upper_bound; ++i) { // what if upper bound was j which keeps changing
-        //     int thread_id = omp_get_thread_num();
-        //     int local_i = i;
+        #pragma omp for
+        for (int i = 0; i < upper_bound; ++i) { // what if upper bound was j which keeps changing
+            int thread_id = omp_get_thread_num();
+            int local_i = i;
 
-        //     // Load the induction variable using a load instruction
-        //     int& local_iv = local_i;
-        //     int local_d = j;
+            // Load the induction variable using a load instruction
+            int& local_iv = local_i;
+            int local_d = j;
 
-        //     local_sum += array[local_iv];
-        //     j--;
-        //     //std::cout << "checking the number of times it prints " << std::endl;
-        // }
+            local_sum += array[local_iv];
+            j--;
+            //std::cout << "checking the number of times it prints " << std::endl;
+        }
 
         #pragma omp sections
         {

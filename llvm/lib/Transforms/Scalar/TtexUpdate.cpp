@@ -133,8 +133,24 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
   llvm::BasicBlock *Secure_1 = BasicBlock::Create(CTX, "TtexSecure_1", Func);
   llvm::BasicBlock *Secure_2 = BasicBlock::Create(CTX, "TtexSecure_2", Func);
 
-  llvm::ConstantInt *secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),count, false);
-  llvm::ConstantInt *compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),0, false);
+  llvm::ConstantInt *secure_counter;
+  llvm::ConstantInt *compare_to_zero;
+
+  if(IntegerType *it = dyn_cast<IntegerType> (IndVar->getType())){
+    if(it->getBitWidth() == 32){
+      secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
+      compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
+    }
+
+    else {
+      secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),count,false);
+      compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),0,false);
+    }
+  }
+
+  else {
+    errs() <<"wrong induction variable format\n";
+  }
 
   IRBuilder<> security_2(Secure_2);
 
@@ -195,6 +211,9 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
   llvm::Instruction *Linst = LatchBlock->getTerminator();
   if(BranchInst *BI = dyn_cast<BranchInst>(LatchBlock->getTerminator())){
     llvm::BasicBlock * ExitMain = BI->getSuccessor(1);
+    if(ExitMain == Header){
+      ExitMain = BI->getSuccessor(0);
+    }
     Value *conditionValue = BI->getCondition();
     Linst->eraseFromParent();
     llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
@@ -202,6 +221,7 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
 
   IndVar->setIncomingBlock(index, Secure_1);
   IndVar->addIncoming(incomingValue, Secure_2);
+  //Header->removePredecessor(LatchBlock);
 
   for(llvm::BasicBlock::iterator I = Header->begin(), Iend = Header->end(); I != Iend ; ++I){
     Instruction &Inst = *I;
@@ -410,12 +430,29 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
   }
 }
 
+std::vector<Loop*> allLoops;
+
+void generateAllLoops(Loop *L) { // gets outer loop
+  if(L->getSubLoops().size() == 0){
+    allLoops.push_back(L);
+    return;
+  }
+
+  std::vector<Loop*> temp = L->getSubLoops();
+  for(int i = 0 ; i < temp.size() ; i++){
+    generateAllLoops(temp[i]);
+  }
+
+  allLoops.push_back(L);
+  return;
+}
+
 std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel_region_id, ModuleAnalysisManager &MA){
   
   std::vector<int> temp;
   auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
   // //FM.registerPass(DominatorTreeAnalysis());
-  FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
+  //FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
   FunctionPassManager FPM;
   // //FPM.run(createLoopSimplifyPass());
   // // FPM.addPass(createLoopSimplifyPass());
@@ -430,18 +467,25 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
   //DT.recalculate(F);
   errs()<<"We get the dominator tree\n";
   // DT->recalculate(F);
-  LoopInfoBase<BasicBlock, Loop>* LIB = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
+  //LoopInfoBase<BasicBlock, Loop>* LIB = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
   // //LIB->releaseMemory();
-  LIB->analyze(*DT);
+  //LIB->analyze(*DT);
 
   // DominatorTree DT = llvm::DominatorTree();
   // DT.recalculate(F);
-  // LoopInfoBase<BasicBlock, Loop>* LInfo = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
-  // LInfo->releaseMemory();
-  // LInfo->analyze(DT);
+  LoopInfoBase<BasicBlock, Loop>* LInfo = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
+  LInfo->releaseMemory();
+  LInfo->analyze(*DT);
 
-  if(LIB){
-    if(LIB->begin() == LIB->end()){
+  LoopInfoBase<BasicBlock, Loop> *LIB;
+  //DT->recalculate(F);
+  //LIB->analyze(*DT);
+
+  //LoopInfo LI;
+  //LI.analyze(FM.getResult<DominatorTreeAnalysis>(F));
+
+  if(LInfo){
+    if(LInfo->begin() == LInfo->end()){
       errs()<<"no loop info\n";
     }
 
@@ -468,11 +512,21 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
       errs()<<"checking for errors"<<"\n";
 
       //int counter = 0;
-
-      //for(LoopInfoBase<BasicBlock, Loop>::iterator loop_iter = LInfo->begin(), loop_iter_end = LInfo->end(); loop_iter != loop_iter_end; ++loop_iter){
-      for (Loop *ltemp : *LI) {
+      //for(LoopInfoBase<BasicBlock, Loop>::iterator loop_iter = LIB->begin(), loop_iter_end = LIB->end(); loop_iter != loop_iter_end; ++loop_iter){
+      for (Loop *ltemp : *LI) { // gives all the outer loops
+        generateAllLoops(ltemp);
+      }  
         //testing
         //Loop *ltemp = *loop_iter;
+
+      for(int i = 0 ; i < allLoops.size(); i++) {
+        Loop* ltemp = allLoops[i];
+        simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
+        formLCSSARecursively(*ltemp, *DT, LI, SE);
+      }
+
+      for(int i = 0 ; i < allLoops.size(); i++) {
+        Loop* ltemp = allLoops[i];
         BasicBlock *header = ltemp->getHeader();
 
         BasicBlock *Preheader = ltemp->getLoopPreheader();
@@ -522,9 +576,6 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
         // }
 
         errs()<<"Found a loop"<<"\n";
-
-        simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
-        formLCSSARecursively(*ltemp, *DT, LI, SE);
 
         bool split_check = LoopSplit(ltemp, 2, SE, parallel_region_id, loop_counter, loop_counter);
         if(split_check){

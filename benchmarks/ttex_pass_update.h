@@ -273,14 +273,15 @@ on_ompt_callback_thread_begin(
   
   printf("----------------------- thread begin ---------------------\n");
 
-  printf("thread begind data is : %d\n", thread_begin.parallel_region_id);
+  printf("thread begin data is : %d\n", thread_begin.parallel_region_id);
 
   // thread_data->value = my_next_id();
-  thread_info* temp_thread_data = (thread_info*) malloc(sizeof(thread_info));
+  thread_info* temp_thread_data = (thread_info*) calloc(1, sizeof(thread_info));
   temp_thread_data->id = my_next_id();
   temp_thread_data->counter = 0;
+  printf("----------------------- thread begin 1_2---------------------\n");
   temp_thread_data->thread_current_timeout = std::vector<timeout_node>();
-  printf("----------------------- thread begin ---------------------\n");
+  printf("----------------------- thread begin 2---------------------\n");
   if(temp_thread_data->thread_current_timeout.size() == 0){
     printf("----------------------- size empty ---------------------\n");
   }

@@ -859,7 +859,7 @@ PreservedAnalyses LoopSimplifyPass::run(Function &F,
   // after simplifying the loops. MemorySSA is preserved if it exists.
   for (auto *L : *LI) {
   //for (Loop *L : LIB) {  
-    errs()<<"--------- loop found ----------------\n";
+    errs()<<"--------- loop found with head block :"<< L->getHeader()->getName() <<"--------------\n";
     Changed |=
         simplifyLoop(L, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
     Changed |= formLCSSARecursively(*L, *DT, LI, SE); // adding lcssa form for ttex
