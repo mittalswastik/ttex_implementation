@@ -1320,6 +1320,9 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   }
 
   if (Options.count("ttex_update") && MyTtex) {
+    //MPM.addPass(createModuleToFunctionPassAdaptor(LoopRotatePass()));
+    MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+    MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
     MPM.addPass(TtexUpdatePass());
   }
 
@@ -1840,6 +1843,8 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
   }
 
   if (Options.count("ttex_update") && MyTtex) {
+    MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+    MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
     MPM.addPass(TtexUpdatePass());
   }
 

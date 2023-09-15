@@ -1,7 +1,5 @@
 Printing details 1
 Parallel region 1 2
-sub parallel region id: -1
-sub parallel region id: 2
 Checking initial
 ----------------------- thread begin ---------------------
 thread begin data is : -100
@@ -11,37 +9,15 @@ thread begin data is : -100
 ----------------------- thread begin ---------------------
 core used is : 0
 scheduling policy priority is : 0
-Thread id and core is 5302 & 0:
+Thread id and core is 5750 & 0:
 thread data value: 0
-scheduling cpu is 0 for id 5302
+scheduling cpu is 0 for id 5750
 : modification call made
-tesing
 parallel id sent is: 1
 Parallel region id is parallel region: 0
-scheduling cpu is 0 for id 5302
+scheduling cpu is 0 for id 5750
 : modification call made
 -------- end of parallel begin -----------
-calling checkout function
-Thread id is **************** 0
-Sub region is *************** 1
-setting the timer for the thread
-timer is been set for callback work
-value is----------
-scheduling cpu is 0 for id 5302
-: modification call made
-checking for error
-scheduling cpu is 0 for id 5302
-: modification call made
-OMPT TEST CALLED 0 1
-scheduling cpu is 0 for id 5302
-: modification call made
---------------callback end---------0 0
-Thread id is **************** 0
-scheduling cpu is 0 for id 5302
-: modification call made
-scheduling cpu is 0 for id 5302
-: modification call made
-Sync region called --- Thread id is **************** 0
 ----------------------- thread begin ---------------------
 thread begin data is : -100
 ----------------------- thread begin 1_2---------------------
@@ -50,8 +26,7 @@ thread begin data is : -100
 ----------------------- thread begin ---------------------
 core used is : 1
 scheduling policy priority is : 10
-Thread id and core is 5303 & 1:
-thread data value: 1
+Thread id and core is 5751 & 1:
 ----------------------- thread begin ---------------------
 thread begin data is : -100
 ----------------------- thread begin 1_2---------------------
@@ -59,10 +34,10 @@ thread begin data is : -100
 ----------------------- size empty ---------------------
 ----------------------- thread begin ---------------------
 core used is : 2
+thread data value: 1
 scheduling policy priority is : 10
-scheduling cpu is 1 for id 5303
+scheduling cpu is 1 for id 5751
 : modification call made
-calling checkout function
 ----------------------- thread begin ---------------------
 thread begin data is : -100
 ----------------------- thread begin 1_2---------------------
@@ -71,193 +46,154 @@ thread begin data is : -100
 ----------------------- thread begin ---------------------
 core used is : 3
 scheduling policy priority is : 10
-Thread id is **************** 1
-Sub region is *************** 1
-setting the timer for the thread
-timer is been set for callback work
-value is----------
-scheduling cpu is 1 for id 5303
-: Thread id and core is 5305 & 3:
-modification call made
-checking for error
-scheduling cpu is 1 for id 5303
+Thread id and core is 5752 & 2:
+thread data value: 2
+scheduling cpu is 2 for id 5752
 : modification call made
-OMPT TEST CALLED 0 1
+Thread id and core is 5753 & 3:
 thread data value: 3
-scheduling cpu is 3 for id 5305
-: scheduling cpu is 1 for id 5303
+scheduling cpu is 3 for id 5753
+: modification call made
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 0 for id 5750
+: modification call made
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 1 for id 5751
+: modification call made
+printing out
+OMPT TEST CALLED 0 0
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 3 for id 5753
+: scheduling cpu is 2 for id 5752
 : modification call made
 modification call made
---------------callback end---------0 0
-Thread id is **************** 1
-calling checkout function
-Thread id and core is 5304 & 2:
-scheduling cpu is 1 for id 5303
-: thread data value: 2
-scheduling cpu is 2 for id 5304
-: modification call made
-modification call made
-scheduling cpu is 1 for id 5303
-: Thread id is **************** 3
-Sub region is *************** 1
-setting the timer for the thread
-calling checkout functiontimer is been set for callback work
-modification call made
-value is----------
+printing out
+printing out
+printing outprinting out
 
-Sync region called --- Thread id is **************** 1
-scheduling cpu is 3 for id 5305
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 0 for id 5750
 : modification call made
-checking for error
-scheduling cpu is 3 for id 5305
-: Thread id is **************** 2
-Sub region is *************** 1
-setting the timer for the thread
-timer is been set for callback work
-value is----------
-modification call made
-OMPT TEST CALLED 0 1
-scheduling cpu is 2 for id 5304
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 1 for id 5751
 : modification call made
-checking for error
-scheduling cpu is 3 for id 5305
-: scheduling cpu is 2 for id 5304
-: modification call made
-OMPT TEST CALLED 0 1
-modification call made
---------------callback end---------0 0
-Thread id is **************** 3
-scheduling cpu is 3 for id 5305
-: scheduling cpu is 2 for id 5304
+printing out
+OMPT TEST CALLED 0 0
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 2 for id 5752
+: scheduling cpu is 3 for id 5753
 : modification call made
 modification call made
-scheduling cpu is 3 for id 5305
-: --------------callback end---------0 0
-Thread id is **************** 2
-scheduling cpu is 2 for id 5304
+printing out
+printing out
+printing outprinting out
+
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 0 for id 5750
 : modification call made
-Sync region called --- Thread id is **************** 3
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 2 for id 5752
+: printing out
+OMPT TEST CALLED 0 0
 modification call made
-scheduling cpu is 2 for id 5304
+scheduling cpu is 3 for id 5753
 : modification call made
-Sync region called --- Thread id is **************** 2
-scheduling cpu is 2 for id 5304
-: scheduling cpu is 1 for id 5303
-: scheduling cpu is 3 for id 5305
-: scheduling cpu is 0 for id 5302
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 1 for id 5751
 : modification call made
-Sync region called --- Thread id is **************** 3
+printing out
+printing out
+printing out
+printing out
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 0 for id 5750
+: modification call made
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 2 for id 5752
+: printing outmodification call made
+
+OMPT TEST CALLED 0 0
+printing out
+scheduling cpu is 3 for id 5753
+: OMPT TEST CALLED 0 0
 modification call made
-Sync region called --- Thread id is **************** 2
+scheduling cpu is 1 for id 5751
+: modification call made
+printing out
+printing out
+printing out
+printing out
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 0 for id 5750
+: modification call made
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 2 for id 5752
+: modification call made
+printing out
+OMPT TEST CALLED 0 0
+scheduling cpu is 3 for id 5753
+: printing out
+OMPT TEST CALLED 0 0
 modification call made
-Sync region called --- Thread id is **************** 1
-modification call made
-Sync region called --- Thread id is **************** 0
-Thread id is **************** 3
-Sub region is *************** 2
-scheduling cpu is 3 for id 5305
-: Thread id is **************** 2
-Sub region is *************** 2
-scheduling cpu is 2 for id 5304
+scheduling cpu is 1 for id 5751
 : modification call made
-checking for error
-scheduling cpu is 3 for id 5305
-: Thread id is **************** 1
-Sub region is *************** 2
-count value is: 1
-scheduling cpu is 1 for id 5303
-: modification call made
-modification call made
-checking for error
---------------callback end---------0 0
-Thread id is **************** 3
-Thread id is **************** 0
-scheduling cpu is 3 for id 5305
-: scheduling cpu is 2 for id 5304
-: modification call made
-Sub region is *************** 2
-checking for error
-count value is: 0
-scheduling cpu is 1 for id 5303
-: modification call made
-scheduling cpu is 0 for id 5302
-: modification call made
---------------callback end---------0 0
-Thread id is **************** 2
-scheduling cpu is 3 for id 5305
-: scheduling cpu is 2 for id 5304
-: modification call made
-modification call made
-testing section 2
---------------callback end---------0 0
-Thread id is **************** 1
-scheduling cpu is 1 for id 5303
-: modification call made
-modification call made
-scheduling cpu is 1 for id 5303
-: Sync region called --- Thread id is **************** 3
-modification call made
-Sync region called --- Thread id is **************** 1
-checking for error
-scheduling cpu is 0 for id 5302
-: modification call made
-modification call made
-calling checkout function
---------------callback end---------0 0
-Thread id is **************** 0
-scheduling cpu is 0 for id 5302
-: modification call made
-scheduling cpu is 0 for id 5302
-: scheduling cpu is 2 for id 5304
+printing out
+printing out
+printing out
+printing out
+printing out
+printing out outer
+scheduling cpu is 0 for id 5750
 : modification call made
 Sync region called --- Thread id is **************** 0
-modification call made
-Sync region called --- Thread id is **************** 2
-scheduling cpu is 0 for id 5302
-: scheduling cpu is 1 for id 5303
-: scheduling cpu is 3 for id 5305
-: scheduling cpu is 2 for id 5304
+printing out
+printing out outer
+scheduling cpu is 2 for id 5752
 : modification call made
-Sync region called --- Thread id is **************** 0
+Sync region called --- Thread id is **************** 2
+printing out
+printing out outer
+scheduling cpu is 3 for id 5753
+: printing out
+printing out outer
 modification call made
 Sync region called --- Thread id is **************** 3
-scheduling cpu is 0 for id 5302
-: scheduling cpu is 3 for id 5305
+scheduling cpu is 1 for id 5751
 : modification call made
-modification call made
-Sync region called --- Thread id is **************** 2
 Sync region called --- Thread id is **************** 1
-modification call made
-Sync region called --- Thread id is **************** 0
-modification call made
-Sync region called --- Thread id is **************** 3
-scheduling cpu is 1 for id 5303
-: scheduling cpu is 2 for id 5304
-: modification call made
-Sync region called --- Thread id is **************** 2
-modification call made
-Sync region called --- Thread id is **************** 1
-scheduling cpu is 0 for id 5302
+scheduling cpu is 0 for id 5750
 : modification call made
 Sync region called --- Thread id is **************** 0
-scheduling cpu is 0 for id 5302
+scheduling cpu is 0 for id 5750
 : modification call made
-Sum: 0
 thread id: 0
 +++++++++++++++++++++++log data size 8
-scheduling cpu is 1 for id 5303
-: scheduling cpu is 2 for id 5304
-: scheduling cpu is 3 for id 5305
+scheduling cpu is 2 for id 5752
+: scheduling cpu is 3 for id 5753
+: scheduling cpu is 1 for id 5751
 : modification call made
 Sync region called --- Thread id is **************** 2
 thread id: 2
-+++++++++++++++++++++++log data size 6
-modification call made
-Sync region called --- Thread id is **************** 1
-thread id: 1
 modification call made
 Sync region called --- Thread id is **************** 3
 thread id: 3
+modification call made
+Sync region called --- Thread id is **************** 1
+thread id: 1
++++++++++++++++++++++++log data size 6
 +++++++++++++++++++++++log data size 6
 +++++++++++++++++++++++log data size 6
 Logging
@@ -269,74 +205,74 @@ Logging
 
 4
 ------------------------------------------------------------
-Thread id 3
-
-Parallel region: -100
-Sub region: -1
-sections region: -10
-Loop Id: -10
-0 seconds and 30396 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: 1
-sections region: -10
-Loop Id: -10
-0 seconds and 3936 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: 0
-sections region: -10
-Loop Id: 1
-0 seconds and 5348 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: -5
-sections region: -10
-Loop Id: -10
-0 seconds and 5416 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: 2
-sections region: -10
-Loop Id: -10
-0 seconds and 5530 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: -5
-sections region: -10
-Loop Id: -10
-0 seconds and 4235 nanoseconds have elapsed!
-
-
-
-------------------------------------------------------------
 Thread id 1
 
 Parallel region: -100
 Sub region: -1
 sections region: -10
 Loop Id: -10
-0 seconds and 39652 nanoseconds have elapsed!
+0 seconds and 1095121 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 1
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2151363 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2541863 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2219451 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2245709 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2195929 nanoseconds have elapsed!
+
+
+
+------------------------------------------------------------
+Thread id 3
+
+Parallel region: -100
+Sub region: -1
 sections region: -10
 Loop Id: -10
-0 seconds and 4081 nanoseconds have elapsed!
+0 seconds and 1093525 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 0
+Sub region: -1
 sections region: -10
-Loop Id: 1
-0 seconds and 4322 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2199032 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: -5
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 20016 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2219494 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 2
-sections region: 0
-Loop Id: -10
-0 seconds and 23664 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: -5
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 3861 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2275729 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2233031 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2201640 nanoseconds have elapsed!
 
 
 
@@ -347,42 +283,42 @@ Parallel region: -100
 Sub region: -1
 sections region: -10
 Loop Id: -10
-0 seconds and 88617 nanoseconds have elapsed!
+0 seconds and 156187 nanoseconds have elapsed!
 Parallel region: -2
 Sub region: -100
 sections region: -10
 Loop Id: -10
-0 seconds and 139606 nanoseconds have elapsed!
+0 seconds and 1546813 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 1
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 4077 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: 0
-sections region: -10
-Loop Id: 1
-0 seconds and 4482 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: -5
-sections region: -10
-Loop Id: -10
-0 seconds and 4555 nanoseconds have elapsed!
-Parallel region: 0
-Sub region: 2
-sections region: 2
 Loop Id: 0
-0 seconds and 16473 nanoseconds have elapsed!
+0 seconds and 2166783 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: -5
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 3776 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2153386 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2132929 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2132547 nanoseconds have elapsed!
+Parallel region: 0
+Sub region: -1
+sections region: -10
+Loop Id: 0
+0 seconds and 2202735 nanoseconds have elapsed!
 Parallel region: -3
 Sub region: -100
 sections region: -10
 Loop Id: -10
-0 seconds and 30300 nanoseconds have elapsed!
+0 seconds and 94418 nanoseconds have elapsed!
 
 
 
@@ -393,32 +329,32 @@ Parallel region: -100
 Sub region: -1
 sections region: -10
 Loop Id: -10
-0 seconds and 36721 nanoseconds have elapsed!
+0 seconds and 1091597 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 1
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 3922 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2198867 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 0
+Sub region: -1
 sections region: -10
-Loop Id: 1
-0 seconds and 7052 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2202522 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: -5
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 3937 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2208477 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: 2
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 4887 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2200409 nanoseconds have elapsed!
 Parallel region: 0
-Sub region: -5
+Sub region: -1
 sections region: -10
-Loop Id: -10
-0 seconds and 37854 nanoseconds have elapsed!
+Loop Id: 0
+0 seconds and 2202128 nanoseconds have elapsed!
 
 
 

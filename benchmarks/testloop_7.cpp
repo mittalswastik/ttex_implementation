@@ -13,6 +13,13 @@ int main() {
     int j = 20;
     int upper_bound = 10;
     int cap = 20;
+    bool check = false, check_2 = false;
+    int test = 30;
+    int t = 0;
+
+    for(int k = 0 ; k < test ; k++) {
+        sum += 1;
+    }
 
     #pragma omp parallel num_threads(4)
     {
@@ -21,9 +28,28 @@ int main() {
                 usleep(1000);
                 std::cout<<"printing out"<<std::endl;
                 if(j == upper_bound) {
-                    check();
+                    check = true;
+                }
+
+                if(j == 30){
+                    check_2 = true;
                 }
             }
+
+            if(check_2) {
+                i = i+2;
+            }
+
+            if(check){
+                break;
+            }
+
+            if(check_2){
+                break;
+            }
+
+            //t = t+1;
+
         }
         std::cout<<"printing out outer"<<std::endl;
     }

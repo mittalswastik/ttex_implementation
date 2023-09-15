@@ -13,6 +13,7 @@ int main() {
     int j = 20;
     int upper_bound = 10;
     int cap = 20;
+    bool check = false;
 
     #pragma omp parallel num_threads(4)
     {
@@ -21,9 +22,15 @@ int main() {
                 usleep(1000);
                 std::cout<<"printing out"<<std::endl;
                 if(j == upper_bound) {
-                    check();
+                    check = true;
+                    break;
                 }
             }
+
+            if(check){
+                break;
+            }
+
         }
         std::cout<<"printing out outer"<<std::endl;
     }

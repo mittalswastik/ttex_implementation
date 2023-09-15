@@ -70,7 +70,6 @@
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Local.h"
-
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 using namespace llvm;
@@ -91,14 +90,42 @@ bool maxvuln_set = true;
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
+PHINode* retreiveInductionVariable(Loop *L){
+  BasicBlock *LatchBlock = L->getLoopLatch();
+  BasicBlock *Header = L->getHeader();
+  for(llvm::BasicBlock::iterator I = LatchBlock->begin(), Iend = LatchBlock->end(); I != Iend ; ++I){
+    Instruction *Inst = &*I;
+    if(auto *binaryinst = dyn_cast<BinaryOperator>(Inst)){
+      for(llvm::BasicBlock::iterator I_2 = LatchBlock->begin(), Iend_2 = LatchBlock->end(); I_2 != Iend_2 ; ++I_2){
+        Instruction *Inst_2 = &*I_2;
+        if(auto *cmpinst = dyn_cast<CmpInst>(Inst_2)){
+          if(cmpinst->getOperand(0) == Inst){
+            for(PHINode &phivar: Header->phis()){
+              if(Inst == phivar.getIncomingValueForBlock(LatchBlock)){
+                errs()<<"--------------- found the induction variable -----------------\n";
+                return &phivar;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return nullptr;
+}
+
 bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter){
 
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
   BasicBlock *LatchBlock = L->getLoopLatch();
-  PHINode *IndVar = L->getInductionVariableTemp(*SE);
+  //PHINode *IndVar = L->getInductionVariableTemp(*SE);
+  PHINode* IndVar = retreiveInductionVariable(L);
+  //auto LB = L->getBounds(*SE);
 
   if(!IndVar){
+    errs() <<"--------------------------- induction variable is nullptr ----------------\n";
     return false; // induction variable not found for the loop
   }
 
@@ -507,6 +534,7 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
         auto *MSSA = &MSSAAnalysis->getMSSA();
         MSSAU = std::make_unique<MemorySSAUpdater>(MSSA);
       }
+
       errs()<<"--------------- Loop details evaluated ------------\n";
 
       errs()<<"checking for errors"<<"\n";
