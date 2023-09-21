@@ -90,20 +90,45 @@ bool maxvuln_set = true;
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
+Value *IndItr;
+Value *IndLower;
+
 PHINode* retreiveInductionVariable(Loop *L){
   BasicBlock *LatchBlock = L->getLoopLatch();
   BasicBlock *Header = L->getHeader();
+  BasicBlock* PreHeader = L->getLoopPreheader();
   for(llvm::BasicBlock::iterator I = LatchBlock->begin(), Iend = LatchBlock->end(); I != Iend ; ++I){
     Instruction *Inst = &*I;
     if(auto *binaryinst = dyn_cast<BinaryOperator>(Inst)){
-      for(llvm::BasicBlock::iterator I_2 = LatchBlock->begin(), Iend_2 = LatchBlock->end(); I_2 != Iend_2 ; ++I_2){
-        Instruction *Inst_2 = &*I_2;
-        if(auto *cmpinst = dyn_cast<CmpInst>(Inst_2)){
-          if(cmpinst->getOperand(0) == Inst){
-            for(PHINode &phivar: Header->phis()){
-              if(Inst == phivar.getIncomingValueForBlock(LatchBlock)){
-                errs()<<"--------------- found the induction variable -----------------\n";
-                return &phivar;
+      if(binaryinst->getOpcode() == llvm::Instruction::Add || binaryinst->getOpcode() == llvm::Instruction::Sub){
+        if(isa<Constant> (binaryinst->getOperand(1)) || isa<Constant> (binaryinst->getOperand(0))){
+          for(llvm::BasicBlock::iterator I_2 = LatchBlock->begin(), Iend_2 = LatchBlock->end(); I_2 != Iend_2 ; ++I_2){
+            Instruction *Inst_2 = &*I_2;
+            
+            if(auto *binary_inst = dyn_cast<BinaryOperator>(Inst_2)){
+              if(binary_inst->getOpcode() == llvm::Instruction::Add || binary_inst->getOpcode() == llvm::Instruction::Sub){
+                if(binaryinst->getOperand(0) == binary_inst->getOperand(0) && binaryinst != binary_inst){
+                  break;  
+                }
+              }
+            } // two different binary statements would mean different step count ... current implementation and general loops assume constant count
+
+            if(auto *cmpinst = dyn_cast<CmpInst>(Inst_2)){
+              if(cmpinst->getOperand(0) == Inst){
+                for(PHINode &phivar: Header->phis()){
+                  if(Inst == phivar.getIncomingValueForBlock(LatchBlock)){
+                    IndItr = binaryinst;
+                    IndLower = phivar.getIncomingValueForBlock(PreHeader);
+                    std::string inditr, indl;
+                    raw_string_ostream stream1(inditr), stream2(indl);
+                    IndItr->print(stream1, false);
+                    IndLower->print(stream2, false); 
+                    errs() << "IndItr value: " << inditr <<"\n";
+                    errs() << "IndLower value: "<< indl <<"\n";
+                    errs()<<"--------------- found the induction variable -----------------\n";
+                    return &phivar;
+                  }
+                }
               }
             }
           }
@@ -132,6 +157,8 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
   if(IndVar->getName().contains("sections")){
     return false;
   }
+
+  //auto bound = Loop::LoopBounds::getBounds(*L, *IndVar, *SE);
 
   Value *incomingValue;
   BasicBlock *incomingBlock;
@@ -162,17 +189,25 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
 
   llvm::ConstantInt *secure_counter;
   llvm::ConstantInt *compare_to_zero;
+  IRBuilder<> security(Secure_1);
+
+  PHINode *phisecure;
 
   if(IntegerType *it = dyn_cast<IntegerType> (IndVar->getType())){
     if(it->getBitWidth() == 32){
       secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
       compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
+      phisecure = security.CreatePHI(llvm::Type::getInt32Ty(CTX), 2, "phi");
     }
 
     else {
       secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),count,false);
       compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),0,false);
+      security.CreatePHI(llvm::Type::getInt64Ty(CTX), 2, "phi");
+      phisecure = security.CreatePHI(llvm::Type::getInt32Ty(CTX), 2, "phi");
     }
+
+    phisecure->addIncoming(IndItr, LatchBlock);
   }
 
   else {
@@ -229,9 +264,25 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
   //fn_test_2->addAttributes(0, AttributeSet::get(c, AttributeSet::FunctionIndex, attr));
   //security_2.CreateBr(Header);
   llvm::BranchInst::Create(Header,Secure_2);
-  IRBuilder<> security(Secure_1);
 
-  Value* temp = security.CreateURem(IndVar, secure_counter);
+  // conitnuing secure 1
+  Value* lower_val;
+  if(auto* loadlower = dyn_cast<LoadInst>(IndLower)){
+    lower_val = security.CreateLoad((loadlower->getPointerOperandType())->getContainedType(0),loadlower->getPointerOperand(),"store_lower");
+  } 
+  
+  else if(isa<Constant> (IndLower)){
+    lower_val = IndLower;
+  }
+
+  else {
+    errs()<< "--------------- some issue with start value ------------\n";
+    return false;
+  }
+
+  Value *ind_sub_lower = security.CreateSub(phisecure,lower_val);
+  Value *val_div_step = security.CreateSDiv(ind_sub_lower, IndItr);
+  Value* temp = security.CreateSRem(val_div_step, secure_counter);
   Value* compare = security.CreateICmpEQ(temp,compare_to_zero);
   security.CreateCondBr(compare, Secure_2, Header);
 
