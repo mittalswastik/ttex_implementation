@@ -140,6 +140,11 @@ PHINode* retreiveInductionVariable(Loop *L){
   return nullptr;
 }
 
+void DeleteAddedBlocks(BasicBlock* btemp1, BasicBlock* btemp2){
+  btemp1->eraseFromParent();
+  btemp2->eraseFromParent();
+}
+
 bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter){
 
   BasicBlock *Preheader = L->getLoopPreheader();
@@ -177,6 +182,7 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
 
   if(!incomingValue){
     errs() << "Incorrect loop or other error \n";
+    return false;
   }
 
   std::vector<BasicBlock *> OriginalLoopBlocks = L->getBlocks();
@@ -212,6 +218,8 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
 
   else {
     errs() <<"wrong induction variable format\n";
+    DeleteAddedBlocks(Secure_1, Secure_2);
+    return false;
   }
 
   IRBuilder<> security_2(Secure_2);
@@ -277,13 +285,71 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
 
   else {
     errs()<< "--------------- some issue with start value ------------\n";
+    DeleteAddedBlocks(Secure_1, Secure_2);
     return false;
   }
+  
+  Value* iteration;
+  if(Instruction *IndItrInst = dyn_cast<Instruction>(IndItr)){
+    if(isa<Constant> (IndItrInst->getOperand(0))){
+      iteration = IndItrInst->getOperand(0);
+    }
+
+    else if(isa<Constant> (IndItrInst->getOperand(1))){
+      iteration = IndItrInst->getOperand(1);
+    }
+
+    else {
+      errs()<<"---- iteration is not a constant -------\n";
+      DeleteAddedBlocks(Secure_1, Secure_2);
+      return false;
+    }
+  }
+
+  else {
+    DeleteAddedBlocks(Secure_1, Secure_2);
+    return false;
+  }
+  
 
   Value *ind_sub_lower = security.CreateSub(phisecure,lower_val);
-  Value *val_div_step = security.CreateSDiv(ind_sub_lower, IndItr);
+  Value *val_div_step = security.CreateSDiv(ind_sub_lower, iteration);
   Value* temp = security.CreateSRem(val_div_step, secure_counter);
   Value* compare = security.CreateICmpEQ(temp,compare_to_zero);
+
+  /*Print function call for testing*/
+
+  // Constant *formatStr = ConstantDataArray::getString(CTX, "String: %s, Value 1: %d, Value 2: %d, Value 3: %d\n");
+  //     GlobalVariable *formatGV = new GlobalVariable(
+  //         *M,
+  //         formatStr->getType(),
+  //         true,
+  //         GlobalValue::InternalLinkage,
+  //         formatStr,
+  //         ".str");
+
+  // Constant *stringToPrint = ConstantDataArray::getString(CTX, "Hello, LLVM!");
+  //     GlobalVariable *stringGV = new GlobalVariable(
+  //         *M,
+  //         stringToPrint->getType(),
+  //         true,
+  //         GlobalValue::InternalLinkage,
+  //         stringToPrint,
+  //         ".str");
+
+
+  // Value *valueToPrint = ConstantInt::get(Type::getInt32Ty(CTX), 42);
+
+  // // Create the printf call
+  // FunctionType *printfType =
+  //     FunctionType::get(Type::getInt32Ty(CTX), {Type::getInt8PtrTy(CTX)}, true);
+  // FunctionCallee printfFunc = M->getOrInsertFunction("printf", printfType);
+  // Value *formatArg = security.CreatePointerCast(formatGV, Type::getInt8PtrTy(CTX));
+  // Value *args_print[] = {formatArg, stringToPrint, lower_val, iteration, phisecure};
+  // security.CreateCall(printfFunc, args_print);
+
+  /*End of print function call*/
+
   security.CreateCondBr(compare, Secure_2, Header);
 
   llvm::Instruction *Linst = LatchBlock->getTerminator();
@@ -291,10 +357,16 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
     llvm::BasicBlock * ExitMain = BI->getSuccessor(1);
     if(ExitMain == Header){
       ExitMain = BI->getSuccessor(0);
+      Value *conditionValue = BI->getCondition();
+      Linst->eraseFromParent();
+      llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock);
     }
-    Value *conditionValue = BI->getCondition();
-    Linst->eraseFromParent();
-    llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
+
+    else {
+      Value *conditionValue = BI->getCondition();
+      Linst->eraseFromParent();
+      llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
+    }
   }
 
   IndVar->setIncomingBlock(index, Secure_1);

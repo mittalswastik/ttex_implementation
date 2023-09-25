@@ -234,7 +234,9 @@ ompt_test(int parallel_region_id, int sub_id, int loop_id, int split_id)
     return;
   }
 
-  printf("OMPT TEST CALLED %d %d\n",parallel_region_id,sub_id);
+  printf("Testing OMPT Test\n");
+
+  printf("OMPT TEST CALLED %d %d\n",parallel_region_id,sub_id,loop_id);
 
   ompt_data_t *current_thread = ompt_get_thread_data();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;

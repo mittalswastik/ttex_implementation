@@ -1,5 +1,5 @@
-; ModuleID = 'ext_loop9'
-source_filename = "testloop_9.cpp"
+; ModuleID = 'ext'
+source_filename = "testing.cpp"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
@@ -117,34 +117,40 @@ $_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__deta
 @.str.54 = private unnamed_addr constant [45 x i8] c"%d seconds and %ld nanoseconds have elapsed!\00", align 1
 @_ZZ15ompt_start_toolE22ompt_start_tool_result = internal global { i32 (void ()* (i8*)*, i32, %union.ompt_data_t*)*, void (%union.ompt_data_t*)*, { i8* } } { i32 (void ()* (i8*)*, i32, %union.ompt_data_t*)* @ompt_initialize, void (%union.ompt_data_t*)* @ompt_finalize, { i8* } zeroinitializer }, align 8
 @_ZSt4cout = external dso_local global %"class.std::basic_ostream", align 8
-@.str.58 = private unnamed_addr constant [13 x i8] c"printing out\00", align 1
-@.str.59 = private unnamed_addr constant [19 x i8] c"printing out outer\00", align 1
+@.str.58 = private unnamed_addr constant [26 x i8] c"calling checkout function\00", align 1
+@.str.59 = private unnamed_addr constant [7 x i8] c"tesing\00", align 1
 @0 = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
-@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
-@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @_GLOBAL__sub_I_testloop_9.cpp, i8* null }]
+@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 514, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
+@2 = private unnamed_addr constant %struct.ident_t { i32 0, i32 66, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
+@3 = private unnamed_addr constant %struct.ident_t { i32 0, i32 1026, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
+@.str.60 = private unnamed_addr constant [18 x i8] c"testing section 2\00", align 1
+@4 = private unnamed_addr constant %struct.ident_t { i32 0, i32 194, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
+@5 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
+@.str.61 = private unnamed_addr constant [6 x i8] c"Sum: \00", align 1
+@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @_GLOBAL__sub_I_testing.cpp, i8* null }]
 @str = private unnamed_addr constant [23 x i8] c"modification call made\00", align 1
-@str.61 = private unnamed_addr constant [62 x i8] c"----------------------- thread begin 1_2---------------------\00", align 1
-@str.62 = private unnamed_addr constant [60 x i8] c"----------------------- thread begin 2---------------------\00", align 1
-@str.63 = private unnamed_addr constant [59 x i8] c"----------------------- thread begin ---------------------\00", align 1
-@str.64 = private unnamed_addr constant [27 x i8] c"Cannot open device file...\00", align 1
-@str.65 = private unnamed_addr constant [32 x i8] c"scheduling policy not retreived\00", align 1
-@str.66 = private unnamed_addr constant [57 x i8] c"----------------------- size empty ---------------------\00", align 1
-@str.67 = private unnamed_addr constant [43 x i8] c"-------- end of parallel begin -----------\00", align 1
-@str.68 = private unnamed_addr constant [19 x i8] c"checking for error\00", align 1
-@str.69 = private unnamed_addr constant [19 x i8] c"value is----------\00", align 1
-@str.70 = private unnamed_addr constant [33 x i8] c"setting the timer for the thread\00", align 1
-@str.71 = private unnamed_addr constant [36 x i8] c"timer is been set for callback work\00", align 1
-@str.72 = private unnamed_addr constant [17 x i8] c"Checking initial\00", align 1
-@str.73 = private unnamed_addr constant [59 x i8] c"0: Could not register callback 'ompt_callback_sync_region'\00", align 1
-@str.74 = private unnamed_addr constant [52 x i8] c"0: Could not register callback 'ompt_callback_work'\00", align 1
-@str.75 = private unnamed_addr constant [58 x i8] c"0: Could not register callback 'ompt_callback_thread_end'\00", align 1
-@str.76 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_thread_begin'\00", align 1
-@str.77 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_parallel_end'\00", align 1
-@str.78 = private unnamed_addr constant [62 x i8] c"0: Could not register callback 'ompt_callback_parallel_begin'\00", align 1
-@str.79 = private unnamed_addr constant [14 x i8] c"Logging\0A\0A\0A\0A\0A\0A\00", align 1
-@str.80 = private unnamed_addr constant [15 x i8] c"Checking final\00", align 1
-@str.81 = private unnamed_addr constant [61 x i8] c"------------------------------------------------------------\00", align 1
-@str.82 = private unnamed_addr constant [3 x i8] c"\0A\0A\00", align 1
+@str.63 = private unnamed_addr constant [62 x i8] c"----------------------- thread begin 1_2---------------------\00", align 1
+@str.64 = private unnamed_addr constant [60 x i8] c"----------------------- thread begin 2---------------------\00", align 1
+@str.65 = private unnamed_addr constant [59 x i8] c"----------------------- thread begin ---------------------\00", align 1
+@str.66 = private unnamed_addr constant [27 x i8] c"Cannot open device file...\00", align 1
+@str.67 = private unnamed_addr constant [32 x i8] c"scheduling policy not retreived\00", align 1
+@str.68 = private unnamed_addr constant [57 x i8] c"----------------------- size empty ---------------------\00", align 1
+@str.69 = private unnamed_addr constant [43 x i8] c"-------- end of parallel begin -----------\00", align 1
+@str.70 = private unnamed_addr constant [19 x i8] c"checking for error\00", align 1
+@str.71 = private unnamed_addr constant [19 x i8] c"value is----------\00", align 1
+@str.72 = private unnamed_addr constant [33 x i8] c"setting the timer for the thread\00", align 1
+@str.73 = private unnamed_addr constant [36 x i8] c"timer is been set for callback work\00", align 1
+@str.74 = private unnamed_addr constant [17 x i8] c"Checking initial\00", align 1
+@str.75 = private unnamed_addr constant [59 x i8] c"0: Could not register callback 'ompt_callback_sync_region'\00", align 1
+@str.76 = private unnamed_addr constant [52 x i8] c"0: Could not register callback 'ompt_callback_work'\00", align 1
+@str.77 = private unnamed_addr constant [58 x i8] c"0: Could not register callback 'ompt_callback_thread_end'\00", align 1
+@str.78 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_thread_begin'\00", align 1
+@str.79 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_parallel_end'\00", align 1
+@str.80 = private unnamed_addr constant [62 x i8] c"0: Could not register callback 'ompt_callback_parallel_begin'\00", align 1
+@str.81 = private unnamed_addr constant [14 x i8] c"Logging\0A\0A\0A\0A\0A\0A\00", align 1
+@str.82 = private unnamed_addr constant [15 x i8] c"Checking final\00", align 1
+@str.83 = private unnamed_addr constant [61 x i8] c"------------------------------------------------------------\00", align 1
+@str.84 = private unnamed_addr constant [3 x i8] c"\0A\0A\00", align 1
 
 declare dso_local void @_ZNSt8ios_base4InitC1Ev(%"class.std::ios_base::Init"* noundef) unnamed_addr #0
 
@@ -175,12 +181,12 @@ while.body.i.i.i:                                 ; preds = %_ZNSt8__detail16_Ha
 
 if.then.i.i.i.i.i.i.i.i.i.i:                      ; preds = %while.body.i.i.i
   %6 = bitcast %struct.timeout_node* %5 to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %6) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %6) #25
   br label %_ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE18_M_deallocate_nodeEPS9_.exit.i.i.i
 
 _ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE18_M_deallocate_nodeEPS9_.exit.i.i.i: ; preds = %if.then.i.i.i.i.i.i.i.i.i.i, %while.body.i.i.i
   %7 = bitcast %"struct.std::__detail::_Hash_node"* %__n.addr.06.i.i.i to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %7) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %7) #25
   %tobool.not.i.i.i = icmp eq %"struct.std::__detail::_Hash_node"* %3, null
   br i1 %tobool.not.i.i.i, label %_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEE5clearEv.exit.i, label %while.body.i.i.i, !llvm.loop !17
 
@@ -190,9 +196,9 @@ _ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detai
   %_M_bucket_count.i.i = getelementptr inbounds %"class.std::unordered_map", %"class.std::unordered_map"* %this, i64 0, i32 0, i32 1
   %10 = load i64, i64* %_M_bucket_count.i.i, align 8, !tbaa !20
   %mul.i.i = shl i64 %10, 3
-  tail call void @llvm.memset.p0i8.i64(i8* align 8 %9, i8 0, i64 %mul.i.i, i1 false) #27
+  tail call void @llvm.memset.p0i8.i64(i8* align 8 %9, i8 0, i64 %mul.i.i, i1 false) #25
   %11 = bitcast %"struct.std::__detail::_Hash_node_base"** %_M_nxt.i.i.i to i8*
-  tail call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(16) %11, i8 0, i64 16, i1 false) #27
+  tail call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(16) %11, i8 0, i64 16, i1 false) #25
   %_M_buckets.i.i = getelementptr inbounds %"class.std::unordered_map", %"class.std::unordered_map"* %this, i64 0, i32 0, i32 0
   %12 = load %"struct.std::__detail::_Hash_node_base"**, %"struct.std::__detail::_Hash_node_base"*** %_M_buckets.i.i, align 8, !tbaa !19
   %_M_single_bucket.i.i.i.i = getelementptr inbounds %"class.std::unordered_map", %"class.std::unordered_map"* %this, i64 0, i32 0, i32 5
@@ -201,7 +207,7 @@ _ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detai
 
 if.end.i.i.i:                                     ; preds = %_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEE5clearEv.exit.i
   %13 = bitcast %"struct.std::__detail::_Hash_node_base"** %12 to i8*
-  tail call void @_ZdlPv(i8* noundef %13) #27
+  tail call void @_ZdlPv(i8* noundef %13) #25
   br label %_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEED2Ev.exit
 
 _ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEED2Ev.exit: ; preds = %if.end.i.i.i, %_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEE5clearEv.exit.i
@@ -212,8 +218,8 @@ declare dso_local i32 @__gxx_personality_v0(...)
 
 ; Function Attrs: noinline noreturn nounwind
 define linkonce_odr hidden void @__clang_call_terminate(i8* %0) local_unnamed_addr #4 comdat {
-  %2 = tail call i8* @__cxa_begin_catch(i8* %0) #27
-  tail call void @_ZSt9terminatev() #30
+  %2 = tail call i8* @__cxa_begin_catch(i8* %0) #25
+  tail call void @_ZSt9terminatev() #29
   unreachable
 }
 
@@ -238,12 +244,12 @@ entry:
 
 if.then.i.i.i.i.i.i:                              ; preds = %entry
   %2 = bitcast %struct.timeout_node* %1 to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %2) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %2) #25
   br label %invoke.cont6
 
 invoke.cont6:                                     ; preds = %if.then.i.i.i.i.i.i, %entry
   %3 = bitcast %"struct.std::__detail::_Hash_node"* %__n to i8*
-  tail call void @_ZdlPv(i8* noundef %3) #27
+  tail call void @_ZdlPv(i8* noundef %3) #25
   ret void
 }
 
@@ -257,20 +263,20 @@ declare dso_local void @_ZdlPv(i8* noundef) local_unnamed_addr #8
 define dso_local void @_Z10resetTimer8timespeci(i64 %t.coerce0, i64 %t.coerce1, i32 noundef %fd) local_unnamed_addr #9 {
 entry:
   %test = alloca %struct.modified_timer, align 8
-  %call = tail call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call = tail call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv = trunc i64 %call to i32
-  %call1 = tail call i32 @sched_getcpu() #27
+  %call1 = tail call i32 @sched_getcpu() #25
   %call2 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1, i32 noundef %conv)
   %0 = bitcast %struct.modified_timer* %test to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %0) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %0) #25
   %id3 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test, i64 0, i32 0
   store i32 %conv, i32* %id3, align 8, !tbaa !21
   %div = sdiv i64 %t.coerce1, 100000
   %time_val = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test, i64 0, i32 1
   store i64 %div, i64* %time_val, align 8, !tbaa !24
-  %call4 = call i32 (i32, i64, ...) @ioctl(i32 noundef %fd, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test) #27
+  %call4 = call i32 (i32, i64, ...) @ioctl(i32 noundef %fd, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test) #25
   %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0))
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %0) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %0) #25
   ret void
 }
 
@@ -400,7 +406,7 @@ entry:
 
 while.body.preheader.i:                           ; preds = %entry
   %0 = add nuw i64 %ts1.coerce1, 999999999
-  %smin.i = tail call i64 @llvm.smin.i64(i64 %ts1.coerce1, i64 1999999999) #27
+  %smin.i = tail call i64 @llvm.smin.i64(i64 %ts1.coerce1, i64 1999999999) #25
   %1 = sub nuw i64 %0, %smin.i
   %2 = udiv i64 %1, 1000000000
   %3 = add i64 %ts1.coerce0, 1
@@ -417,7 +423,7 @@ while.cond2.preheader.i:                          ; preds = %while.body.preheade
   br i1 %cmp449.i, label %while.body5.preheader.i, label %while.end8.i
 
 while.body5.preheader.i:                          ; preds = %while.cond2.preheader.i
-  %smax.i = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i, i64 -1999999999) #27
+  %smax.i = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i, i64 -1999999999) #25
   %7 = sub nsw i64 %smax.i, %ts.sroa.12.0.lcssa.i
   %8 = icmp ne i64 %7, 0
   %umin.i = zext i1 %8 to i64
@@ -463,7 +469,7 @@ _Z18timespec_normalise8timespec.exit:             ; preds = %if.then23.i, %if.el
 
 while.body.preheader.i27:                         ; preds = %_Z18timespec_normalise8timespec.exit
   %17 = add nuw i64 %ts2.coerce1, 999999999
-  %smin.i25 = tail call i64 @llvm.smin.i64(i64 %ts2.coerce1, i64 1999999999) #27
+  %smin.i25 = tail call i64 @llvm.smin.i64(i64 %ts2.coerce1, i64 1999999999) #25
   %18 = sub nuw i64 %17, %smin.i25
   %19 = udiv i64 %18, 1000000000
   %20 = add i64 %ts2.coerce0, 1
@@ -480,7 +486,7 @@ while.cond2.preheader.i31:                        ; preds = %while.body.preheade
   br i1 %cmp449.i30, label %while.body5.preheader.i34, label %while.end8.i40
 
 while.body5.preheader.i34:                        ; preds = %while.cond2.preheader.i31
-  %smax.i32 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i28, i64 -1999999999) #27
+  %smax.i32 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i28, i64 -1999999999) #25
   %24 = sub nsw i64 %smax.i32, %ts.sroa.12.0.lcssa.i28
   %25 = icmp ne i64 %24, 0
   %umin.i33 = zext i1 %25 to i64
@@ -528,7 +534,7 @@ _Z18timespec_normalise8timespec.exit55:           ; preds = %if.then23.i50, %if.
 
 while.body.preheader.i59:                         ; preds = %_Z18timespec_normalise8timespec.exit55
   %34 = add nuw i64 %add6, 999999999
-  %smin.i57 = tail call i64 @llvm.smin.i64(i64 %add6, i64 1999999999) #27
+  %smin.i57 = tail call i64 @llvm.smin.i64(i64 %add6, i64 1999999999) #25
   %35 = sub nuw i64 %34, %smin.i57
   %36 = udiv i64 %35, 1000000000
   %37 = add i64 %add, 1
@@ -545,7 +551,7 @@ while.cond2.preheader.i63:                        ; preds = %while.body.preheade
   br i1 %cmp449.i62, label %while.body5.preheader.i66, label %while.end8.i72
 
 while.body5.preheader.i66:                        ; preds = %while.cond2.preheader.i63
-  %smax.i64 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i60, i64 -1999999999) #27
+  %smax.i64 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i60, i64 -1999999999) #25
   %41 = sub nsw i64 %smax.i64, %ts.sroa.12.0.lcssa.i60
   %42 = icmp ne i64 %41, 0
   %umin.i65 = zext i1 %42 to i64
@@ -599,7 +605,7 @@ entry:
 
 while.body.preheader.i:                           ; preds = %entry
   %0 = add nuw i64 %ts1.coerce1, 999999999
-  %smin.i = tail call i64 @llvm.smin.i64(i64 %ts1.coerce1, i64 1999999999) #27
+  %smin.i = tail call i64 @llvm.smin.i64(i64 %ts1.coerce1, i64 1999999999) #25
   %1 = sub nuw i64 %0, %smin.i
   %2 = udiv i64 %1, 1000000000
   %3 = add i64 %ts1.coerce0, 1
@@ -616,7 +622,7 @@ while.cond2.preheader.i:                          ; preds = %while.body.preheade
   br i1 %cmp449.i, label %while.body5.preheader.i, label %while.end8.i
 
 while.body5.preheader.i:                          ; preds = %while.cond2.preheader.i
-  %smax.i = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i, i64 -1999999999) #27
+  %smax.i = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i, i64 -1999999999) #25
   %7 = sub nsw i64 %smax.i, %ts.sroa.12.0.lcssa.i
   %8 = icmp ne i64 %7, 0
   %umin.i = zext i1 %8 to i64
@@ -662,7 +668,7 @@ _Z18timespec_normalise8timespec.exit:             ; preds = %if.then23.i, %if.el
 
 while.body.preheader.i27:                         ; preds = %_Z18timespec_normalise8timespec.exit
   %17 = add nuw i64 %ts2.coerce1, 999999999
-  %smin.i25 = tail call i64 @llvm.smin.i64(i64 %ts2.coerce1, i64 1999999999) #27
+  %smin.i25 = tail call i64 @llvm.smin.i64(i64 %ts2.coerce1, i64 1999999999) #25
   %18 = sub nuw i64 %17, %smin.i25
   %19 = udiv i64 %18, 1000000000
   %20 = add i64 %ts2.coerce0, 1
@@ -679,7 +685,7 @@ while.cond2.preheader.i31:                        ; preds = %while.body.preheade
   br i1 %cmp449.i30, label %while.body5.preheader.i34, label %while.end8.i40
 
 while.body5.preheader.i34:                        ; preds = %while.cond2.preheader.i31
-  %smax.i32 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i28, i64 -1999999999) #27
+  %smax.i32 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i28, i64 -1999999999) #25
   %24 = sub nsw i64 %smax.i32, %ts.sroa.12.0.lcssa.i28
   %25 = icmp ne i64 %24, 0
   %umin.i33 = zext i1 %25 to i64
@@ -727,7 +733,7 @@ _Z18timespec_normalise8timespec.exit55:           ; preds = %if.then23.i50, %if.
 
 while.body.preheader.i59:                         ; preds = %_Z18timespec_normalise8timespec.exit55
   %34 = add nuw i64 %sub6, 999999999
-  %smin.i57 = tail call i64 @llvm.smin.i64(i64 %sub6, i64 1999999999) #27
+  %smin.i57 = tail call i64 @llvm.smin.i64(i64 %sub6, i64 1999999999) #25
   %35 = sub nuw i64 %34, %smin.i57
   %36 = udiv i64 %35, 1000000000
   %37 = add i64 %sub, 1
@@ -744,7 +750,7 @@ while.cond2.preheader.i63:                        ; preds = %while.body.preheade
   br i1 %cmp449.i62, label %while.body5.preheader.i66, label %while.end8.i72
 
 while.body5.preheader.i66:                        ; preds = %while.cond2.preheader.i63
-  %smax.i64 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i60, i64 -1999999999) #27
+  %smax.i64 = tail call i64 @llvm.smax.i64(i64 %ts.sroa.12.0.lcssa.i60, i64 -1999999999) #25
   %41 = sub nsw i64 %smax.i64, %ts.sroa.12.0.lcssa.i60
   %42 = icmp ne i64 %41, 0
   %umin.i65 = zext i1 %42 to i64
@@ -824,8 +830,8 @@ if.end:                                           ; preds = %entry
 
 if.then10:                                        ; preds = %if.end
   %11 = bitcast %struct.timespec* %temp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %11) #27
-  %call11 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %11) #25
+  %call11 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #25
   %12 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %13 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i99 = ptrtoint %struct.timeout_node* %12 to i64
@@ -851,7 +857,7 @@ if.then10:                                        ; preds = %if.end
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx69, align 8, !tbaa.struct !35
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %11) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %11) #25
   %.pre = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   br label %if.end25
 
@@ -871,7 +877,7 @@ if.end25:                                         ; preds = %if.then10, %if.end
 if.then.i:                                        ; preds = %if.end25
   %20 = bitcast %struct.timeout_node* %16 to i8*
   %21 = bitcast %struct.timeout_node* %expected_execution to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %20, i8* noundef nonnull align 8 dereferenceable(56) %21, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %20, i8* noundef nonnull align 8 dereferenceable(56) %21, i64 56, i1 false) #25, !tbaa.struct !37
   %22 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %22, i64 1
   store %struct.timeout_node* %incdec.ptr.i, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -896,7 +902,7 @@ if.else.i:                                        ; preds = %if.end25
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i: ; preds = %if.else.i
   %mul.i.i.i.i.i = mul nuw i64 %cond.i.i.i, 56
-  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #31
+  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #30
   %25 = bitcast i8* %call2.i.i.i.i.i to %struct.timeout_node*
   %.pre.i.i = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i = ptrtoint %struct.timeout_node* %.pre.i.i to i64
@@ -910,14 +916,14 @@ invoke.cont.i.i:                                  ; preds = %_ZNSt16allocator_tr
   %add.ptr.i.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i, i64 %sub.ptr.div.i.i.i.i
   %27 = bitcast %struct.timeout_node* %add.ptr.i.i to i8*
   %28 = bitcast %struct.timeout_node* %expected_execution to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %27, i8* noundef nonnull align 8 dereferenceable(56) %28, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %27, i8* noundef nonnull align 8 dereferenceable(56) %28, i64 56, i1 false) #25, !tbaa.struct !37
   %29 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, 0
   br i1 %29, label %invoke.cont10.i.i, label %if.then.i.i.i.i.i.i.i.i.i.i
 
 if.then.i.i.i.i.i.i.i.i.i.i:                      ; preds = %invoke.cont.i.i
   %30 = bitcast %struct.timeout_node* %cond.i66.i.i to i8*
   %31 = bitcast %struct.timeout_node* %26 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %30, i8* align 8 %31, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %30, i8* align 8 %31, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #25
   br label %invoke.cont10.i.i
 
 invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i.i.i, %invoke.cont.i.i
@@ -933,7 +939,7 @@ invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i:                    ; preds = %invoke.cont10.i.i
   %34 = bitcast %struct.timeout_node* %incdec.ptr.i.i to i8*
   %35 = bitcast %struct.timeout_node* %16 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %34, i8* align 8 %35, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %34, i8* align 8 %35, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #25
   br label %invoke.cont15.i.i
 
 invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i, %invoke.cont10.i.i
@@ -942,7 +948,7 @@ invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i:                                  ; preds = %invoke.cont15.i.i
   %36 = bitcast %struct.timeout_node* %26 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %36) #27
+  call void @_ZdlPv(i8* noundef nonnull %36) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i: ; preds = %if.then.i75.i.i, %invoke.cont15.i.i
@@ -972,7 +978,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %loop_id46 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %37, i64 %sub32, i32 3
   store i32 %loop_id, i32* %loop_id46, align 4, !tbaa !44
   %et52 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %37, i64 %sub32, i32 5
-  %call53 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et52) #27
+  %call53 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et52) #25
   %40 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %41 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i148 = ptrtoint %struct.timeout_node* %40 to i64
@@ -984,20 +990,20 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %agg.tmp54.sroa.2.0.copyload = load i64, i64* %agg.tmp54.sroa.2.0..sroa_idx62, align 8, !tbaa.struct !35
   %fd = getelementptr inbounds %struct.thread_info, %struct.thread_info* %7, i64 0, i32 2
   %42 = load i32, i32* %fd, align 8, !tbaa !45
-  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i = trunc i64 %call.i to i32
-  %call1.i = call i32 @sched_getcpu() #27
-  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #27
+  %call1.i = call i32 @sched_getcpu() #25
+  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #25
   %43 = bitcast %struct.modified_timer* %test.i to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %43) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %43) #25
   %id3.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 0
   store i32 %conv.i, i32* %id3.i, align 8, !tbaa !21
   %div.i = sdiv i64 %agg.tmp54.sroa.2.0.copyload, 100000
   %time_val.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 1
   store i64 %div.i, i64* %time_val.i, align 8, !tbaa !24
-  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %42, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #27
-  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %43) #27
+  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %42, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
+  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %43) #25
   br label %return
 
 return:                                           ; preds = %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit, %entry
@@ -1029,10 +1035,10 @@ entry:
   %policy = alloca i32, align 4
   %cpuset = alloca %struct.cpu_set_t, align 8
   %id35 = alloca i32, align 4
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.63, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.65, i64 0, i64 0))
   %0 = load i32, i32* getelementptr inbounds (%struct.timeout_node, %struct.timeout_node* @thread_begin, i64 0, i32 0), align 8, !tbaa !46
   %call1 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @.str.6, i64 0, i64 0), i32 noundef %0)
-  %call2 = tail call noalias align 16 dereferenceable_or_null(40) i8* @calloc(i64 noundef 1, i64 noundef 40) #27
+  %call2 = tail call noalias align 16 dereferenceable_or_null(40) i8* @calloc(i64 noundef 1, i64 noundef 40) #25
   %1 = bitcast i8* %call2 to %struct.thread_info*
   %2 = atomicrmw add i64* @_ZZ10my_next_idE2ID, i64 1 seq_cst, align 8
   %conv.i = trunc i64 %2 to i32
@@ -1040,7 +1046,7 @@ entry:
   store i32 %conv.i, i32* %id, align 16, !tbaa !47
   %counter = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 3
   store i32 0, i32* %counter, align 4, !tbaa !40
-  %puts99 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.61, i64 0, i64 0))
+  %puts99 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.63, i64 0, i64 0))
   %_M_start.i.i.i = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 4, i32 0, i32 0, i32 0
   %3 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i.i.i, align 16, !tbaa !25
   %_M_finish.i.i.i = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 4, i32 0, i32 0, i32 1
@@ -1052,14 +1058,14 @@ entry:
 
 if.then.i.i.i.i.i:                                ; preds = %entry
   %5 = bitcast %struct.timeout_node* %3 to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %5) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %5) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %if.then.i.i.i.i.i, %entry
-  %puts100 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.62, i64 0, i64 0))
-  %puts104 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([57 x i8], [57 x i8]* @str.66, i64 0, i64 0))
-  %call2.i.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef 56) #31
-  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %call2.i.i.i.i.i, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @thread_begin to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  %puts100 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.64, i64 0, i64 0))
+  %puts104 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([57 x i8], [57 x i8]* @str.68, i64 0, i64 0))
+  %call2.i.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef 56) #30
+  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %call2.i.i.i.i.i, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @thread_begin to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %incdec.ptr.i.i = getelementptr inbounds i8, i8* %call2.i.i.i.i.i, i64 56
   %6 = bitcast %struct.timeout_node** %_M_start.i.i.i to i8**
   store i8* %call2.i.i.i.i.i, i8** %6, align 16, !tbaa !14
@@ -1067,25 +1073,25 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %if.then.i.i
   store i8* %incdec.ptr.i.i, i8** %7, align 8, !tbaa !27
   %8 = bitcast %struct.timeout_node** %_M_end_of_storage.i.i.i to i8**
   store i8* %incdec.ptr.i.i, i8** %8, align 16, !tbaa !36
-  %puts101 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.63, i64 0, i64 0))
+  %puts101 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.65, i64 0, i64 0))
   %9 = atomicrmw add i64* @_ZZ10my_core_idE2ID, i64 1 seq_cst, align 8
   %conv.i107 = trunc i64 %9 to i32
   %rem = srem i32 %conv.i107, 6
   %call13 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @.str.10, i64 0, i64 0), i32 noundef %rem)
   %10 = bitcast %union.pthread_attr_t* %attr to i8*
-  call void @llvm.lifetime.start.p0i8(i64 56, i8* nonnull %10) #27
+  call void @llvm.lifetime.start.p0i8(i64 56, i8* nonnull %10) #25
   %11 = bitcast %struct.sched_param* %param to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %11) #27
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %11) #25
   %12 = bitcast i32* %policy to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %12) #27
-  %call14 = tail call i64 @pthread_self() #32
-  %call15 = call i32 @pthread_attr_init(%union.pthread_attr_t* noundef nonnull %attr) #27
-  %call16 = call i32 @pthread_getschedparam(i64 noundef %call14, i32* noundef nonnull %policy, %struct.sched_param* noundef nonnull %param) #27
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %12) #25
+  %call14 = tail call i64 @pthread_self() #31
+  %call15 = call i32 @pthread_attr_init(%union.pthread_attr_t* noundef nonnull %attr) #25
+  %call16 = call i32 @pthread_getschedparam(i64 noundef %call14, i32* noundef nonnull %policy, %struct.sched_param* noundef nonnull %param) #25
   %cmp17.not = icmp eq i32 %call16, 0
   br i1 %cmp17.not, label %if.else, label %if.then18
 
 if.then18:                                        ; preds = %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit
-  %puts103 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([32 x i8], [32 x i8]* @str.65, i64 0, i64 0))
+  %puts103 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([32 x i8], [32 x i8]* @str.67, i64 0, i64 0))
   br label %if.end21
 
 if.else:                                          ; preds = %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit
@@ -1099,9 +1105,9 @@ if.end21:                                         ; preds = %if.else, %if.then18
   %sched_priority22 = getelementptr inbounds %struct.sched_param, %struct.sched_param* %param, i64 0, i32 0
   store i32 %14, i32* %sched_priority22, align 4, !tbaa !48
   store i32 1, i32* %policy, align 4, !tbaa !38
-  %call23 = call i32 @pthread_setschedparam(i64 noundef %call14, i32 noundef 1, %struct.sched_param* noundef nonnull %param) #27
+  %call23 = call i32 @pthread_setschedparam(i64 noundef %call14, i32 noundef 1, %struct.sched_param* noundef nonnull %param) #25
   %15 = bitcast %struct.cpu_set_t* %cpuset to i8*
-  call void @llvm.lifetime.start.p0i8(i64 128, i8* nonnull %15) #27
+  call void @llvm.lifetime.start.p0i8(i64 128, i8* nonnull %15) #25
   call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(128) %15, i8 0, i64 128, i1 false)
   %conv = sext i32 %rem to i64
   %cmp24 = icmp ult i32 %rem, 1024
@@ -1118,7 +1124,7 @@ cond.true:                                        ; preds = %if.end21
   br label %cond.end
 
 cond.end:                                         ; preds = %cond.true, %if.end21
-  %call27 = call i32 @pthread_setaffinity_np(i64 noundef %call14, i64 noundef 128, %struct.cpu_set_t* noundef nonnull %cpuset) #27
+  %call27 = call i32 @pthread_setaffinity_np(i64 noundef %call14, i64 noundef 128, %struct.cpu_set_t* noundef nonnull %cpuset) #25
   %call28 = call i32 (i8*, i32, ...) @open(i8* noundef getelementptr inbounds ([16 x i8], [16 x i8]* @.str.13, i64 0, i64 0), i32 noundef 2)
   %fd29 = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 2
   store i32 %call28, i32* %fd29, align 8, !tbaa !45
@@ -1126,20 +1132,20 @@ cond.end:                                         ; preds = %cond.true, %if.end2
   br i1 %cmp31, label %if.then32, label %if.end34
 
 if.then32:                                        ; preds = %cond.end
-  %puts102 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @str.64, i64 0, i64 0))
+  %puts102 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @str.66, i64 0, i64 0))
   br label %cleanup
 
 if.end34:                                         ; preds = %cond.end
   %ptr = bitcast %union.ompt_data_t* %thread_data to i8**
   store i8* %call2, i8** %ptr, align 8, !tbaa !26
   %17 = bitcast i32* %id35 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %17) #27
-  %call36 = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %17) #25
+  %call36 = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv37 = trunc i64 %call36 to i32
   store i32 %conv37, i32* %id35, align 4, !tbaa !38
   %call38 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([32 x i8], [32 x i8]* @.str.15, i64 0, i64 0), i32 noundef %conv37, i32 noundef %rem)
   %18 = load i32, i32* %fd29, align 8, !tbaa !45
-  %call40 = call i32 (i32, i64, ...) @ioctl(i32 noundef %18, i64 noundef 1074287362, i32* noundef nonnull %id35) #27
+  %call40 = call i32 (i32, i64, ...) @ioctl(i32 noundef %18, i64 noundef 1074287362, i32* noundef nonnull %id35) #25
   %19 = load i32, i32* %id, align 16, !tbaa !47
   %call42 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([24 x i8], [24 x i8]* @.str.16, i64 0, i64 0), i32 noundef %19)
   store i8* %call2, i8** %ptr, align 8, !tbaa !26
@@ -1153,7 +1159,7 @@ if.end34:                                         ; preds = %cond.end
   %timer_set_flag = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %21, i64 %sub, i32 6
   store i8 1, i8* %timer_set_flag, align 8, !tbaa !28
   %et = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %21, i64 %sub, i32 5
-  %call53 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et) #27
+  %call53 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et) #25
   %22 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i.i.i, align 8, !tbaa !27
   %23 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i.i.i, align 16, !tbaa !14
   %sub.ptr.lhs.cast.i125 = ptrtoint %struct.timeout_node* %22 to i64
@@ -1164,28 +1170,28 @@ if.end34:                                         ; preds = %cond.end
   %agg.tmp.sroa.2.0..sroa_idx68 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %23, i64 %sub57, i32 4, i32 1
   %agg.tmp.sroa.2.0.copyload = load i64, i64* %agg.tmp.sroa.2.0..sroa_idx68, align 8, !tbaa.struct !35
   %24 = load i32, i32* %fd29, align 8, !tbaa !45
-  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i131 = trunc i64 %call.i to i32
-  %call1.i = call i32 @sched_getcpu() #27
-  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i131) #27
+  %call1.i = call i32 @sched_getcpu() #25
+  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i131) #25
   %25 = bitcast %struct.modified_timer* %test.i to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %25) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %25) #25
   %id3.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 0
   store i32 %conv.i131, i32* %id3.i, align 8, !tbaa !21
   %div.i = sdiv i64 %agg.tmp.sroa.2.0.copyload, 100000
   %time_val.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 1
   store i64 %div.i, i64* %time_val.i, align 8, !tbaa !24
-  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %24, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #27
-  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %25) #27
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %17) #27
+  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %24, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
+  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %25) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %17) #25
   br label %cleanup
 
 cleanup:                                          ; preds = %if.end34, %if.then32
-  call void @llvm.lifetime.end.p0i8(i64 128, i8* nonnull %15) #27
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %12) #27
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %11) #27
-  call void @llvm.lifetime.end.p0i8(i64 56, i8* nonnull %10) #27
+  call void @llvm.lifetime.end.p0i8(i64 128, i8* nonnull %15) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %12) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %11) #25
+  call void @llvm.lifetime.end.p0i8(i64 56, i8* nonnull %10) #25
   ret void
 }
 
@@ -1241,8 +1247,8 @@ entry:
 
 if.then:                                          ; preds = %entry
   %6 = bitcast %struct.timespec* %temp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %6) #27
-  %call8 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %6) #25
+  %call8 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #25
   %7 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %8 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i72 = ptrtoint %struct.timeout_node* %7 to i64
@@ -1268,7 +1274,7 @@ if.then:                                          ; preds = %entry
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx50, align 8, !tbaa.struct !35
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %6) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %6) #25
   %.pre = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   br label %if.end
 
@@ -1281,7 +1287,7 @@ if.end:                                           ; preds = %if.then, %entry
 
 if.then.i:                                        ; preds = %if.end
   %13 = bitcast %struct.timeout_node* %11 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %13, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_begin to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %13, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_begin to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %14 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %14, i64 1
   store %struct.timeout_node* %incdec.ptr.i, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -1306,7 +1312,7 @@ if.else.i:                                        ; preds = %if.end
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i: ; preds = %if.else.i
   %mul.i.i.i.i.i = mul nuw i64 %cond.i.i.i, 56
-  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #31
+  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #30
   %17 = bitcast i8* %call2.i.i.i.i.i to %struct.timeout_node*
   %.pre.i.i = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i = ptrtoint %struct.timeout_node* %.pre.i.i to i64
@@ -1319,14 +1325,14 @@ invoke.cont.i.i:                                  ; preds = %_ZNSt16allocator_tr
   %cond.i66.i.i = phi %struct.timeout_node* [ %17, %_ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i ], [ null, %if.else.i ]
   %add.ptr.i.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i, i64 %sub.ptr.div.i.i.i.i
   %19 = bitcast %struct.timeout_node* %add.ptr.i.i to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %19, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_begin to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %19, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_begin to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %20 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, 0
   br i1 %20, label %invoke.cont10.i.i, label %if.then.i.i.i.i.i.i.i.i.i.i
 
 if.then.i.i.i.i.i.i.i.i.i.i:                      ; preds = %invoke.cont.i.i
   %21 = bitcast %struct.timeout_node* %cond.i66.i.i to i8*
   %22 = bitcast %struct.timeout_node* %18 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %21, i8* align 8 %22, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %21, i8* align 8 %22, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #25
   br label %invoke.cont10.i.i
 
 invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i.i.i, %invoke.cont.i.i
@@ -1342,7 +1348,7 @@ invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i:                    ; preds = %invoke.cont10.i.i
   %25 = bitcast %struct.timeout_node* %incdec.ptr.i.i to i8*
   %26 = bitcast %struct.timeout_node* %11 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %25, i8* align 8 %26, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %25, i8* align 8 %26, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #25
   br label %invoke.cont15.i.i
 
 invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i, %invoke.cont10.i.i
@@ -1351,7 +1357,7 @@ invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i:                                  ; preds = %invoke.cont15.i.i
   %27 = bitcast %struct.timeout_node* %18 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %27) #27
+  call void @_ZdlPv(i8* noundef nonnull %27) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i: ; preds = %if.then.i75.i.i, %invoke.cont15.i.i
@@ -1374,7 +1380,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %timer_set_flag28 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %28, i64 %sub26, i32 6
   store i8 1, i8* %timer_set_flag28, align 8, !tbaa !28
   %et34 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %28, i64 %sub26, i32 5
-  %call35 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et34) #27
+  %call35 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et34) #25
   %30 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %31 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i105 = ptrtoint %struct.timeout_node* %30 to i64
@@ -1386,21 +1392,21 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %agg.tmp36.sroa.2.0.copyload = load i64, i64* %agg.tmp36.sroa.2.0..sroa_idx43, align 8, !tbaa.struct !35
   %fd = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %32 = load i32, i32* %fd, align 8, !tbaa !45
-  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i = trunc i64 %call.i to i32
-  %call1.i = call i32 @sched_getcpu() #27
-  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #27
+  %call1.i = call i32 @sched_getcpu() #25
+  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #25
   %33 = bitcast %struct.modified_timer* %test.i to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %33) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %33) #25
   %id3.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 0
   store i32 %conv.i, i32* %id3.i, align 8, !tbaa !21
   %div.i = sdiv i64 %agg.tmp36.sroa.2.0.copyload, 100000
   %time_val.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 1
   store i64 %div.i, i64* %time_val.i, align 8, !tbaa !24
-  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %32, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #27
-  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %33) #27
-  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([43 x i8], [43 x i8]* @str.67, i64 0, i64 0))
+  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %32, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
+  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %33) #25
+  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([43 x i8], [43 x i8]* @str.69, i64 0, i64 0))
   ret void
 }
 
@@ -1443,10 +1449,10 @@ if.then:                                          ; preds = %entry
   br i1 %tobool.not, label %if.end, label %if.then6
 
 if.then6:                                         ; preds = %if.then
-  %puts372 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([33 x i8], [33 x i8]* @str.70, i64 0, i64 0))
+  %puts372 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([33 x i8], [33 x i8]* @str.72, i64 0, i64 0))
   %7 = bitcast %struct.timespec* %temp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %7) #27
-  %call8 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %7) #25
+  %call8 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #25
   %8 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %9 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i377 = ptrtoint %struct.timeout_node* %8 to i64
@@ -1472,8 +1478,8 @@ if.then6:                                         ; preds = %if.then
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx275, align 8, !tbaa.struct !35
-  %puts373 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([36 x i8], [36 x i8]* @str.71, i64 0, i64 0))
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %7) #27
+  %puts373 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([36 x i8], [36 x i8]* @str.73, i64 0, i64 0))
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %7) #25
   br label %if.end
 
 if.end:                                           ; preds = %if.then6, %if.then
@@ -1510,7 +1516,7 @@ if.then27:                                        ; preds = %if.end
 if.then.i:                                        ; preds = %if.then27
   %22 = bitcast %struct.timeout_node* %20 to i8*
   %23 = bitcast %struct.timeout_node* %add.ptr.i392 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %22, i8* noundef nonnull align 8 dereferenceable(56) %23, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %22, i8* noundef nonnull align 8 dereferenceable(56) %23, i64 56, i1 false) #25, !tbaa.struct !37
   %24 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %24, i64 1
   store %struct.timeout_node* %incdec.ptr.i, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -1535,7 +1541,7 @@ if.else.i:                                        ; preds = %if.then27
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i: ; preds = %if.else.i
   %mul.i.i.i.i.i = mul nuw i64 %cond.i.i.i, 56
-  %call2.i.i.i.i.i394 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #31
+  %call2.i.i.i.i.i394 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #30
   %27 = bitcast i8* %call2.i.i.i.i.i394 to %struct.timeout_node*
   %.pre.i.i = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i = ptrtoint %struct.timeout_node* %.pre.i.i to i64
@@ -1549,14 +1555,14 @@ invoke.cont.i.i:                                  ; preds = %_ZNSt16allocator_tr
   %add.ptr.i.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i, i64 %sub.ptr.div.i.i.i.i
   %29 = bitcast %struct.timeout_node* %add.ptr.i.i to i8*
   %30 = bitcast %struct.timeout_node* %add.ptr.i392 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %29, i8* noundef nonnull align 8 dereferenceable(56) %30, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %29, i8* noundef nonnull align 8 dereferenceable(56) %30, i64 56, i1 false) #25, !tbaa.struct !37
   %31 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, 0
   br i1 %31, label %invoke.cont10.i.i, label %if.then.i.i.i.i.i.i.i.i.i.i
 
 if.then.i.i.i.i.i.i.i.i.i.i:                      ; preds = %invoke.cont.i.i
   %32 = bitcast %struct.timeout_node* %cond.i66.i.i to i8*
   %33 = bitcast %struct.timeout_node* %28 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %32, i8* align 8 %33, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %32, i8* align 8 %33, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #25
   br label %invoke.cont10.i.i
 
 invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i.i.i, %invoke.cont.i.i
@@ -1572,7 +1578,7 @@ invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i:                    ; preds = %invoke.cont10.i.i
   %36 = bitcast %struct.timeout_node* %incdec.ptr.i.i to i8*
   %37 = bitcast %struct.timeout_node* %20 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %36, i8* align 8 %37, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %36, i8* align 8 %37, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #25
   br label %invoke.cont15.i.i
 
 invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i, %invoke.cont10.i.i
@@ -1581,7 +1587,7 @@ invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i:                                  ; preds = %invoke.cont15.i.i
   %38 = bitcast %struct.timeout_node* %28 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %38) #27
+  call void @_ZdlPv(i8* noundef nonnull %38) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i: ; preds = %if.then.i75.i.i, %invoke.cont15.i.i
@@ -1613,20 +1619,20 @@ invoke.cont37:                                    ; preds = %_ZNSt6vectorI12time
   %agg.tmp55.sroa.2.0.copyload = load i64, i64* %agg.tmp55.sroa.2.0..sroa_idx268, align 8, !tbaa.struct !35
   %fd = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %42 = load i32, i32* %fd, align 8, !tbaa !45
-  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i = trunc i64 %call.i to i32
-  %call1.i = call i32 @sched_getcpu() #27
-  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #27
+  %call1.i = call i32 @sched_getcpu() #25
+  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #25
   %43 = bitcast %struct.modified_timer* %test.i to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %43) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %43) #25
   %id3.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 0
   store i32 %conv.i, i32* %id3.i, align 8, !tbaa !21
   %div.i = sdiv i64 %agg.tmp55.sroa.2.0.copyload, 100000
   %time_val.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 1
   store i64 %div.i, i64* %time_val.i, align 8, !tbaa !24
-  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %42, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #27
-  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %43) #27
+  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %42, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
+  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %43) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit686
 
 if.else:                                          ; preds = %if.end
@@ -1636,7 +1642,7 @@ if.else:                                          ; preds = %if.end
   ]
 
 if.then69:                                        ; preds = %if.else
-  %puts371 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.69, i64 0, i64 0))
+  %puts371 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.71, i64 0, i64 0))
   %44 = load %struct.details**, %struct.details*** @parallel_region, align 8, !tbaa !25
   %45 = load i64, i64* %value, align 8, !tbaa !26
   %arrayidx74 = getelementptr inbounds %struct.details*, %struct.details** %44, i64 %45
@@ -1652,7 +1658,7 @@ if.then69:                                        ; preds = %if.else
 if.then.i433:                                     ; preds = %if.then69
   %50 = bitcast %struct.timeout_node* %48 to i8*
   %51 = bitcast %struct.timeout_node* %47 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %50, i8* noundef nonnull align 8 dereferenceable(56) %51, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %50, i8* noundef nonnull align 8 dereferenceable(56) %51, i64 56, i1 false) #25, !tbaa.struct !37
   %52 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i432 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %52, i64 1
   store %struct.timeout_node* %incdec.ptr.i432, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -1677,7 +1683,7 @@ if.else.i446:                                     ; preds = %if.then69
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i451: ; preds = %if.else.i446
   %mul.i.i.i.i.i447 = mul nuw i64 %cond.i.i.i444, 56
-  %call2.i.i.i.i.i472 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i447) #31
+  %call2.i.i.i.i.i472 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i447) #30
   %55 = bitcast i8* %call2.i.i.i.i.i472 to %struct.timeout_node*
   %.pre.i.i448 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i449 = ptrtoint %struct.timeout_node* %.pre.i.i448 to i64
@@ -1691,14 +1697,14 @@ invoke.cont.i.i455:                               ; preds = %_ZNSt16allocator_tr
   %add.ptr.i.i454 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i453, i64 %sub.ptr.div.i.i.i.i438
   %57 = bitcast %struct.timeout_node* %add.ptr.i.i454 to i8*
   %58 = bitcast %struct.timeout_node* %47 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %57, i8* noundef nonnull align 8 dereferenceable(56) %58, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %57, i8* noundef nonnull align 8 dereferenceable(56) %58, i64 56, i1 false) #25, !tbaa.struct !37
   %59 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i452, 0
   br i1 %59, label %invoke.cont10.i.i462, label %if.then.i.i.i.i.i.i.i.i.i.i456
 
 if.then.i.i.i.i.i.i.i.i.i.i456:                   ; preds = %invoke.cont.i.i455
   %60 = bitcast %struct.timeout_node* %cond.i66.i.i453 to i8*
   %61 = bitcast %struct.timeout_node* %56 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %60, i8* align 8 %61, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i452, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %60, i8* align 8 %61, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i452, i1 false) #25
   br label %invoke.cont10.i.i462
 
 invoke.cont10.i.i462:                             ; preds = %if.then.i.i.i.i.i.i.i.i.i.i456, %invoke.cont.i.i455
@@ -1714,7 +1720,7 @@ invoke.cont10.i.i462:                             ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i463:                 ; preds = %invoke.cont10.i.i462
   %64 = bitcast %struct.timeout_node* %incdec.ptr.i.i459 to i8*
   %65 = bitcast %struct.timeout_node* %48 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %64, i8* align 8 %65, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i461, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %64, i8* align 8 %65, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i461, i1 false) #25
   br label %invoke.cont15.i.i465
 
 invoke.cont15.i.i465:                             ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i463, %invoke.cont10.i.i462
@@ -1723,7 +1729,7 @@ invoke.cont15.i.i465:                             ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i466:                               ; preds = %invoke.cont15.i.i465
   %66 = bitcast %struct.timeout_node* %56 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %66) #27
+  call void @_ZdlPv(i8* noundef nonnull %66) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i470
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i470: ; preds = %if.then.i75.i.i466, %invoke.cont15.i.i465
@@ -1755,20 +1761,20 @@ invoke.cont80:                                    ; preds = %_ZNSt6vectorI12time
   %agg.tmp101.sroa.2.0.copyload = load i64, i64* %agg.tmp101.sroa.2.0..sroa_idx267, align 8, !tbaa.struct !35
   %fd108 = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %70 = load i32, i32* %fd108, align 8, !tbaa !45
-  %call.i507 = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i507 = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i508 = trunc i64 %call.i507 to i32
-  %call1.i509 = call i32 @sched_getcpu() #27
-  %call2.i510 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i509, i32 noundef %conv.i508) #27
+  %call1.i509 = call i32 @sched_getcpu() #25
+  %call2.i510 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i509, i32 noundef %conv.i508) #25
   %71 = bitcast %struct.modified_timer* %test.i506 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %71) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %71) #25
   %id3.i511 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i506, i64 0, i32 0
   store i32 %conv.i508, i32* %id3.i511, align 8, !tbaa !21
   %div.i512 = sdiv i64 %agg.tmp101.sroa.2.0.copyload, 100000
   %time_val.i513 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i506, i64 0, i32 1
   store i64 %div.i512, i64* %time_val.i513, align 8, !tbaa !24
-  %call4.i514 = call i32 (i32, i64, ...) @ioctl(i32 noundef %70, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i506) #27
-  %puts.i515 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %71) #27
+  %call4.i514 = call i32 (i32, i64, ...) @ioctl(i32 noundef %70, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i506) #25
+  %puts.i515 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %71) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit686
 
 if.then118:                                       ; preds = %if.else
@@ -1788,7 +1794,7 @@ if.then118:                                       ; preds = %if.else
 if.then.i521:                                     ; preds = %if.then118
   %78 = bitcast %struct.timeout_node* %76 to i8*
   %79 = bitcast %struct.timeout_node* %75 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %78, i8* noundef nonnull align 8 dereferenceable(56) %79, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %78, i8* noundef nonnull align 8 dereferenceable(56) %79, i64 56, i1 false) #25, !tbaa.struct !37
   %80 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i520 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %80, i64 1
   store %struct.timeout_node* %incdec.ptr.i520, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -1813,7 +1819,7 @@ if.else.i534:                                     ; preds = %if.then118
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i539: ; preds = %if.else.i534
   %mul.i.i.i.i.i535 = mul nuw i64 %cond.i.i.i532, 56
-  %call2.i.i.i.i.i560 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i535) #31
+  %call2.i.i.i.i.i560 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i535) #30
   %83 = bitcast i8* %call2.i.i.i.i.i560 to %struct.timeout_node*
   %.pre.i.i536 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i537 = ptrtoint %struct.timeout_node* %.pre.i.i536 to i64
@@ -1827,14 +1833,14 @@ invoke.cont.i.i543:                               ; preds = %_ZNSt16allocator_tr
   %add.ptr.i.i542 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i541, i64 %sub.ptr.div.i.i.i.i526
   %85 = bitcast %struct.timeout_node* %add.ptr.i.i542 to i8*
   %86 = bitcast %struct.timeout_node* %75 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %85, i8* noundef nonnull align 8 dereferenceable(56) %86, i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %85, i8* noundef nonnull align 8 dereferenceable(56) %86, i64 56, i1 false) #25, !tbaa.struct !37
   %87 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i540, 0
   br i1 %87, label %invoke.cont10.i.i550, label %if.then.i.i.i.i.i.i.i.i.i.i544
 
 if.then.i.i.i.i.i.i.i.i.i.i544:                   ; preds = %invoke.cont.i.i543
   %88 = bitcast %struct.timeout_node* %cond.i66.i.i541 to i8*
   %89 = bitcast %struct.timeout_node* %84 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %88, i8* align 8 %89, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i540, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %88, i8* align 8 %89, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i540, i1 false) #25
   br label %invoke.cont10.i.i550
 
 invoke.cont10.i.i550:                             ; preds = %if.then.i.i.i.i.i.i.i.i.i.i544, %invoke.cont.i.i543
@@ -1850,7 +1856,7 @@ invoke.cont10.i.i550:                             ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i551:                 ; preds = %invoke.cont10.i.i550
   %92 = bitcast %struct.timeout_node* %incdec.ptr.i.i547 to i8*
   %93 = bitcast %struct.timeout_node* %76 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %92, i8* align 8 %93, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i549, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %92, i8* align 8 %93, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i549, i1 false) #25
   br label %invoke.cont15.i.i553
 
 invoke.cont15.i.i553:                             ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i551, %invoke.cont10.i.i550
@@ -1859,7 +1865,7 @@ invoke.cont15.i.i553:                             ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i554:                               ; preds = %invoke.cont15.i.i553
   %94 = bitcast %struct.timeout_node* %84 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %94) #27
+  call void @_ZdlPv(i8* noundef nonnull %94) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i558
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i558: ; preds = %if.then.i75.i.i554, %invoke.cont15.i.i553
@@ -1891,20 +1897,20 @@ invoke.cont131:                                   ; preds = %_ZNSt6vectorI12time
   %agg.tmp152.sroa.2.0.copyload = load i64, i64* %agg.tmp152.sroa.2.0..sroa_idx266, align 8, !tbaa.struct !35
   %fd159 = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %98 = load i32, i32* %fd159, align 8, !tbaa !45
-  %call.i595 = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i595 = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i596 = trunc i64 %call.i595 to i32
-  %call1.i597 = call i32 @sched_getcpu() #27
-  %call2.i598 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i597, i32 noundef %conv.i596) #27
+  %call1.i597 = call i32 @sched_getcpu() #25
+  %call2.i598 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i597, i32 noundef %conv.i596) #25
   %99 = bitcast %struct.modified_timer* %test.i594 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %99) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %99) #25
   %id3.i599 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i594, i64 0, i32 0
   store i32 %conv.i596, i32* %id3.i599, align 8, !tbaa !21
   %div.i600 = sdiv i64 %agg.tmp152.sroa.2.0.copyload, 100000
   %time_val.i601 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i594, i64 0, i32 1
   store i64 %div.i600, i64* %time_val.i601, align 8, !tbaa !24
-  %call4.i602 = call i32 (i32, i64, ...) @ioctl(i32 noundef %98, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i594) #27
-  %puts.i603 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %99) #27
+  %call4.i602 = call i32 (i32, i64, ...) @ioctl(i32 noundef %98, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i594) #25
+  %puts.i603 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %99) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit686
 
 if.else161:                                       ; preds = %if.else
@@ -1916,7 +1922,7 @@ if.else161:                                       ; preds = %if.else
 
 if.then.i608:                                     ; preds = %if.else161
   %102 = bitcast %struct.timeout_node* %100 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %102, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_begin to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %102, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_begin to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %103 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i607 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %103, i64 1
   store %struct.timeout_node* %incdec.ptr.i607, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -1941,7 +1947,7 @@ if.else.i621:                                     ; preds = %if.else161
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i626: ; preds = %if.else.i621
   %mul.i.i.i.i.i622 = mul nuw i64 %cond.i.i.i619, 56
-  %call2.i.i.i.i.i647 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i622) #31
+  %call2.i.i.i.i.i647 = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i622) #30
   %106 = bitcast i8* %call2.i.i.i.i.i647 to %struct.timeout_node*
   %.pre.i.i623 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i624 = ptrtoint %struct.timeout_node* %.pre.i.i623 to i64
@@ -1954,14 +1960,14 @@ invoke.cont.i.i630:                               ; preds = %_ZNSt16allocator_tr
   %cond.i66.i.i628 = phi %struct.timeout_node* [ %106, %_ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i626 ], [ null, %if.else.i621 ]
   %add.ptr.i.i629 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i628, i64 %sub.ptr.div.i.i.i.i613
   %108 = bitcast %struct.timeout_node* %add.ptr.i.i629 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %108, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_begin to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %108, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_begin to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %109 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i627, 0
   br i1 %109, label %invoke.cont10.i.i637, label %if.then.i.i.i.i.i.i.i.i.i.i631
 
 if.then.i.i.i.i.i.i.i.i.i.i631:                   ; preds = %invoke.cont.i.i630
   %110 = bitcast %struct.timeout_node* %cond.i66.i.i628 to i8*
   %111 = bitcast %struct.timeout_node* %107 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %110, i8* align 8 %111, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i627, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %110, i8* align 8 %111, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i627, i1 false) #25
   br label %invoke.cont10.i.i637
 
 invoke.cont10.i.i637:                             ; preds = %if.then.i.i.i.i.i.i.i.i.i.i631, %invoke.cont.i.i630
@@ -1977,7 +1983,7 @@ invoke.cont10.i.i637:                             ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i638:                 ; preds = %invoke.cont10.i.i637
   %114 = bitcast %struct.timeout_node* %incdec.ptr.i.i634 to i8*
   %115 = bitcast %struct.timeout_node* %100 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %114, i8* align 8 %115, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i636, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %114, i8* align 8 %115, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i636, i1 false) #25
   br label %invoke.cont15.i.i640
 
 invoke.cont15.i.i640:                             ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i638, %invoke.cont10.i.i637
@@ -1986,7 +1992,7 @@ invoke.cont15.i.i640:                             ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i641:                               ; preds = %invoke.cont15.i.i640
   %116 = bitcast %struct.timeout_node* %107 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %116) #27
+  call void @_ZdlPv(i8* noundef nonnull %116) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i645
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i645: ; preds = %if.then.i75.i.i641, %invoke.cont15.i.i640
@@ -2017,24 +2023,24 @@ invoke.cont163:                                   ; preds = %_ZNSt6vectorI12time
   %agg.tmp184.sroa.2.0.copyload = load i64, i64* getelementptr inbounds (%struct.timespec, %struct.timespec* @max_timeout, i64 0, i32 1), align 8, !tbaa.struct !35
   %fd185 = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %120 = load i32, i32* %fd185, align 8, !tbaa !45
-  %call.i674 = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i674 = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i675 = trunc i64 %call.i674 to i32
-  %call1.i676 = call i32 @sched_getcpu() #27
-  %call2.i677 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i676, i32 noundef %conv.i675) #27
+  %call1.i676 = call i32 @sched_getcpu() #25
+  %call2.i677 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i676, i32 noundef %conv.i675) #25
   %121 = bitcast %struct.modified_timer* %test.i673 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %121) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %121) #25
   %id3.i678 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i673, i64 0, i32 0
   store i32 %conv.i675, i32* %id3.i678, align 8, !tbaa !21
   %div.i679 = sdiv i64 %agg.tmp184.sroa.2.0.copyload, 100000
   %time_val.i680 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i673, i64 0, i32 1
   store i64 %div.i679, i64* %time_val.i680, align 8, !tbaa !24
-  %call4.i681 = call i32 (i32, i64, ...) @ioctl(i32 noundef %120, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i673) #27
-  %puts.i682 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %121) #27
+  %call4.i681 = call i32 (i32, i64, ...) @ioctl(i32 noundef %120, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i673) #25
+  %puts.i682 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %121) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit686
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit686:  ; preds = %invoke.cont163, %invoke.cont131, %invoke.cont80, %invoke.cont37
-  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.68, i64 0, i64 0))
+  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.70, i64 0, i64 0))
   %.pre823 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %.pre824 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre825 = ptrtoint %struct.timeout_node* %.pre823 to i64
@@ -2067,8 +2073,8 @@ if.else192:                                       ; preds = %entry
 
 if.then204:                                       ; preds = %if.else192
   %127 = bitcast %struct.timespec* %temp205 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %127) #27
-  %call206 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp205) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %127) #25
+  %call206 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp205) #25
   %128 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i687, align 8, !tbaa !27
   %129 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i688, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i697 = ptrtoint %struct.timeout_node* %128 to i64
@@ -2094,7 +2100,7 @@ if.then204:                                       ; preds = %if.else192
   %retval.sroa.3.0.i708 = select i1 %cmp.i704, i64 %add.i705, i64 %sub.i703
   store i64 %retval.sroa.0.0.i707, i64* %temp_2207.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i708, i64* %temp_2207.sroa.4.0..sroa_idx264, align 8, !tbaa.struct !35
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %127) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %127) #25
   %.pre821 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i687, align 8, !tbaa !27
   br label %if.end224
 
@@ -2107,7 +2113,7 @@ if.end224:                                        ; preds = %if.then204, %if.els
 
 if.then.i723:                                     ; preds = %if.end224
   %134 = bitcast %struct.timeout_node* %132 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %134, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_end to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %134, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_end to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %135 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i687, align 8, !tbaa !27
   %incdec.ptr.i722 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %135, i64 1
   store %struct.timeout_node* %incdec.ptr.i722, %struct.timeout_node** %_M_finish.i687, align 8, !tbaa !27
@@ -2132,7 +2138,7 @@ if.else.i736:                                     ; preds = %if.end224
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i741: ; preds = %if.else.i736
   %mul.i.i.i.i.i737 = mul nuw i64 %cond.i.i.i734, 56
-  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i737) #31
+  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i737) #30
   %138 = bitcast i8* %call2.i.i.i.i.i to %struct.timeout_node*
   %.pre.i.i738 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i688, align 8, !tbaa !14
   %.pre82.i.i739 = ptrtoint %struct.timeout_node* %.pre.i.i738 to i64
@@ -2145,14 +2151,14 @@ invoke.cont.i.i745:                               ; preds = %_ZNSt16allocator_tr
   %cond.i66.i.i743 = phi %struct.timeout_node* [ %138, %_ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i741 ], [ null, %if.else.i736 ]
   %add.ptr.i.i744 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i743, i64 %sub.ptr.div.i.i.i.i728
   %140 = bitcast %struct.timeout_node* %add.ptr.i.i744 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %140, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_end to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %140, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @work_end to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %141 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i742, 0
   br i1 %141, label %invoke.cont10.i.i752, label %if.then.i.i.i.i.i.i.i.i.i.i746
 
 if.then.i.i.i.i.i.i.i.i.i.i746:                   ; preds = %invoke.cont.i.i745
   %142 = bitcast %struct.timeout_node* %cond.i66.i.i743 to i8*
   %143 = bitcast %struct.timeout_node* %139 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %142, i8* align 8 %143, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i742, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %142, i8* align 8 %143, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i742, i1 false) #25
   br label %invoke.cont10.i.i752
 
 invoke.cont10.i.i752:                             ; preds = %if.then.i.i.i.i.i.i.i.i.i.i746, %invoke.cont.i.i745
@@ -2168,7 +2174,7 @@ invoke.cont10.i.i752:                             ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i753:                 ; preds = %invoke.cont10.i.i752
   %146 = bitcast %struct.timeout_node* %incdec.ptr.i.i749 to i8*
   %147 = bitcast %struct.timeout_node* %132 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %146, i8* align 8 %147, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i751, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %146, i8* align 8 %147, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i751, i1 false) #25
   br label %invoke.cont15.i.i755
 
 invoke.cont15.i.i755:                             ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i753, %invoke.cont10.i.i752
@@ -2177,7 +2183,7 @@ invoke.cont15.i.i755:                             ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i756:                               ; preds = %invoke.cont15.i.i755
   %148 = bitcast %struct.timeout_node* %139 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %148) #27
+  call void @_ZdlPv(i8* noundef nonnull %148) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i760
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i760: ; preds = %if.then.i75.i.i756, %invoke.cont15.i.i755
@@ -2211,7 +2217,7 @@ if.end234:                                        ; preds = %_ZNSt6vectorI12time
   %timer_set_flag240 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %152, i64 %sub238.pre-phi, i32 6
   store i8 1, i8* %timer_set_flag240, align 8, !tbaa !28
   %et246 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %152, i64 %sub238.pre-phi, i32 5
-  %call247 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et246) #27
+  %call247 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et246) #25
   %153 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i770, align 8, !tbaa !27
   %154 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i771, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i788 = ptrtoint %struct.timeout_node* %153 to i64
@@ -2223,20 +2229,20 @@ if.end234:                                        ; preds = %_ZNSt6vectorI12time
   %agg.tmp248.sroa.2.0.copyload = load i64, i64* %agg.tmp248.sroa.2.0..sroa_idx257, align 8, !tbaa.struct !35
   %fd255 = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %155 = load i32, i32* %fd255, align 8, !tbaa !45
-  %call.i795 = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i795 = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i796 = trunc i64 %call.i795 to i32
-  %call1.i797 = call i32 @sched_getcpu() #27
-  %call2.i798 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i797, i32 noundef %conv.i796) #27
+  %call1.i797 = call i32 @sched_getcpu() #25
+  %call2.i798 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i797, i32 noundef %conv.i796) #25
   %156 = bitcast %struct.modified_timer* %test.i794 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %156) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %156) #25
   %id3.i799 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i794, i64 0, i32 0
   store i32 %conv.i796, i32* %id3.i799, align 8, !tbaa !21
   %div.i800 = sdiv i64 %agg.tmp248.sroa.2.0.copyload, 100000
   %time_val.i801 = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i794, i64 0, i32 1
   store i64 %div.i800, i64* %time_val.i801, align 8, !tbaa !24
-  %call4.i802 = call i32 (i32, i64, ...) @ioctl(i32 noundef %155, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i794) #27
-  %puts.i803 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %156) #27
+  %call4.i802 = call i32 (i32, i64, ...) @ioctl(i32 noundef %155, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i794) #25
+  %puts.i803 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %156) #25
   ret void
 }
 
@@ -2266,8 +2272,8 @@ entry:
 if.then:                                          ; preds = %entry
   store i8 0, i8* %timer_set_flag, align 8, !tbaa !28
   %6 = bitcast %struct.timespec* %temp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %6) #27
-  %call10 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %6) #25
+  %call10 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #25
   %7 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %8 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i56 = ptrtoint %struct.timeout_node* %7 to i64
@@ -2293,27 +2299,27 @@ if.then:                                          ; preds = %entry
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx32, align 8, !tbaa.struct !35
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %6) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %6) #25
   br label %if.end
 
 if.end:                                           ; preds = %if.then, %entry
   %agg.tmp24.sroa.2.0.copyload = load i64, i64* getelementptr inbounds (%struct.timeout_node, %struct.timeout_node* @sync_region, i64 0, i32 4, i32 1), align 8, !tbaa.struct !35
   %fd = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %11 = load i32, i32* %fd, align 8, !tbaa !45
-  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i = trunc i64 %call.i to i32
-  %call1.i = call i32 @sched_getcpu() #27
-  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #27
+  %call1.i = call i32 @sched_getcpu() #25
+  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #25
   %12 = bitcast %struct.modified_timer* %test.i to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %12) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %12) #25
   %id3.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 0
   store i32 %conv.i, i32* %id3.i, align 8, !tbaa !21
   %div.i = sdiv i64 %agg.tmp24.sroa.2.0.copyload, 100000
   %time_val.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 1
   store i64 %div.i, i64* %time_val.i, align 8, !tbaa !24
-  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %11, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #27
-  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %12) #27
+  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %11, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
+  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %12) #25
   %id = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 0
   %13 = load i32, i32* %id, align 8, !tbaa !47
   %call25 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([57 x i8], [57 x i8]* @.str.29, i64 0, i64 0), i32 noundef %13)
@@ -2345,8 +2351,8 @@ entry:
 
 if.then:                                          ; preds = %entry
   %6 = bitcast %struct.timespec* %temp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %6) #27
-  %call4 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %6) #25
+  %call4 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #25
   %7 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %8 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i65 = ptrtoint %struct.timeout_node* %7 to i64
@@ -2372,7 +2378,7 @@ if.then:                                          ; preds = %entry
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx45, align 8, !tbaa.struct !35
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %6) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %6) #25
   %.pre = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   br label %if.end
 
@@ -2385,7 +2391,7 @@ if.end:                                           ; preds = %if.then, %entry
 
 if.then.i:                                        ; preds = %if.end
   %13 = bitcast %struct.timeout_node* %11 to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %13, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_end to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %13, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_end to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %14 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %incdec.ptr.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %14, i64 1
   store %struct.timeout_node* %incdec.ptr.i, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
@@ -2410,7 +2416,7 @@ if.else.i:                                        ; preds = %if.end
 
 _ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i: ; preds = %if.else.i
   %mul.i.i.i.i.i = mul nuw i64 %cond.i.i.i, 56
-  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #31
+  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #30
   %17 = bitcast i8* %call2.i.i.i.i.i to %struct.timeout_node*
   %.pre.i.i = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre82.i.i = ptrtoint %struct.timeout_node* %.pre.i.i to i64
@@ -2423,14 +2429,14 @@ invoke.cont.i.i:                                  ; preds = %_ZNSt16allocator_tr
   %cond.i66.i.i = phi %struct.timeout_node* [ %17, %_ZNSt16allocator_traitsISaI12timeout_nodeEE8allocateERS1_m.exit.i.i.i ], [ null, %if.else.i ]
   %add.ptr.i.i = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %cond.i66.i.i, i64 %sub.ptr.div.i.i.i.i
   %19 = bitcast %struct.timeout_node* %add.ptr.i.i to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %19, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_end to i8*), i64 56, i1 false) #27, !tbaa.struct !37
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %19, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @parallel_end to i8*), i64 56, i1 false) #25, !tbaa.struct !37
   %20 = icmp eq i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, 0
   br i1 %20, label %invoke.cont10.i.i, label %if.then.i.i.i.i.i.i.i.i.i.i
 
 if.then.i.i.i.i.i.i.i.i.i.i:                      ; preds = %invoke.cont.i.i
   %21 = bitcast %struct.timeout_node* %cond.i66.i.i to i8*
   %22 = bitcast %struct.timeout_node* %18 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %21, i8* align 8 %22, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %21, i8* align 8 %22, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i.pre-phi.i.i, i1 false) #25
   br label %invoke.cont10.i.i
 
 invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i.i.i, %invoke.cont.i.i
@@ -2446,7 +2452,7 @@ invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i:                    ; preds = %invoke.cont10.i.i
   %25 = bitcast %struct.timeout_node* %incdec.ptr.i.i to i8*
   %26 = bitcast %struct.timeout_node* %11 to i8*
-  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %25, i8* align 8 %26, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #27
+  call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %25, i8* align 8 %26, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #25
   br label %invoke.cont15.i.i
 
 invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i, %invoke.cont10.i.i
@@ -2455,7 +2461,7 @@ invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i:                                  ; preds = %invoke.cont15.i.i
   %27 = bitcast %struct.timeout_node* %18 to i8*
-  call void @_ZdlPv(i8* noundef nonnull %27) #27
+  call void @_ZdlPv(i8* noundef nonnull %27) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i: ; preds = %if.then.i75.i.i, %invoke.cont15.i.i
@@ -2478,7 +2484,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %timer_set_flag24 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %28, i64 %sub22, i32 6
   store i8 1, i8* %timer_set_flag24, align 8, !tbaa !28
   %et30 = getelementptr inbounds %struct.timeout_node, %struct.timeout_node* %28, i64 %sub22, i32 5
-  %call31 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et30) #27
+  %call31 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %et30) #25
   %30 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %31 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i98 = ptrtoint %struct.timeout_node* %30 to i64
@@ -2490,20 +2496,20 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %agg.tmp32.sroa.2.0.copyload = load i64, i64* %agg.tmp32.sroa.2.0..sroa_idx38, align 8, !tbaa.struct !35
   %fd = getelementptr inbounds %struct.thread_info, %struct.thread_info* %2, i64 0, i32 2
   %32 = load i32, i32* %fd, align 8, !tbaa !45
-  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #27
+  %call.i = call i64 (i64, ...) @syscall(i64 noundef 186) #25
   %conv.i = trunc i64 %call.i to i32
-  %call1.i = call i32 @sched_getcpu() #27
-  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #27
+  %call1.i = call i32 @sched_getcpu() #25
+  %call2.i = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([34 x i8], [34 x i8]* @.str, i64 0, i64 0), i32 noundef %call1.i, i32 noundef %conv.i) #25
   %33 = bitcast %struct.modified_timer* %test.i to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %33) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %33) #25
   %id3.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 0
   store i32 %conv.i, i32* %id3.i, align 8, !tbaa !21
   %div.i = sdiv i64 %agg.tmp32.sroa.2.0.copyload, 100000
   %time_val.i = getelementptr inbounds %struct.modified_timer, %struct.modified_timer* %test.i, i64 0, i32 1
   store i64 %div.i, i64* %time_val.i, align 8, !tbaa !24
-  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %32, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #27
-  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #27
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %33) #27
+  %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %32, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
+  %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %33) #25
   ret void
 }
 
@@ -2530,8 +2536,8 @@ entry:
 
 if.then:                                          ; preds = %entry
   %5 = bitcast %struct.timespec* %temp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %5) #27
-  %call3 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #27
+  call void @llvm.lifetime.start.p0i8(i64 16, i8* nonnull %5) #25
+  %call3 = call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull %temp) #25
   %6 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %7 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %sub.ptr.lhs.cast.i50 = ptrtoint %struct.timeout_node* %6 to i64
@@ -2557,7 +2563,7 @@ if.then:                                          ; preds = %entry
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !33
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx35, align 8, !tbaa.struct !35
-  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %5) #27
+  call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %5) #25
   br label %if.end
 
 if.end:                                           ; preds = %if.then, %entry
@@ -2610,7 +2616,7 @@ lor.lhs.false.i.i.i.i:                            ; preds = %if.end3.i.i.i.i
   br i1 %cmp.not.i.i.i.i, label %for.cond.i.i.i.i, label %if.then.i.i, !llvm.loop !52
 
 if.then.i.i:                                      ; preds = %lor.lhs.false.i.i.i.i, %if.end3.i.i.i.i, %if.then18
-  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef 40) #31
+  %call2.i.i.i.i.i = call noalias noundef nonnull i8* @_Znwm(i64 noundef 40) #30
   %22 = bitcast i8* %call2.i.i.i.i.i to %"struct.std::__detail::_Hash_node"*
   %_M_nxt.i.i.i.i.i.i = bitcast i8* %call2.i.i.i.i.i to %"struct.std::__detail::_Hash_node_base"**
   store %"struct.std::__detail::_Hash_node_base"* null, %"struct.std::__detail::_Hash_node_base"** %_M_nxt.i.i.i.i.i.i, align 8, !tbaa !13
@@ -2619,7 +2625,7 @@ if.then.i.i:                                      ; preds = %lor.lhs.false.i.i.i
   %23 = load i32, i32* %id, align 4, !tbaa !38
   store i32 %23, i32* %first.i.i.i.i.i.i.i, align 8, !tbaa !53
   %second.i.i.i.i.i.i.i = getelementptr inbounds i8, i8* %call2.i.i.i.i.i, i64 16
-  call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(24) %second.i.i.i.i.i.i.i, i8 0, i64 24, i1 false) #27
+  call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(24) %second.i.i.i.i.i.i.i, i8 0, i64 24, i1 false) #25
   %call7.i.i = call %"struct.std::__detail::_Hash_node"* @_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEE21_M_insert_unique_nodeEmmPNS8_10_Hash_nodeIS6_Lb0EEE(%"class.std::_Hashtable"* noundef getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0), i64 noundef %rem.i.i.i.i.i, i64 noundef %conv.i.i.i.i, %"struct.std::__detail::_Hash_node"* noundef nonnull %22)
   br label %_ZNSt13unordered_mapIiSt6vectorI12timeout_nodeSaIS1_EESt4hashIiESt8equal_toIiESaISt4pairIKiS3_EEEixERS9_.exit
 
@@ -2677,7 +2683,7 @@ lor.lhs.false.i.i.i.i83:                          ; preds = %if.end3.i.i.i.i77
   br i1 %cmp.not.i.i.i.i82, label %for.cond.i.i.i.i73, label %if.then.i.i90, !llvm.loop !52
 
 if.then.i.i90:                                    ; preds = %lor.lhs.false.i.i.i.i83, %if.end3.i.i.i.i77, %if.end24
-  %call2.i.i.i.i.i84 = call noalias noundef nonnull i8* @_Znwm(i64 noundef 40) #31
+  %call2.i.i.i.i.i84 = call noalias noundef nonnull i8* @_Znwm(i64 noundef 40) #30
   %36 = bitcast i8* %call2.i.i.i.i.i84 to %"struct.std::__detail::_Hash_node"*
   %_M_nxt.i.i.i.i.i.i85 = bitcast i8* %call2.i.i.i.i.i84 to %"struct.std::__detail::_Hash_node_base"**
   store %"struct.std::__detail::_Hash_node_base"* null, %"struct.std::__detail::_Hash_node_base"** %_M_nxt.i.i.i.i.i.i85, align 8, !tbaa !13
@@ -2686,7 +2692,7 @@ if.then.i.i90:                                    ; preds = %lor.lhs.false.i.i.i
   %37 = load i32, i32* %id25, align 4, !tbaa !38
   store i32 %37, i32* %first.i.i.i.i.i.i.i87, align 8, !tbaa !53
   %second.i.i.i.i.i.i.i88 = getelementptr inbounds i8, i8* %call2.i.i.i.i.i84, i64 16
-  call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(24) %second.i.i.i.i.i.i.i88, i8 0, i64 24, i1 false) #27
+  call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(24) %second.i.i.i.i.i.i.i88, i8 0, i64 24, i1 false) #25
   %call7.i.i89 = call %"struct.std::__detail::_Hash_node"* @_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detail10_Select1stESt8equal_toIiESt4hashIiENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEE21_M_insert_unique_nodeEmmPNS8_10_Hash_nodeIS6_Lb0EEE(%"class.std::_Hashtable"* noundef getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0), i64 noundef %rem.i.i.i.i.i65, i64 noundef %conv.i.i.i.i64, %"struct.std::__detail::_Hash_node"* noundef nonnull %36)
   br label %_ZNSt13unordered_mapIiSt6vectorI12timeout_nodeSaIS1_EESt4hashIiESt8equal_toIiESaISt4pairIKiS3_EEEixERS9_.exit94
 
@@ -2741,18 +2747,18 @@ cond.true.i.i:                                    ; preds = %if.then
   br i1 %cmp.i.i.i.i, label %if.then.i.i.i.i, label %_ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE11_M_allocateEm.exit.i
 
 if.then.i.i.i.i:                                  ; preds = %cond.true.i.i
-  tail call void @_ZSt17__throw_bad_allocv() #33
+  tail call void @_ZSt17__throw_bad_allocv() #32
   unreachable
 
 _ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE11_M_allocateEm.exit.i: ; preds = %cond.true.i.i
-  %call2.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %sub.ptr.sub.i) #31
+  %call2.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %sub.ptr.sub.i) #30
   %4 = bitcast i8* %call2.i.i.i.i to %struct.timeout_node*
   %5 = icmp eq i64 %sub.ptr.sub.i, 0
   br i1 %5, label %_ZNSt6vectorI12timeout_nodeSaIS0_EE20_M_allocate_and_copyIN9__gnu_cxx17__normal_iteratorIPKS0_S2_EEEEPS0_mT_SA_.exit, label %if.then.i.i.i.i.i.i.i.i
 
 if.then.i.i.i.i.i.i.i.i:                          ; preds = %_ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE11_M_allocateEm.exit.i
   %6 = bitcast %struct.timeout_node* %1 to i8*
-  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i, i8* align 8 %6, i64 %sub.ptr.sub.i, i1 false) #27
+  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i, i8* align 8 %6, i64 %sub.ptr.sub.i, i1 false) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE20_M_allocate_and_copyIN9__gnu_cxx17__normal_iteratorIPKS0_S2_EEEEPS0_mT_SA_.exit
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE20_M_allocate_and_copyIN9__gnu_cxx17__normal_iteratorIPKS0_S2_EEEEPS0_mT_SA_.exit: ; preds = %if.then.i.i.i.i.i.i.i.i, %_ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE11_M_allocateEm.exit.i
@@ -2762,7 +2768,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE20_M_allocate_and_copyIN9__gnu_cxx17__normal_
 
 if.then.i:                                        ; preds = %_ZNSt6vectorI12timeout_nodeSaIS0_EE20_M_allocate_and_copyIN9__gnu_cxx17__normal_iteratorIPKS0_S2_EEEEPS0_mT_SA_.exit
   %8 = bitcast %struct.timeout_node* %7 to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %8) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %8) #25
   br label %_ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE13_M_deallocateEPS0_m.exit
 
 _ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE13_M_deallocateEPS0_m.exit: ; preds = %if.then.i, %_ZNSt6vectorI12timeout_nodeSaIS0_EE20_M_allocate_and_copyIN9__gnu_cxx17__normal_iteratorIPKS0_S2_EEEEPS0_mT_SA_.exit
@@ -2788,7 +2794,7 @@ if.then27:                                        ; preds = %if.else
 if.then.i.i.i.i107:                               ; preds = %if.then27
   %12 = bitcast %struct.timeout_node* %3 to i8*
   %13 = bitcast %struct.timeout_node* %1 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %12, i8* align 8 %13, i64 %sub.ptr.sub.i, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %12, i8* align 8 %13, i64 %sub.ptr.sub.i, i1 false) #25
   br label %if.end69
 
 if.else49:                                        ; preds = %if.else
@@ -2798,7 +2804,7 @@ if.else49:                                        ; preds = %if.else
 if.then.i.i.i.i118:                               ; preds = %if.else49
   %15 = bitcast %struct.timeout_node* %3 to i8*
   %16 = bitcast %struct.timeout_node* %1 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %15, i8* align 8 %16, i64 %sub.ptr.sub.i102, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %15, i8* align 8 %16, i64 %sub.ptr.sub.i102, i1 false) #25
   %.pre = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre127 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i98, align 8, !tbaa !27
   %.pre128 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i91, align 8, !tbaa !14
@@ -2824,7 +2830,7 @@ _ZSt4copyIP12timeout_nodeS1_ET0_T_S3_S2_.exit:    ; preds = %if.then.i.i.i.i118,
 if.then.i.i.i.i.i.i.i:                            ; preds = %_ZSt4copyIP12timeout_nodeS1_ET0_T_S3_S2_.exit
   %20 = bitcast %struct.timeout_node* %17 to i8*
   %21 = bitcast %struct.timeout_node* %add.ptr62 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %20, i8* align 8 %21, i64 %sub.ptr.sub.i.i.i.i.i.i.i, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* align 8 %20, i8* align 8 %21, i64 %sub.ptr.sub.i.i.i.i.i.i.i, i1 false) #25
   br label %if.end69
 
 if.end69:                                         ; preds = %if.then.i.i.i.i.i.i.i, %_ZSt4copyIP12timeout_nodeS1_ET0_T_S3_S2_.exit, %if.then.i.i.i.i107, %if.then27, %_ZNSt12_Vector_baseI12timeout_nodeSaIS0_EE13_M_deallocateEPS0_m.exit
@@ -2843,7 +2849,7 @@ define linkonce_odr dso_local %"struct.std::__detail::_Hash_node"* @_ZNSt10_Hash
 entry:
   %ref.tmp = alloca i64, align 8
   %0 = bitcast i64* %ref.tmp to i8*
-  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %0) #27
+  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %0) #25
   %_M_rehash_policy = getelementptr inbounds %"class.std::_Hashtable", %"class.std::_Hashtable"* %this, i64 0, i32 4
   %_M_next_resize.i = getelementptr inbounds %"class.std::_Hashtable", %"class.std::_Hashtable"* %this, i64 0, i32 4, i32 1
   %1 = load i64, i64* %_M_next_resize.i, align 8, !tbaa !55
@@ -2872,13 +2878,13 @@ lpad:                                             ; preds = %if.then
   %8 = landingpad { i8*, i32 }
           catch i8* null
   %9 = extractvalue { i8*, i32 } %8, 0
-  %10 = call i8* @__cxa_begin_catch(i8* %9) #27
+  %10 = call i8* @__cxa_begin_catch(i8* %9) #25
   %11 = bitcast %"class.std::_Hashtable"* %this to %"struct.std::__detail::_Hashtable_alloc"*
   invoke void @_ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE18_M_deallocate_nodeEPS9_(%"struct.std::__detail::_Hashtable_alloc"* noundef %11, %"struct.std::__detail::_Hash_node"* noundef %__node)
           to label %invoke.cont14 unwind label %lpad13
 
 invoke.cont14:                                    ; preds = %lpad
-  invoke void @__cxa_rethrow() #33
+  invoke void @__cxa_rethrow() #32
           to label %unreachable unwind label %lpad13
 
 if.end:                                           ; preds = %invoke.cont4, %entry
@@ -2935,7 +2941,7 @@ _ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__detai
   %23 = load i64, i64* %_M_element_count, align 8, !tbaa !56
   %inc = add i64 %23, 1
   store i64 %inc, i64* %_M_element_count, align 8, !tbaa !56
-  call void @llvm.lifetime.end.p0i8(i64 8, i8* nonnull %0) #27
+  call void @llvm.lifetime.end.p0i8(i64 8, i8* nonnull %0) #25
   ret %"struct.std::__detail::_Hash_node"* %__node
 
 lpad13:                                           ; preds = %invoke.cont14, %lpad
@@ -2945,14 +2951,14 @@ lpad13:                                           ; preds = %invoke.cont14, %lpa
           to label %invoke.cont15 unwind label %terminate.lpad
 
 invoke.cont15:                                    ; preds = %lpad13
-  call void @llvm.lifetime.end.p0i8(i64 8, i8* nonnull %0) #27
+  call void @llvm.lifetime.end.p0i8(i64 8, i8* nonnull %0) #25
   resume { i8*, i32 } %24
 
 terminate.lpad:                                   ; preds = %lpad13
   %25 = landingpad { i8*, i32 }
           catch i8* null
   %26 = extractvalue { i8*, i32 } %25, 0
-  call void @__clang_call_terminate(i8* %26) #30
+  call void @__clang_call_terminate(i8* %26) #29
   unreachable
 
 unreachable:                                      ; preds = %invoke.cont14
@@ -2977,7 +2983,7 @@ if.end.i.i:                                       ; preds = %entry
   br i1 %cmp.i.i.i.i.i, label %if.then.i.i.i.i.i, label %_ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE19_M_allocate_bucketsEm.exit.i.i
 
 if.then.i.i.i.i.i:                                ; preds = %if.end.i.i
-  invoke void @_ZSt17__throw_bad_allocv() #33
+  invoke void @_ZSt17__throw_bad_allocv() #32
           to label %.noexc unwind label %lpad
 
 .noexc:                                           ; preds = %if.then.i.i.i.i.i
@@ -2985,7 +2991,7 @@ if.then.i.i.i.i.i:                                ; preds = %if.end.i.i
 
 _ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE19_M_allocate_bucketsEm.exit.i.i: ; preds = %if.end.i.i
   %mul.i.i.i.i.i = shl nuw i64 %__n, 3
-  %call2.i.i10.i.i.i7 = invoke noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #31
+  %call2.i.i10.i.i.i7 = invoke noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #30
           to label %call2.i.i10.i.i.i.noexc unwind label %lpad
 
 call2.i.i10.i.i.i.noexc:                          ; preds = %_ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE19_M_allocate_bucketsEm.exit.i.i
@@ -3060,18 +3066,18 @@ while.end.i:                                      ; preds = %if.end22.i, %_ZNSt1
 
 if.end.i.i.i:                                     ; preds = %while.end.i
   %14 = bitcast %"struct.std::__detail::_Hash_node_base"** %13 to i8*
-  tail call void @_ZdlPv(i8* noundef %14) #27
+  tail call void @_ZdlPv(i8* noundef %14) #25
   br label %try.cont
 
 lpad:                                             ; preds = %_ZNSt8__detail16_Hashtable_allocISaINS_10_Hash_nodeISt4pairIKiSt6vectorI12timeout_nodeSaIS5_EEELb0EEEEE19_M_allocate_bucketsEm.exit.i.i, %if.then.i.i.i.i.i
   %15 = landingpad { i8*, i32 }
           catch i8* null
   %16 = extractvalue { i8*, i32 } %15, 0
-  %17 = tail call i8* @__cxa_begin_catch(i8* %16) #27
+  %17 = tail call i8* @__cxa_begin_catch(i8* %16) #25
   %18 = load i64, i64* %__state, align 8, !tbaa !34
   %_M_next_resize.i = getelementptr inbounds %"class.std::_Hashtable", %"class.std::_Hashtable"* %this, i64 0, i32 4, i32 1
   store i64 %18, i64* %_M_next_resize.i, align 8, !tbaa !55
-  invoke void @__cxa_rethrow() #33
+  invoke void @__cxa_rethrow() #32
           to label %unreachable unwind label %lpad2
 
 lpad2:                                            ; preds = %lpad
@@ -3093,7 +3099,7 @@ terminate.lpad:                                   ; preds = %lpad2
   %20 = landingpad { i8*, i32 }
           catch i8* null
   %21 = extractvalue { i8*, i32 } %20, 0
-  tail call void @__clang_call_terminate(i8* %21) #30
+  tail call void @__clang_call_terminate(i8* %21) #29
   unreachable
 
 unreachable:                                      ; preds = %lpad
@@ -3262,7 +3268,7 @@ if.else.i:                                        ; preds = %for.body39
   %cmp.not.i.i.i = icmp ne i64 %cond.i.i.i, 0
   call void @llvm.assume(i1 %cmp.not.i.i.i)
   %mul.i.i.i.i.i = mul nuw i64 %cond.i.i.i, 56
-  %call2.i.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #31
+  %call2.i.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i) #30
   %37 = bitcast i8* %call2.i.i.i.i.i to %struct.timeout_node*
   %.pre.i.i = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i.i.i.i, align 8, !tbaa !14
   %.pre82.i.i = ptrtoint %struct.timeout_node* %.pre.i.i to i64
@@ -3285,7 +3291,7 @@ if.else.i:                                        ; preds = %for.body39
 
 if.then.i.i.i.i.i.i.i.i.i.i:                      ; preds = %if.else.i
   %40 = bitcast %struct.timeout_node* %.pre.i.i to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i.i, i8* align 8 %40, i64 %.pre83.i.i, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i.i, i8* align 8 %40, i64 %.pre83.i.i, i1 false) #25
   br label %invoke.cont10.i.i
 
 invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i.i.i, %if.else.i
@@ -3302,7 +3308,7 @@ invoke.cont10.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i:                    ; preds = %invoke.cont10.i.i
   %44 = bitcast %struct.timeout_node* %incdec.ptr.i.i to i8*
   %45 = bitcast %struct.timeout_node* %31 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %44, i8* align 8 %45, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %44, i8* align 8 %45, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i, i1 false) #25
   br label %invoke.cont15.i.i
 
 invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i, %invoke.cont10.i.i
@@ -3311,7 +3317,7 @@ invoke.cont15.i.i:                                ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i:                                  ; preds = %invoke.cont15.i.i
   %46 = bitcast %struct.timeout_node* %.pre.i.i to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %46) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %46) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i: ; preds = %if.then.i75.i.i, %invoke.cont15.i.i
@@ -3385,7 +3391,7 @@ if.else.i205:                                     ; preds = %if.then60
   %cmp.not.i.i.i204 = icmp ne i64 %cond.i.i.i203, 0
   call void @llvm.assume(i1 %cmp.not.i.i.i204)
   %mul.i.i.i.i.i206 = mul nuw i64 %cond.i.i.i203, 56
-  %call2.i.i.i.i.i207 = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i206) #31
+  %call2.i.i.i.i.i207 = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i206) #30
   %58 = bitcast i8* %call2.i.i.i.i.i207 to %struct.timeout_node*
   %.pre.i.i208 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i.i.i.i193, align 8, !tbaa !14
   %.pre82.i.i209 = ptrtoint %struct.timeout_node* %.pre.i.i208 to i64
@@ -3409,7 +3415,7 @@ if.else.i205:                                     ; preds = %if.then60
 
 if.then.i.i.i.i.i.i.i.i.i.i216:                   ; preds = %if.else.i205
   %62 = bitcast %struct.timeout_node* %.pre.i.i208 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i.i207, i8* align 8 %62, i64 %.pre83.i.i210, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i.i207, i8* align 8 %62, i64 %.pre83.i.i210, i1 false) #25
   br label %invoke.cont10.i.i222
 
 invoke.cont10.i.i222:                             ; preds = %if.then.i.i.i.i.i.i.i.i.i.i216, %if.else.i205
@@ -3426,7 +3432,7 @@ invoke.cont10.i.i222:                             ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i223:                 ; preds = %invoke.cont10.i.i222
   %66 = bitcast %struct.timeout_node* %incdec.ptr.i.i219 to i8*
   %67 = bitcast %struct.timeout_node* %51 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %66, i8* align 8 %67, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i221, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %66, i8* align 8 %67, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i221, i1 false) #25
   br label %invoke.cont15.i.i225
 
 invoke.cont15.i.i225:                             ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i223, %invoke.cont10.i.i222
@@ -3435,7 +3441,7 @@ invoke.cont15.i.i225:                             ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i226:                               ; preds = %invoke.cont15.i.i225
   %68 = bitcast %struct.timeout_node* %.pre.i.i208 to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %68) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %68) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i230
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i230: ; preds = %if.then.i75.i.i226, %invoke.cont15.i.i225
@@ -3493,7 +3499,7 @@ if.else.i249:                                     ; preds = %if.then79
   %cmp.not.i.i.i248 = icmp ne i64 %cond.i.i.i247, 0
   call void @llvm.assume(i1 %cmp.not.i.i.i248)
   %mul.i.i.i.i.i250 = mul nuw i64 %cond.i.i.i247, 56
-  %call2.i.i.i.i.i251 = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i250) #31
+  %call2.i.i.i.i.i251 = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef %mul.i.i.i.i.i250) #30
   %77 = bitcast i8* %call2.i.i.i.i.i251 to %struct.timeout_node*
   %.pre.i.i252 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i.i.i.i237, align 8, !tbaa !14
   %.pre82.i.i253 = ptrtoint %struct.timeout_node* %.pre.i.i252 to i64
@@ -3517,7 +3523,7 @@ if.else.i249:                                     ; preds = %if.then79
 
 if.then.i.i.i.i.i.i.i.i.i.i260:                   ; preds = %if.else.i249
   %81 = bitcast %struct.timeout_node* %.pre.i.i252 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i.i251, i8* align 8 %81, i64 %.pre83.i.i254, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %call2.i.i.i.i.i251, i8* align 8 %81, i64 %.pre83.i.i254, i1 false) #25
   br label %invoke.cont10.i.i266
 
 invoke.cont10.i.i266:                             ; preds = %if.then.i.i.i.i.i.i.i.i.i.i260, %if.else.i249
@@ -3534,7 +3540,7 @@ invoke.cont10.i.i266:                             ; preds = %if.then.i.i.i.i.i.i
 if.then.i.i.i.i.i.i.i.i71.i.i267:                 ; preds = %invoke.cont10.i.i266
   %85 = bitcast %struct.timeout_node* %incdec.ptr.i.i263 to i8*
   %86 = bitcast %struct.timeout_node* %70 to i8*
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %85, i8* align 8 %86, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i265, i1 false) #27
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* nonnull align 8 %85, i8* align 8 %86, i64 %sub.ptr.sub.i.i.i.i.i.i.i.i70.i.i265, i1 false) #25
   br label %invoke.cont15.i.i269
 
 invoke.cont15.i.i269:                             ; preds = %if.then.i.i.i.i.i.i.i.i71.i.i267, %invoke.cont10.i.i266
@@ -3543,7 +3549,7 @@ invoke.cont15.i.i269:                             ; preds = %if.then.i.i.i.i.i.i
 
 if.then.i75.i.i270:                               ; preds = %invoke.cont15.i.i269
   %87 = bitcast %struct.timeout_node* %.pre.i.i252 to i8*
-  tail call void @_ZdlPv(i8* noundef nonnull %87) #27
+  tail call void @_ZdlPv(i8* noundef nonnull %87) #25
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i274
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE17_M_realloc_insertIJRKS0_EEEvN9__gnu_cxx17__normal_iteratorIPS0_S2_EEDpOT_.exit.i274: ; preds = %if.then.i75.i.i270, %invoke.cont15.i.i269
@@ -3583,7 +3589,7 @@ entry:
   br i1 %cmp, label %if.then, label %if.end
 
 if.then:                                          ; preds = %entry
-  %puts68 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.78, i64 0, i64 0))
+  %puts68 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.80, i64 0, i64 0))
   br label %if.end
 
 if.end:                                           ; preds = %if.then, %entry
@@ -3592,7 +3598,7 @@ if.end:                                           ; preds = %if.then, %entry
   br i1 %cmp8, label %if.then9, label %if.end11
 
 if.then9:                                         ; preds = %if.end
-  %puts67 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.77, i64 0, i64 0))
+  %puts67 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.79, i64 0, i64 0))
   br label %if.end11
 
 if.end11:                                         ; preds = %if.then9, %if.end
@@ -3601,7 +3607,7 @@ if.end11:                                         ; preds = %if.then9, %if.end
   br i1 %cmp16, label %if.then17, label %if.end19
 
 if.then17:                                        ; preds = %if.end11
-  %puts66 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.76, i64 0, i64 0))
+  %puts66 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.78, i64 0, i64 0))
   br label %if.end19
 
 if.end19:                                         ; preds = %if.then17, %if.end11
@@ -3610,7 +3616,7 @@ if.end19:                                         ; preds = %if.then17, %if.end1
   br i1 %cmp24, label %if.then25, label %if.end27
 
 if.then25:                                        ; preds = %if.end19
-  %puts65 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([58 x i8], [58 x i8]* @str.75, i64 0, i64 0))
+  %puts65 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([58 x i8], [58 x i8]* @str.77, i64 0, i64 0))
   br label %if.end27
 
 if.end27:                                         ; preds = %if.then25, %if.end19
@@ -3619,7 +3625,7 @@ if.end27:                                         ; preds = %if.then25, %if.end1
   br i1 %cmp32, label %if.then33, label %if.end35
 
 if.then33:                                        ; preds = %if.end27
-  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @str.74, i64 0, i64 0))
+  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @str.76, i64 0, i64 0))
   br label %if.end35
 
 if.end35:                                         ; preds = %if.then33, %if.end27
@@ -3628,21 +3634,21 @@ if.end35:                                         ; preds = %if.then33, %if.end2
   br i1 %cmp40, label %if.then41, label %if.end43
 
 if.then41:                                        ; preds = %if.end35
-  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.73, i64 0, i64 0))
+  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.75, i64 0, i64 0))
   br label %if.end43
 
 if.end43:                                         ; preds = %if.then41, %if.end35
   tail call void @ompt_test(i32 noundef -1, i32 noundef -1, i32 noundef -1, i32 noundef -1)
-  %call46 = tail call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull @start_time) #27
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([17 x i8], [17 x i8]* @str.72, i64 0, i64 0))
+  %call46 = tail call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull @start_time) #25
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([17 x i8], [17 x i8]* @str.74, i64 0, i64 0))
   ret i32 1
 }
 
 ; Function Attrs: nounwind uwtable
 define dso_local void @ompt_finalize(%union.ompt_data_t* nocapture readnone %data) #22 {
 entry:
-  %call = tail call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull @end_time) #27
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([14 x i8], [14 x i8]* @str.79, i64 0, i64 0))
+  %call = tail call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull @end_time) #25
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([14 x i8], [14 x i8]* @str.81, i64 0, i64 0))
   %0 = load i64, i64* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 3), align 8, !tbaa !56
   %call3 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @.str.47, i64 0, i64 0), i64 noundef %0)
   %__begin1.sroa.0.087 = load %"struct.std::__detail::_Hash_node"*, %"struct.std::__detail::_Hash_node"** bitcast (%"struct.std::__detail::_Hash_node_base"** getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 2, i32 0) to %"struct.std::__detail::_Hash_node"**), align 8, !tbaa !13
@@ -3650,7 +3656,7 @@ entry:
   br i1 %cmp.i.not88, label %for.cond.cleanup, label %for.body
 
 for.cond.cleanup:                                 ; preds = %for.cond.cleanup17, %entry
-  %puts62 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([15 x i8], [15 x i8]* @str.80, i64 0, i64 0))
+  %puts62 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([15 x i8], [15 x i8]* @str.82, i64 0, i64 0))
   ret void
 
 for.body:                                         ; preds = %for.cond.cleanup17, %entry
@@ -3658,7 +3664,7 @@ for.body:                                         ; preds = %for.cond.cleanup17,
   %_M_storage.i.i.i = getelementptr inbounds %"struct.std::__detail::_Hash_node", %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089, i64 0, i32 0, i32 1
   %first.i.i = bitcast %"struct.__gnu_cxx::__aligned_buffer"* %_M_storage.i.i.i to i32*
   %second.i.i = getelementptr inbounds %"struct.std::__detail::_Hash_node", %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089, i64 0, i32 0, i32 1, i32 0, i32 0, i64 8
-  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([61 x i8], [61 x i8]* @str.81, i64 0, i64 0))
+  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([61 x i8], [61 x i8]* @str.83, i64 0, i64 0))
   %1 = load i32, i32* %first.i.i, align 4, !tbaa !38
   %call14 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([15 x i8], [15 x i8]* @.str.49, i64 0, i64 0), i32 noundef %1)
   %_M_finish.i = getelementptr inbounds %"struct.std::__detail::_Hash_node", %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089, i64 0, i32 0, i32 1, i32 0, i32 0, i64 16
@@ -3670,7 +3676,7 @@ for.body:                                         ; preds = %for.cond.cleanup17,
   br i1 %5, label %for.cond.cleanup17, label %for.body18
 
 for.cond.cleanup17:                               ; preds = %for.body18, %for.body
-  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([3 x i8], [3 x i8]* @str.82, i64 0, i64 0))
+  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([3 x i8], [3 x i8]* @str.84, i64 0, i64 0))
   %6 = bitcast %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089 to %"struct.std::__detail::_Hash_node"**
   %__begin1.sroa.0.0 = load %"struct.std::__detail::_Hash_node"*, %"struct.std::__detail::_Hash_node"** %6, align 8, !tbaa !13
   %cmp.i.not = icmp eq %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.0, null
@@ -3724,7 +3730,7 @@ entry:
   %0 = load i32*, i32** @parallel_arr_size, align 8
   %1 = load i32*, i32** @loop_arr_size, align 8
   %2 = getelementptr i32, i32* %0, i64 0
-  store i32 0, i32* %2, align 4
+  store i32 2, i32* %2, align 4
   %3 = getelementptr i32, i32* %1, i64 0
   store i32 2, i32* %3, align 4
   %malloccall3 = tail call i8* @malloc(i64 ptrtoint (%struct.details** getelementptr (%struct.details*, %struct.details** null, i32 1) to i64))
@@ -3739,283 +3745,70 @@ entry:
   %5 = getelementptr %struct.loop_details*, %struct.loop_details** %4, i64 0
   store %struct.loop_details* %malloced8, %struct.loop_details** %5, align 8
   %6 = load %struct.loop_details**, %struct.loop_details*** @loop_execution, align 8
-  %malloccall9 = tail call i8* @malloc(i64 0)
+  %malloccall9 = tail call i8* @malloc(i64 mul (i64 ptrtoint (%struct.details* getelementptr (%struct.details, %struct.details* null, i32 1) to i64), i64 2))
   %malloced10 = bitcast i8* %malloccall9 to %struct.details*
   %7 = load %struct.details**, %struct.details*** @parallel_region, align 8
   %8 = getelementptr %struct.details*, %struct.details** %7, i64 0
   store %struct.details* %malloced10, %struct.details** %8, align 8
   %9 = load %struct.details**, %struct.details*** @parallel_region, align 8
+  %10 = getelementptr %struct.details*, %struct.details** %9, i64 0
+  %11 = load %struct.details*, %struct.details** %10, align 8
+  %12 = getelementptr %struct.details, %struct.details* %11, i64 0
+  %13 = getelementptr %struct.details, %struct.details* %12, i64 0, i32 0
+  store i32 -1, i32* %13, align 4
+  %14 = getelementptr %struct.details*, %struct.details** %9, i64 0
+  %15 = load %struct.details*, %struct.details** %14, align 8
+  %16 = getelementptr %struct.details, %struct.details* %15, i64 1
+  %17 = getelementptr %struct.details, %struct.details* %16, i64 0, i32 0
+  store i32 2, i32* %17, align 4
   ret %struct.ompt_start_tool_result_t* bitcast ({ i32 (void ()* (i8*)*, i32, %union.ompt_data_t*)*, void (%union.ompt_data_t*)*, { i8* } }* @_ZZ15ompt_start_toolE22ompt_start_tool_result to %struct.ompt_start_tool_result_t*)
 }
 
-; Function Attrs: mustprogress noreturn nounwind uwtable
-define dso_local void @_Z5checkv() local_unnamed_addr #23 {
+; Function Attrs: mustprogress uwtable
+define dso_local void @_Z5checkv() local_unnamed_addr #21 {
 entry:
-  tail call void @exit(i32 noundef 0) #30
-  unreachable
-}
-
-; Function Attrs: noreturn nounwind
-declare dso_local void @exit(i32 noundef) local_unnamed_addr #24
-
-; Function Attrs: mustprogress norecurse nounwind uwtable
-define dso_local noundef i32 @main() local_unnamed_addr #25 {
-entry:
-  %start = alloca i32, align 4
-  %cap = alloca i32, align 4
-  %test = alloca i32, align 4
-  %upper_bound_2 = alloca i32, align 4
-  %0 = tail call i32 @__kmpc_global_thread_num(%struct.ident_t* nonnull @1)
-  %1 = bitcast i32* %start to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %1) #27
-  store i32 0, i32* %start, align 4, !tbaa !38
-  %2 = bitcast i32* %cap to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %2) #27
-  store i32 20, i32* %cap, align 4, !tbaa !38
-  %3 = bitcast i32* %test to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %3) #27
-  store i32 60, i32* %test, align 4, !tbaa !38
-  %4 = bitcast i32* %upper_bound_2 to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %4) #27
-  store i32 30, i32* %upper_bound_2, align 4, !tbaa !38
-  tail call void @__kmpc_push_num_threads(%struct.ident_t* nonnull @1, i32 %0, i32 4)
-  call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull @1, i32 4, void (i32*, i32*, ...)* bitcast (void (i32*, i32*, i32*, i32*, i32*, i32*)* @.omp_outlined. to void (i32*, i32*, ...)*), i32 1, i32* nonnull %start, i32* nonnull %upper_bound_2, i32* nonnull %test, i32* nonnull %cap)
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %4) #27
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %3) #27
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %2) #27
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %1) #27
-  ret i32 0
-}
-
-; Function Attrs: alwaysinline norecurse nounwind uwtable
-define internal void @.omp_outlined.(i32* noalias nocapture noundef readnone %.global_tid., i32* noalias nocapture noundef readnone %.bound_tid., i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %start, i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %upper_bound_2, i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %test, i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %cap) #26 personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*) !ttex_array !72 !ttex_sub_array !72 !parallel_id !73 {
-entry:
-  %0 = load i32, i32* %start, align 4, !tbaa !38
-  %1 = load i32, i32* %upper_bound_2, align 4, !tbaa !38
-  %cmp72 = icmp slt i32 %0, %1
-  %2 = load i32, i32* %test, align 4
-  %cmp173 = icmp sgt i32 %2, 0
-  %or.cond74 = select i1 %cmp72, i1 %cmp173, i1 false
-  %3 = load i32, i32* %cap, align 4
-  %4 = icmp sgt i32 %3, 0
-  %or.cond80 = select i1 %or.cond74, i1 %4, i1 false
-  br i1 %or.cond80, label %for.cond2.preheader.preheader, label %for.cond.cleanup
-
-for.cond2.preheader.preheader:                    ; preds = %entry
-  br label %for.cond2.preheader
-
-for.cond2.preheader:                              ; preds = %TtexSecure_11, %TtexSecure_22, %for.cond2.preheader.preheader
-  %5 = phi i32 [ %8, %TtexSecure_11 ], [ %2, %for.cond2.preheader.preheader ], [ %8, %TtexSecure_22 ]
-  %6 = phi i32 [ %9, %TtexSecure_11 ], [ %1, %for.cond2.preheader.preheader ], [ %9, %TtexSecure_22 ]
-  %7 = phi i32 [ %10, %TtexSecure_11 ], [ %3, %for.cond2.preheader.preheader ], [ %10, %TtexSecure_22 ]
-  %i.076 = phi i32 [ %inc13, %TtexSecure_11 ], [ %0, %for.cond2.preheader.preheader ], [ %inc13, %TtexSecure_22 ]
-  %t.075 = phi i32 [ %t.1, %TtexSecure_11 ], [ 0, %for.cond2.preheader.preheader ], [ %t.1, %TtexSecure_22 ]
-  %cmp370 = icmp sgt i32 %7, 0
-  br i1 %cmp370, label %for.body5.preheader, label %for.cond.cleanup4
-
-for.body5.preheader:                              ; preds = %for.cond2.preheader
-  br label %for.body5
-
-for.cond.cleanup.loopexit:                        ; preds = %for.cond.cleanup4
-  br label %for.cond.cleanup
-
-for.cond.cleanup:                                 ; preds = %for.cond.cleanup.loopexit, %entry
-  %call1.i30 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([19 x i8], [19 x i8]* @.str.59, i64 0, i64 0), i64 noundef 18)
-          to label %invoke.cont15 unwind label %terminate.lpad
-
-for.cond.cleanup4.loopexit:                       ; preds = %for.inc
-  %.lcssa = phi i32 [ %19, %for.inc ]
-  %.pre = load i32, i32* %upper_bound_2, align 4, !tbaa !38
-  %.pre78 = load i32, i32* %test, align 4
-  br label %for.cond.cleanup4
-
-for.cond.cleanup4:                                ; preds = %for.cond.cleanup4.loopexit, %for.cond2.preheader
-  %8 = phi i32 [ %.pre78, %for.cond.cleanup4.loopexit ], [ %5, %for.cond2.preheader ]
-  %9 = phi i32 [ %.pre, %for.cond.cleanup4.loopexit ], [ %6, %for.cond2.preheader ]
-  %10 = phi i32 [ %.lcssa, %for.cond.cleanup4.loopexit ], [ %7, %for.cond2.preheader ]
-  %11 = and i32 %i.076, 1
-  %cmp10 = icmp eq i32 %11, 0
-  %t.1.v = select i1 %cmp10, i32 1, i32 2
-  %t.1 = add nuw nsw i32 %t.1.v, %t.075
-  %inc13 = add nsw i32 %i.076, 1
-  %cmp = icmp slt i32 %inc13, %9
-  %cmp1 = icmp slt i32 %t.1, %8
-  %or.cond = select i1 %cmp, i1 %cmp1, i1 false
-  br i1 %or.cond, label %TtexSecure_11, label %for.cond.cleanup.loopexit
-
-for.body5:                                        ; preds = %TtexSecure_1, %TtexSecure_2, %for.body5.preheader
-  %j.071 = phi i32 [ %inc, %TtexSecure_1 ], [ 0, %for.body5.preheader ], [ %inc, %TtexSecure_2 ]
-  %call = invoke i32 @usleep(i32 noundef 1000)
-          to label %invoke.cont unwind label %lpad.loopexit
-
-invoke.cont:                                      ; preds = %for.body5
-  %call1.i32 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([13 x i8], [13 x i8]* @.str.58, i64 0, i64 0), i64 noundef 12)
-          to label %invoke.cont6 unwind label %lpad.loopexit
-
-invoke.cont6:                                     ; preds = %invoke.cont
-  %vtable.i = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !74
+  %call1.i = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([26 x i8], [26 x i8]* @.str.58, i64 0, i64 0), i64 noundef 25)
+  %vtable.i = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !72
   %vbase.offset.ptr.i = getelementptr i8, i8* %vtable.i, i64 -24
-  %12 = bitcast i8* %vbase.offset.ptr.i to i64*
-  %vbase.offset.i = load i64, i64* %12, align 8
-  %_M_ctype.i.i = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_streambuf"** getelementptr inbounds (%"class.std::basic_ostream", %"class.std::basic_ostream"* @_ZSt4cout, i64 0, i32 1, i32 4) to i8*), i64 %vbase.offset.i
-  %13 = bitcast i8* %_M_ctype.i.i to %"class.std::ctype"**
-  %14 = load %"class.std::ctype"*, %"class.std::ctype"** %13, align 8, !tbaa !76
-  %tobool.not.i.i.i = icmp eq %"class.std::ctype"* %14, null
+  %0 = bitcast i8* %vbase.offset.ptr.i to i64*
+  %vbase.offset.i = load i64, i64* %0, align 8
+  %add.ptr.i = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8*), i64 %vbase.offset.i
+  %_M_ctype.i.i = getelementptr inbounds i8, i8* %add.ptr.i, i64 240
+  %1 = bitcast i8* %_M_ctype.i.i to %"class.std::ctype"**
+  %2 = load %"class.std::ctype"*, %"class.std::ctype"** %1, align 8, !tbaa !74
+  %tobool.not.i.i.i = icmp eq %"class.std::ctype"* %2, null
   br i1 %tobool.not.i.i.i, label %if.then.i.i.i, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
 
-if.then.i.i.i:                                    ; preds = %invoke.cont6
-  invoke void @_ZSt16__throw_bad_castv() #33
-          to label %.noexc unwind label %lpad.loopexit.split-lp
-
-.noexc:                                           ; preds = %if.then.i.i.i
+if.then.i.i.i:                                    ; preds = %entry
+  tail call void @_ZSt16__throw_bad_castv() #32
   unreachable
 
-_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i: ; preds = %invoke.cont6
-  %_M_widen_ok.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %14, i64 0, i32 8
-  %15 = load i8, i8* %_M_widen_ok.i.i.i, align 8, !tbaa !78
-  %tobool.not.i3.i.i = icmp eq i8 %15, 0
+_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i: ; preds = %entry
+  %_M_widen_ok.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %2, i64 0, i32 8
+  %3 = load i8, i8* %_M_widen_ok.i.i.i, align 8, !tbaa !76
+  %tobool.not.i3.i.i = icmp eq i8 %3, 0
   br i1 %tobool.not.i3.i.i, label %if.end.i.i.i, label %if.then.i4.i.i
 
 if.then.i4.i.i:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
-  %arrayidx.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %14, i64 0, i32 9, i64 10
-  %16 = load i8, i8* %arrayidx.i.i.i, align 1, !tbaa !26
-  br label %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i
+  %arrayidx.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %2, i64 0, i32 9, i64 10
+  %4 = load i8, i8* %arrayidx.i.i.i, align 1, !tbaa !26
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
 
 if.end.i.i.i:                                     ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
-  invoke void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %14)
-          to label %.noexc38 unwind label %lpad.loopexit
-
-.noexc38:                                         ; preds = %if.end.i.i.i
-  %17 = bitcast %"class.std::ctype"* %14 to i8 (%"class.std::ctype"*, i8)***
-  %vtable.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %17, align 8, !tbaa !74
+  tail call void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %2)
+  %5 = bitcast %"class.std::ctype"* %2 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %5, align 8, !tbaa !72
   %vfn.i.i.i = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i, i64 6
-  %18 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i, align 8
-  %call.i.i.i39 = invoke noundef signext i8 %18(%"class.std::ctype"* noundef nonnull %14, i8 noundef signext 10)
-          to label %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i unwind label %lpad.loopexit
+  %6 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i, align 8
+  %call.i.i.i = tail call noundef signext i8 %6(%"class.std::ctype"* noundef nonnull %2, i8 noundef signext 10)
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
 
-_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i: ; preds = %.noexc38, %if.then.i4.i.i
-  %retval.0.i.i.i = phi i8 [ %16, %if.then.i4.i.i ], [ %call.i.i.i39, %.noexc38 ]
-  %call1.i40 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i)
-          to label %call1.i.noexc unwind label %lpad.loopexit
-
-call1.i.noexc:                                    ; preds = %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i
-  %call.i.i3741 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i40)
-          to label %for.inc unwind label %lpad.loopexit
-
-for.inc:                                          ; preds = %call1.i.noexc
-  %inc = add nuw nsw i32 %j.071, 1
-  %19 = load i32, i32* %cap, align 4, !tbaa !38
-  %cmp3 = icmp slt i32 %inc, %19
-  br i1 %cmp3, label %TtexSecure_1, label %for.cond.cleanup4.loopexit
-
-lpad.loopexit:                                    ; preds = %call1.i.noexc, %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i, %.noexc38, %if.end.i.i.i, %invoke.cont, %for.body5
-  %lpad.loopexit68 = landingpad { i8*, i32 }
-          catch i8* null
-  br label %lpad
-
-lpad.loopexit.split-lp:                           ; preds = %if.then.i.i.i
-  %lpad.loopexit.split-lp69 = landingpad { i8*, i32 }
-          catch i8* null
-  br label %lpad
-
-lpad:                                             ; preds = %lpad.loopexit.split-lp, %lpad.loopexit
-  %lpad.phi = phi { i8*, i32 } [ %lpad.loopexit68, %lpad.loopexit ], [ %lpad.loopexit.split-lp69, %lpad.loopexit.split-lp ]
-  %20 = extractvalue { i8*, i32 } %lpad.phi, 0
-  tail call void @__clang_call_terminate(i8* %20) #30
-  unreachable
-
-invoke.cont15:                                    ; preds = %for.cond.cleanup
-  %vtable.i42 = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !74
-  %vbase.offset.ptr.i43 = getelementptr i8, i8* %vtable.i42, i64 -24
-  %21 = bitcast i8* %vbase.offset.ptr.i43 to i64*
-  %vbase.offset.i44 = load i64, i64* %21, align 8
-  %add.ptr.i45 = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8*), i64 %vbase.offset.i44
-  %_M_ctype.i.i46 = getelementptr inbounds i8, i8* %add.ptr.i45, i64 240
-  %22 = bitcast i8* %_M_ctype.i.i46 to %"class.std::ctype"**
-  %23 = load %"class.std::ctype"*, %"class.std::ctype"** %22, align 8, !tbaa !76
-  %tobool.not.i.i.i47 = icmp eq %"class.std::ctype"* %23, null
-  br i1 %tobool.not.i.i.i47, label %if.then.i.i.i48, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i51
-
-if.then.i.i.i48:                                  ; preds = %invoke.cont15
-  invoke void @_ZSt16__throw_bad_castv() #33
-          to label %.noexc60 unwind label %terminate.lpad
-
-.noexc60:                                         ; preds = %if.then.i.i.i48
-  unreachable
-
-_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i51: ; preds = %invoke.cont15
-  %_M_widen_ok.i.i.i49 = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %23, i64 0, i32 8
-  %24 = load i8, i8* %_M_widen_ok.i.i.i49, align 8, !tbaa !78
-  %tobool.not.i3.i.i50 = icmp eq i8 %24, 0
-  br i1 %tobool.not.i3.i.i50, label %if.end.i.i.i56, label %if.then.i4.i.i53
-
-if.then.i4.i.i53:                                 ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i51
-  %arrayidx.i.i.i52 = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %23, i64 0, i32 9, i64 10
-  %25 = load i8, i8* %arrayidx.i.i.i52, align 1, !tbaa !26
-  br label %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i59
-
-if.end.i.i.i56:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i51
-  invoke void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %23)
-          to label %.noexc61 unwind label %terminate.lpad
-
-.noexc61:                                         ; preds = %if.end.i.i.i56
-  %26 = bitcast %"class.std::ctype"* %23 to i8 (%"class.std::ctype"*, i8)***
-  %vtable.i.i.i54 = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %26, align 8, !tbaa !74
-  %vfn.i.i.i55 = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i54, i64 6
-  %27 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i55, align 8
-  %call.i.i.i63 = invoke noundef signext i8 %27(%"class.std::ctype"* noundef nonnull %23, i8 noundef signext 10)
-          to label %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i59 unwind label %terminate.lpad
-
-_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i59: ; preds = %.noexc61, %if.then.i4.i.i53
-  %retval.0.i.i.i57 = phi i8 [ %25, %if.then.i4.i.i53 ], [ %call.i.i.i63, %.noexc61 ]
-  %call1.i65 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i57)
-          to label %call1.i.noexc64 unwind label %terminate.lpad
-
-call1.i.noexc64:                                  ; preds = %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i59
-  %call.i.i5866 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i65)
-          to label %invoke.cont17 unwind label %terminate.lpad
-
-invoke.cont17:                                    ; preds = %call1.i.noexc64
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit: ; preds = %if.end.i.i.i, %if.then.i4.i.i
+  %retval.0.i.i.i = phi i8 [ %4, %if.then.i4.i.i ], [ %call.i.i.i, %if.end.i.i.i ]
+  %call1.i2 = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i)
+  %call.i.i3 = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i2)
   ret void
-
-terminate.lpad:                                   ; preds = %call1.i.noexc64, %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i59, %.noexc61, %if.end.i.i.i56, %if.then.i.i.i48, %for.cond.cleanup
-  %28 = landingpad { i8*, i32 }
-          catch i8* null
-  %29 = extractvalue { i8*, i32 } %28, 0
-  tail call void @__clang_call_terminate(i8* %29) #30
-  unreachable
-
-TtexSecure_1:                                     ; preds = %for.inc
-  %phi = phi i32 [ %inc, %for.inc ]
-  %30 = urem i32 %phi, 2
-  %31 = icmp eq i32 %30, 0
-  br i1 %31, label %TtexSecure_2, label %for.body5
-
-TtexSecure_2:                                     ; preds = %TtexSecure_1
-  call void @ompt_test(i32 0, i32 0, i32 0, i32 -1)
-  br label %for.body5
-
-TtexSecure_11:                                    ; preds = %for.cond.cleanup4
-  %phi3 = phi i32 [ %inc13, %for.cond.cleanup4 ]
-  %32 = urem i32 %phi3, 2
-  %33 = icmp eq i32 %32, 0
-  br i1 %33, label %TtexSecure_22, label %for.cond2.preheader
-
-TtexSecure_22:                                    ; preds = %TtexSecure_11
-  call void @ompt_test(i32 0, i32 1, i32 1, i32 -1)
-  br label %for.cond2.preheader
 }
-
-declare dso_local i32 @usleep(i32 noundef) local_unnamed_addr #0
-
-; Function Attrs: nounwind
-declare i32 @__kmpc_global_thread_num(%struct.ident_t*) local_unnamed_addr #27
-
-; Function Attrs: nounwind
-declare void @__kmpc_push_num_threads(%struct.ident_t*, i32, i32) local_unnamed_addr #27
-
-; Function Attrs: nounwind
-declare !callback !80 void @__kmpc_fork_call(%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) local_unnamed_addr #27
 
 declare dso_local noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8), i8* noundef, i64 noundef) local_unnamed_addr #0
 
@@ -4028,17 +3821,536 @@ declare dso_local void @_ZSt16__throw_bad_castv() local_unnamed_addr #16
 
 declare dso_local void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef) local_unnamed_addr #0
 
+; Function Attrs: mustprogress norecurse uwtable
+define dso_local noundef i32 @main() local_unnamed_addr #23 {
+entry:
+  %array = alloca [30 x i32], align 16
+  %j = alloca i32, align 4
+  %upper_bound = alloca i32, align 4
+  %0 = tail call i32 @__kmpc_global_thread_num(%struct.ident_t* nonnull @5)
+  %1 = bitcast [30 x i32]* %array to i8*
+  call void @llvm.lifetime.start.p0i8(i64 120, i8* nonnull %1) #25
+  %2 = bitcast [30 x i32]* %array to <4 x i32>*
+  store <4 x i32> <i32 1, i32 2, i32 3, i32 4>, <4 x i32>* %2, align 16, !tbaa !38
+  %arrayidx.4 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 4
+  %3 = bitcast i32* %arrayidx.4 to <4 x i32>*
+  store <4 x i32> <i32 5, i32 6, i32 7, i32 8>, <4 x i32>* %3, align 16, !tbaa !38
+  %arrayidx.8 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 8
+  %4 = bitcast i32* %arrayidx.8 to <4 x i32>*
+  store <4 x i32> <i32 9, i32 10, i32 11, i32 12>, <4 x i32>* %4, align 16, !tbaa !38
+  %arrayidx.12 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 12
+  %5 = bitcast i32* %arrayidx.12 to <4 x i32>*
+  store <4 x i32> <i32 13, i32 14, i32 15, i32 16>, <4 x i32>* %5, align 16, !tbaa !38
+  %arrayidx.16 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 16
+  %6 = bitcast i32* %arrayidx.16 to <4 x i32>*
+  store <4 x i32> <i32 17, i32 18, i32 19, i32 20>, <4 x i32>* %6, align 16, !tbaa !38
+  %arrayidx.20 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 20
+  %7 = bitcast i32* %arrayidx.20 to <4 x i32>*
+  store <4 x i32> <i32 21, i32 22, i32 23, i32 24>, <4 x i32>* %7, align 16, !tbaa !38
+  %arrayidx.24 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 24
+  %8 = bitcast i32* %arrayidx.24 to <4 x i32>*
+  store <4 x i32> <i32 25, i32 26, i32 27, i32 28>, <4 x i32>* %8, align 16, !tbaa !38
+  %arrayidx.28 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 28
+  store i32 29, i32* %arrayidx.28, align 16, !tbaa !38
+  %arrayidx.29 = getelementptr inbounds [30 x i32], [30 x i32]* %array, i64 0, i64 29
+  store i32 30, i32* %arrayidx.29, align 4, !tbaa !38
+  %9 = bitcast i32* %j to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %9) #25
+  store i32 20, i32* %j, align 4, !tbaa !38
+  %10 = bitcast i32* %upper_bound to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %10) #25
+  store i32 10, i32* %upper_bound, align 4, !tbaa !38
+  %call1.i = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([7 x i8], [7 x i8]* @.str.59, i64 0, i64 0), i64 noundef 6)
+  %vtable.i = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !72
+  %vbase.offset.ptr.i = getelementptr i8, i8* %vtable.i, i64 -24
+  %11 = bitcast i8* %vbase.offset.ptr.i to i64*
+  %vbase.offset.i = load i64, i64* %11, align 8
+  %add.ptr.i = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8*), i64 %vbase.offset.i
+  %_M_ctype.i.i = getelementptr inbounds i8, i8* %add.ptr.i, i64 240
+  %12 = bitcast i8* %_M_ctype.i.i to %"class.std::ctype"**
+  %13 = load %"class.std::ctype"*, %"class.std::ctype"** %12, align 8, !tbaa !74
+  %tobool.not.i.i.i = icmp eq %"class.std::ctype"* %13, null
+  br i1 %tobool.not.i.i.i, label %if.then.i.i.i, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
+
+if.then.i.i.i:                                    ; preds = %entry
+  tail call void @_ZSt16__throw_bad_castv() #32
+  unreachable
+
+_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i: ; preds = %entry
+  %_M_widen_ok.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %13, i64 0, i32 8
+  %14 = load i8, i8* %_M_widen_ok.i.i.i, align 8, !tbaa !76
+  %tobool.not.i3.i.i = icmp eq i8 %14, 0
+  br i1 %tobool.not.i3.i.i, label %if.end.i.i.i, label %if.then.i4.i.i
+
+if.then.i4.i.i:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
+  %arrayidx.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %13, i64 0, i32 9, i64 10
+  %15 = load i8, i8* %arrayidx.i.i.i, align 1, !tbaa !26
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
+
+if.end.i.i.i:                                     ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
+  tail call void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %13)
+  %16 = bitcast %"class.std::ctype"* %13 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %16, align 8, !tbaa !72
+  %vfn.i.i.i = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i, i64 6
+  %17 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i, align 8
+  %call.i.i.i = tail call noundef signext i8 %17(%"class.std::ctype"* noundef nonnull %13, i8 noundef signext 10)
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
+
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit: ; preds = %if.end.i.i.i, %if.then.i4.i.i
+  %retval.0.i.i.i = phi i8 [ %15, %if.then.i4.i.i ], [ %call.i.i.i, %if.end.i.i.i ]
+  %call1.i14 = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i)
+  %call.i.i15 = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i14)
+  tail call void @__kmpc_push_num_threads(%struct.ident_t* nonnull @5, i32 %0, i32 4)
+  call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull @5, i32 3, void (i32*, i32*, ...)* bitcast (void (i32*, i32*, i32*, i32*, [30 x i32]*)* @.omp_outlined. to void (i32*, i32*, ...)*), i32 1, i32* nonnull %upper_bound, i32* nonnull %j, [30 x i32]* nonnull %array)
+  %call1.i12 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([6 x i8], [6 x i8]* @.str.61, i64 0, i64 0), i64 noundef 5)
+  %call3 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSolsEi(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i32 noundef 0)
+  %18 = bitcast %"class.std::basic_ostream"* %call3 to i8**
+  %vtable.i16 = load i8*, i8** %18, align 8, !tbaa !72
+  %vbase.offset.ptr.i17 = getelementptr i8, i8* %vtable.i16, i64 -24
+  %19 = bitcast i8* %vbase.offset.ptr.i17 to i64*
+  %vbase.offset.i18 = load i64, i64* %19, align 8
+  %20 = bitcast %"class.std::basic_ostream"* %call3 to i8*
+  %add.ptr.i19 = getelementptr inbounds i8, i8* %20, i64 %vbase.offset.i18
+  %_M_ctype.i.i20 = getelementptr inbounds i8, i8* %add.ptr.i19, i64 240
+  %21 = bitcast i8* %_M_ctype.i.i20 to %"class.std::ctype"**
+  %22 = load %"class.std::ctype"*, %"class.std::ctype"** %21, align 8, !tbaa !74
+  %tobool.not.i.i.i21 = icmp eq %"class.std::ctype"* %22, null
+  br i1 %tobool.not.i.i.i21, label %if.then.i.i.i22, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i25
+
+if.then.i.i.i22:                                  ; preds = %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
+  call void @_ZSt16__throw_bad_castv() #32
+  unreachable
+
+_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i25: ; preds = %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit
+  %_M_widen_ok.i.i.i23 = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %22, i64 0, i32 8
+  %23 = load i8, i8* %_M_widen_ok.i.i.i23, align 8, !tbaa !76
+  %tobool.not.i3.i.i24 = icmp eq i8 %23, 0
+  br i1 %tobool.not.i3.i.i24, label %if.end.i.i.i31, label %if.then.i4.i.i27
+
+if.then.i4.i.i27:                                 ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i25
+  %arrayidx.i.i.i26 = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %22, i64 0, i32 9, i64 10
+  %24 = load i8, i8* %arrayidx.i.i.i26, align 1, !tbaa !26
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit35
+
+if.end.i.i.i31:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i25
+  call void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %22)
+  %25 = bitcast %"class.std::ctype"* %22 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i28 = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %25, align 8, !tbaa !72
+  %vfn.i.i.i29 = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i28, i64 6
+  %26 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i29, align 8
+  %call.i.i.i30 = call noundef signext i8 %26(%"class.std::ctype"* noundef nonnull %22, i8 noundef signext 10)
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit35
+
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit35: ; preds = %if.end.i.i.i31, %if.then.i4.i.i27
+  %retval.0.i.i.i32 = phi i8 [ %24, %if.then.i4.i.i27 ], [ %call.i.i.i30, %if.end.i.i.i31 ]
+  %call1.i33 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull %call3, i8 noundef signext %retval.0.i.i.i32)
+  %call.i.i34 = call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i33)
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %10) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %9) #25
+  call void @llvm.lifetime.end.p0i8(i64 120, i8* nonnull %1) #25
+  ret i32 0
+}
+
+; Function Attrs: alwaysinline norecurse nounwind uwtable
+define internal void @.omp_outlined.(i32* noalias nocapture noundef readonly %.global_tid., i32* noalias nocapture noundef readnone %.bound_tid., i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %upper_bound, i32* nocapture noundef nonnull align 4 dereferenceable(4) %j, [30 x i32]* nocapture noundef nonnull readnone align 4 dereferenceable(120) %array) #24 personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*) !ttex_array !78 !ttex_sub_array !79 !parallel_id !80 {
+entry:
+  %.omp.lb = alloca i32, align 4
+  %.omp.ub = alloca i32, align 4
+  %.omp.stride = alloca i32, align 4
+  %.omp.is_last = alloca i32, align 4
+  %.omp.sections.lb. = alloca i32, align 4
+  %.omp.sections.ub. = alloca i32, align 4
+  %.omp.sections.st. = alloca i32, align 4
+  %.omp.sections.il. = alloca i32, align 4
+  br label %for.cond2.preheader
+
+for.cond2.preheader:                              ; preds = %TtexSecure_11, %TtexSecure_22, %entry
+  %i.0127 = phi i32 [ 0, %entry ], [ %inc7, %TtexSecure_11 ], [ %inc7, %TtexSecure_22 ]
+  br label %for.body5
+
+for.cond.cleanup:                                 ; preds = %for.cond.cleanup4
+  %0 = load i32, i32* %upper_bound, align 4, !tbaa !38
+  %sub10 = add nsw i32 %0, -1
+  %cmp12 = icmp sgt i32 %0, 0
+  br i1 %cmp12, label %omp.precond.then, label %for.cond.cleanup.omp.precond.end_crit_edge
+
+for.cond.cleanup.omp.precond.end_crit_edge:       ; preds = %for.cond.cleanup
+  %.pre = load i32, i32* %.global_tid., align 4, !tbaa !38
+  br label %omp.precond.end
+
+for.cond.cleanup4:                                ; preds = %for.inc
+  %inc7 = add nuw nsw i32 %i.0127, 1
+  %exitcond133.not = icmp eq i32 %inc7, 30
+  br i1 %exitcond133.not, label %TtexSecure_11, label %for.cond.cleanup
+
+for.body5:                                        ; preds = %TtexSecure_1, %TtexSecure_2, %for.cond2.preheader
+  %j1.0126 = phi i32 [ 0, %for.cond2.preheader ], [ %inc, %TtexSecure_1 ], [ %inc, %TtexSecure_2 ]
+  %call1.i.i78 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([26 x i8], [26 x i8]* @.str.58, i64 0, i64 0), i64 noundef 25)
+          to label %call1.i.i.noexc unwind label %lpad.loopexit121
+
+call1.i.i.noexc:                                  ; preds = %for.body5
+  %vtable.i.i = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !72
+  %vbase.offset.ptr.i.i = getelementptr i8, i8* %vtable.i.i, i64 -24
+  %1 = bitcast i8* %vbase.offset.ptr.i.i to i64*
+  %vbase.offset.i.i = load i64, i64* %1, align 8
+  %_M_ctype.i.i.i = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_streambuf"** getelementptr inbounds (%"class.std::basic_ostream", %"class.std::basic_ostream"* @_ZSt4cout, i64 0, i32 1, i32 4) to i8*), i64 %vbase.offset.i.i
+  %2 = bitcast i8* %_M_ctype.i.i.i to %"class.std::ctype"**
+  %3 = load %"class.std::ctype"*, %"class.std::ctype"** %2, align 8, !tbaa !74
+  %tobool.not.i.i.i.i = icmp eq %"class.std::ctype"* %3, null
+  br i1 %tobool.not.i.i.i.i, label %if.then.i.i.i.i, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i
+
+if.then.i.i.i.i:                                  ; preds = %call1.i.i.noexc
+  invoke void @_ZSt16__throw_bad_castv() #32
+          to label %.noexc unwind label %lpad.loopexit.split-lp122
+
+.noexc:                                           ; preds = %if.then.i.i.i.i
+  unreachable
+
+_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i: ; preds = %call1.i.i.noexc
+  %_M_widen_ok.i.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %3, i64 0, i32 8
+  %4 = load i8, i8* %_M_widen_ok.i.i.i.i, align 8, !tbaa !76
+  %tobool.not.i3.i.i.i = icmp eq i8 %4, 0
+  br i1 %tobool.not.i3.i.i.i, label %if.end.i.i.i.i, label %if.then.i4.i.i.i
+
+if.then.i4.i.i.i:                                 ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i
+  %arrayidx.i.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %3, i64 0, i32 9, i64 10
+  %5 = load i8, i8* %arrayidx.i.i.i.i, align 1, !tbaa !26
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i
+
+if.end.i.i.i.i:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i
+  invoke void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %3)
+          to label %.noexc79 unwind label %lpad.loopexit121
+
+.noexc79:                                         ; preds = %if.end.i.i.i.i
+  %6 = bitcast %"class.std::ctype"* %3 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %6, align 8, !tbaa !72
+  %vfn.i.i.i.i = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i.i, i64 6
+  %7 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i.i, align 8
+  %call.i.i.i.i80 = invoke noundef signext i8 %7(%"class.std::ctype"* noundef nonnull %3, i8 noundef signext 10)
+          to label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i unwind label %lpad.loopexit121
+
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i: ; preds = %.noexc79, %if.then.i4.i.i.i
+  %retval.0.i.i.i.i = phi i8 [ %5, %if.then.i4.i.i.i ], [ %call.i.i.i.i80, %.noexc79 ]
+  %call1.i2.i81 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i.i)
+          to label %call1.i2.i.noexc unwind label %lpad.loopexit121
+
+call1.i2.i.noexc:                                 ; preds = %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i
+  %call.i.i3.i82 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i2.i81)
+          to label %for.inc unwind label %lpad.loopexit121
+
+for.inc:                                          ; preds = %call1.i2.i.noexc
+  %inc = add nuw nsw i32 %j1.0126, 1
+  %exitcond.not = icmp eq i32 %inc, 20
+  br i1 %exitcond.not, label %TtexSecure_1, label %for.cond.cleanup4
+
+lpad.loopexit121:                                 ; preds = %call1.i2.i.noexc, %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i, %.noexc79, %if.end.i.i.i.i, %for.body5
+  %lpad.loopexit123 = landingpad { i8*, i32 }
+          catch i8* null
+  br label %terminate.handler
+
+lpad.loopexit.split-lp122:                        ; preds = %if.then.i.i.i.i
+  %lpad.loopexit.split-lp124 = landingpad { i8*, i32 }
+          catch i8* null
+  br label %terminate.handler
+
+omp.precond.then:                                 ; preds = %for.cond.cleanup
+  %8 = bitcast i32* %.omp.lb to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %8) #25
+  store i32 0, i32* %.omp.lb, align 4, !tbaa !38
+  %9 = bitcast i32* %.omp.ub to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %9) #25
+  store i32 %sub10, i32* %.omp.ub, align 4, !tbaa !38
+  %10 = bitcast i32* %.omp.stride to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %10) #25
+  store i32 1, i32* %.omp.stride, align 4, !tbaa !38
+  %11 = bitcast i32* %.omp.is_last to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %11) #25
+  store i32 0, i32* %.omp.is_last, align 4, !tbaa !38
+  %12 = load i32, i32* %.global_tid., align 4, !tbaa !38
+  call void @__kmpc_for_static_init_4(%struct.ident_t* nonnull @1, i32 %12, i32 34, i32* nonnull %.omp.is_last, i32* nonnull %.omp.lb, i32* nonnull %.omp.ub, i32* nonnull %.omp.stride, i32 1, i32 1, i32 1) #25
+  %13 = load i32, i32* %.omp.ub, align 4, !tbaa !38
+  %cmp14 = icmp sgt i32 %13, %sub10
+  %cond = select i1 %cmp14, i32 %sub10, i32 %13
+  store i32 %cond, i32* %.omp.ub, align 4, !tbaa !38
+  %14 = load i32, i32* %.omp.lb, align 4, !tbaa !38
+  %cmp15.not128 = icmp sgt i32 %14, %cond
+  br i1 %cmp15.not128, label %omp.loop.exit, label %omp.inner.for.body.preheader
+
+omp.inner.for.body.preheader:                     ; preds = %omp.precond.then
+  br label %omp.inner.for.body
+
+omp.inner.for.body:                               ; preds = %omp.inner.for.body.preheader, %omp.inner.for.body
+  %.omp.iv.0129 = phi i32 [ %add19, %omp.inner.for.body ], [ %14, %omp.inner.for.body.preheader ]
+  %call = call i32 @omp_get_thread_num()
+  %15 = load i32, i32* %j, align 4, !tbaa !38
+  %dec = add nsw i32 %15, -1
+  store i32 %dec, i32* %j, align 4, !tbaa !38
+  %add19 = add nsw i32 %.omp.iv.0129, 1
+  %16 = load i32, i32* %.omp.ub, align 4, !tbaa !38
+  %cmp15.not.not = icmp slt i32 %.omp.iv.0129, %16
+  br i1 %cmp15.not.not, label %omp.inner.for.body, label %omp.loop.exit.loopexit
+
+omp.loop.exit.loopexit:                           ; preds = %omp.inner.for.body
+  br label %omp.loop.exit
+
+omp.loop.exit:                                    ; preds = %omp.loop.exit.loopexit, %omp.precond.then
+  call void @__kmpc_for_static_fini(%struct.ident_t* nonnull @1, i32 %12)
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %11) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %10) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %9) #25
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %8) #25
+  br label %omp.precond.end
+
+omp.precond.end:                                  ; preds = %omp.loop.exit, %for.cond.cleanup.omp.precond.end_crit_edge
+  %17 = phi i32 [ %.pre, %for.cond.cleanup.omp.precond.end_crit_edge ], [ %12, %omp.loop.exit ]
+  call void @__kmpc_barrier(%struct.ident_t* nonnull @2, i32 %17)
+  store i32 0, i32* %.omp.sections.lb., align 4, !tbaa !38
+  store i32 1, i32* %.omp.sections.ub., align 4, !tbaa !38
+  store i32 1, i32* %.omp.sections.st., align 4, !tbaa !38
+  store i32 0, i32* %.omp.sections.il., align 4, !tbaa !38
+  call void @__kmpc_for_static_init_4(%struct.ident_t* nonnull @3, i32 %17, i32 34, i32* nonnull %.omp.sections.il., i32* nonnull %.omp.sections.lb., i32* nonnull %.omp.sections.ub., i32* nonnull %.omp.sections.st., i32 1, i32 1, i32 2) #25
+  %18 = load i32, i32* %.omp.sections.ub., align 4, !tbaa !38
+  %19 = icmp slt i32 %18, 1
+  %20 = select i1 %19, i32 %18, i32 1
+  store i32 %20, i32* %.omp.sections.ub., align 4, !tbaa !38
+  %21 = load i32, i32* %.omp.sections.lb., align 4, !tbaa !38
+  %cmp21.not131 = icmp sgt i32 %21, %20
+  br i1 %cmp21.not131, label %omp.inner.for.end40, label %omp.inner.for.body22.preheader
+
+omp.inner.for.body22.preheader:                   ; preds = %omp.precond.end
+  br label %omp.inner.for.body22
+
+omp.inner.for.body22:                             ; preds = %omp.inner.for.body22.preheader, %omp.inner.for.inc38
+  %.omp.sections.iv..0132 = phi i32 [ %inc39, %omp.inner.for.inc38 ], [ %21, %omp.inner.for.body22.preheader ]
+  switch i32 %.omp.sections.iv..0132, label %omp.inner.for.inc38 [
+    i32 0, label %for.body27.preheader
+    i32 1, label %.omp.sections.case33
+  ]
+
+for.body27.preheader:                             ; preds = %omp.inner.for.body22
+  br label %for.body27
+
+for.body27:                                       ; preds = %for.body27.preheader, %for.inc30
+  %i23.0130 = phi i32 [ %inc31, %for.inc30 ], [ %.omp.sections.iv..0132, %for.body27.preheader ]
+  %call1.i.i101 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([26 x i8], [26 x i8]* @.str.58, i64 0, i64 0), i64 noundef 25)
+          to label %call1.i.i.noexc100 unwind label %lpad28.loopexit
+
+call1.i.i.noexc100:                               ; preds = %for.body27
+  %vtable.i.i83 = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !72
+  %vbase.offset.ptr.i.i84 = getelementptr i8, i8* %vtable.i.i83, i64 -24
+  %22 = bitcast i8* %vbase.offset.ptr.i.i84 to i64*
+  %vbase.offset.i.i85 = load i64, i64* %22, align 8
+  %_M_ctype.i.i.i87 = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_streambuf"** getelementptr inbounds (%"class.std::basic_ostream", %"class.std::basic_ostream"* @_ZSt4cout, i64 0, i32 1, i32 4) to i8*), i64 %vbase.offset.i.i85
+  %23 = bitcast i8* %_M_ctype.i.i.i87 to %"class.std::ctype"**
+  %24 = load %"class.std::ctype"*, %"class.std::ctype"** %23, align 8, !tbaa !74
+  %tobool.not.i.i.i.i88 = icmp eq %"class.std::ctype"* %24, null
+  br i1 %tobool.not.i.i.i.i88, label %if.then.i.i.i.i89, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i92
+
+if.then.i.i.i.i89:                                ; preds = %call1.i.i.noexc100
+  invoke void @_ZSt16__throw_bad_castv() #32
+          to label %.noexc102 unwind label %lpad28.loopexit.split-lp
+
+.noexc102:                                        ; preds = %if.then.i.i.i.i89
+  unreachable
+
+_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i92: ; preds = %call1.i.i.noexc100
+  %_M_widen_ok.i.i.i.i90 = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %24, i64 0, i32 8
+  %25 = load i8, i8* %_M_widen_ok.i.i.i.i90, align 8, !tbaa !76
+  %tobool.not.i3.i.i.i91 = icmp eq i8 %25, 0
+  br i1 %tobool.not.i3.i.i.i91, label %if.end.i.i.i.i97, label %if.then.i4.i.i.i94
+
+if.then.i4.i.i.i94:                               ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i92
+  %arrayidx.i.i.i.i93 = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %24, i64 0, i32 9, i64 10
+  %26 = load i8, i8* %arrayidx.i.i.i.i93, align 1, !tbaa !26
+  br label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i99
+
+if.end.i.i.i.i97:                                 ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i.i92
+  invoke void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %24)
+          to label %.noexc103 unwind label %lpad28.loopexit
+
+.noexc103:                                        ; preds = %if.end.i.i.i.i97
+  %27 = bitcast %"class.std::ctype"* %24 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i.i95 = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %27, align 8, !tbaa !72
+  %vfn.i.i.i.i96 = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i.i95, i64 6
+  %28 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i.i96, align 8
+  %call.i.i.i.i105 = invoke noundef signext i8 %28(%"class.std::ctype"* noundef nonnull %24, i8 noundef signext 10)
+          to label %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i99 unwind label %lpad28.loopexit
+
+_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i99: ; preds = %.noexc103, %if.then.i4.i.i.i94
+  %retval.0.i.i.i.i98 = phi i8 [ %26, %if.then.i4.i.i.i94 ], [ %call.i.i.i.i105, %.noexc103 ]
+  %call1.i2.i107 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i.i98)
+          to label %call1.i2.i.noexc106 unwind label %lpad28.loopexit
+
+call1.i2.i.noexc106:                              ; preds = %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i99
+  %call.i.i3.i108 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i2.i107)
+          to label %for.inc30 unwind label %lpad28.loopexit
+
+for.inc30:                                        ; preds = %call1.i2.i.noexc106
+  %inc31 = add nuw nsw i32 %i23.0130, 1
+  %exitcond134.not = icmp eq i32 %inc31, 20
+  br i1 %exitcond134.not, label %omp.inner.for.inc38.loopexit, label %for.body27, !llvm.loop !81
+
+lpad28.loopexit:                                  ; preds = %call1.i2.i.noexc106, %_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_.exit.i99, %.noexc103, %if.end.i.i.i.i97, %for.body27
+  %lpad.loopexit = landingpad { i8*, i32 }
+          catch i8* null
+  br label %terminate.handler
+
+lpad28.loopexit.split-lp:                         ; preds = %if.then.i.i.i.i89
+  %lpad.loopexit.split-lp = landingpad { i8*, i32 }
+          catch i8* null
+  br label %terminate.handler
+
+.omp.sections.case33:                             ; preds = %omp.inner.for.body22
+  %call1.i110 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([18 x i8], [18 x i8]* @.str.60, i64 0, i64 0), i64 noundef 17)
+          to label %invoke.cont34 unwind label %terminate.lpad.loopexit
+
+invoke.cont34:                                    ; preds = %.omp.sections.case33
+  %vtable.i = load i8*, i8** bitcast (%"class.std::basic_ostream"* @_ZSt4cout to i8**), align 8, !tbaa !72
+  %vbase.offset.ptr.i = getelementptr i8, i8* %vtable.i, i64 -24
+  %29 = bitcast i8* %vbase.offset.ptr.i to i64*
+  %vbase.offset.i = load i64, i64* %29, align 8
+  %_M_ctype.i.i = getelementptr inbounds i8, i8* bitcast (%"class.std::basic_streambuf"** getelementptr inbounds (%"class.std::basic_ostream", %"class.std::basic_ostream"* @_ZSt4cout, i64 0, i32 1, i32 4) to i8*), i64 %vbase.offset.i
+  %30 = bitcast i8* %_M_ctype.i.i to %"class.std::ctype"**
+  %31 = load %"class.std::ctype"*, %"class.std::ctype"** %30, align 8, !tbaa !74
+  %tobool.not.i.i.i = icmp eq %"class.std::ctype"* %31, null
+  br i1 %tobool.not.i.i.i, label %if.then.i.i.i, label %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
+
+if.then.i.i.i:                                    ; preds = %invoke.cont34
+  invoke void @_ZSt16__throw_bad_castv() #32
+          to label %.noexc113 unwind label %terminate.lpad.loopexit.split-lp
+
+.noexc113:                                        ; preds = %if.then.i.i.i
+  unreachable
+
+_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i: ; preds = %invoke.cont34
+  %_M_widen_ok.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %31, i64 0, i32 8
+  %32 = load i8, i8* %_M_widen_ok.i.i.i, align 8, !tbaa !76
+  %tobool.not.i3.i.i = icmp eq i8 %32, 0
+  br i1 %tobool.not.i3.i.i, label %if.end.i.i.i, label %if.then.i4.i.i
+
+if.then.i4.i.i:                                   ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
+  %arrayidx.i.i.i = getelementptr inbounds %"class.std::ctype", %"class.std::ctype"* %31, i64 0, i32 9, i64 10
+  %33 = load i8, i8* %arrayidx.i.i.i, align 1, !tbaa !26
+  br label %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i
+
+if.end.i.i.i:                                     ; preds = %_ZSt13__check_facetISt5ctypeIcEERKT_PS3_.exit.i.i
+  invoke void @_ZNKSt5ctypeIcE13_M_widen_initEv(%"class.std::ctype"* noundef nonnull %31)
+          to label %.noexc114 unwind label %terminate.lpad.loopexit
+
+.noexc114:                                        ; preds = %if.end.i.i.i
+  %34 = bitcast %"class.std::ctype"* %31 to i8 (%"class.std::ctype"*, i8)***
+  %vtable.i.i.i = load i8 (%"class.std::ctype"*, i8)**, i8 (%"class.std::ctype"*, i8)*** %34, align 8, !tbaa !72
+  %vfn.i.i.i = getelementptr inbounds i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vtable.i.i.i, i64 6
+  %35 = load i8 (%"class.std::ctype"*, i8)*, i8 (%"class.std::ctype"*, i8)** %vfn.i.i.i, align 8
+  %call.i.i.i115 = invoke noundef signext i8 %35(%"class.std::ctype"* noundef nonnull %31, i8 noundef signext 10)
+          to label %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i unwind label %terminate.lpad.loopexit
+
+_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i: ; preds = %.noexc114, %if.then.i4.i.i
+  %retval.0.i.i.i = phi i8 [ %33, %if.then.i4.i.i ], [ %call.i.i.i115, %.noexc114 ]
+  %call1.i116 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo3putEc(%"class.std::basic_ostream"* noundef nonnull @_ZSt4cout, i8 noundef signext %retval.0.i.i.i)
+          to label %call1.i.noexc unwind label %terminate.lpad.loopexit
+
+call1.i.noexc:                                    ; preds = %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i
+  %call.i.i112117 = invoke noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSo5flushEv(%"class.std::basic_ostream"* noundef nonnull %call1.i116)
+          to label %omp.inner.for.inc38 unwind label %terminate.lpad.loopexit
+
+omp.inner.for.inc38.loopexit:                     ; preds = %for.inc30
+  br label %omp.inner.for.inc38
+
+omp.inner.for.inc38:                              ; preds = %omp.inner.for.inc38.loopexit, %call1.i.noexc, %omp.inner.for.body22
+  %inc39 = add nsw i32 %.omp.sections.iv..0132, 1
+  %36 = load i32, i32* %.omp.sections.ub., align 4, !tbaa !38
+  %cmp21.not.not = icmp slt i32 %.omp.sections.iv..0132, %36
+  br i1 %cmp21.not.not, label %omp.inner.for.body22, label %omp.inner.for.end40.loopexit
+
+omp.inner.for.end40.loopexit:                     ; preds = %omp.inner.for.inc38
+  br label %omp.inner.for.end40
+
+omp.inner.for.end40:                              ; preds = %omp.inner.for.end40.loopexit, %omp.precond.end
+  call void @__kmpc_for_static_fini(%struct.ident_t* nonnull @3, i32 %17)
+  call void @__kmpc_barrier(%struct.ident_t* nonnull @4, i32 %17)
+  ret void
+
+terminate.lpad.loopexit:                          ; preds = %call1.i.noexc, %_ZNKSt9basic_iosIcSt11char_traitsIcEE5widenEc.exit.i, %.noexc114, %if.end.i.i.i, %.omp.sections.case33
+  %lpad.loopexit118 = landingpad { i8*, i32 }
+          catch i8* null
+  br label %terminate.lpad
+
+terminate.lpad.loopexit.split-lp:                 ; preds = %if.then.i.i.i
+  %lpad.loopexit.split-lp119 = landingpad { i8*, i32 }
+          catch i8* null
+  br label %terminate.lpad
+
+terminate.lpad:                                   ; preds = %terminate.lpad.loopexit.split-lp, %terminate.lpad.loopexit
+  %lpad.phi120 = phi { i8*, i32 } [ %lpad.loopexit118, %terminate.lpad.loopexit ], [ %lpad.loopexit.split-lp119, %terminate.lpad.loopexit.split-lp ]
+  %37 = extractvalue { i8*, i32 } %lpad.phi120, 0
+  call void @__clang_call_terminate(i8* %37) #29
+  unreachable
+
+terminate.handler:                                ; preds = %lpad28.loopexit.split-lp, %lpad28.loopexit, %lpad.loopexit.split-lp122, %lpad.loopexit121
+  %.pn = phi { i8*, i32 } [ %lpad.loopexit123, %lpad.loopexit121 ], [ %lpad.loopexit.split-lp124, %lpad.loopexit.split-lp122 ], [ %lpad.loopexit, %lpad28.loopexit ], [ %lpad.loopexit.split-lp, %lpad28.loopexit.split-lp ]
+  %exn.slot.0 = extractvalue { i8*, i32 } %.pn, 0
+  call void @__clang_call_terminate(i8* %exn.slot.0) #29
+  unreachable
+
+TtexSecure_1:                                     ; preds = %for.inc
+  %phi = phi i32 [ %inc, %for.inc ]
+  %38 = sub i32 %phi, 0
+  %39 = sdiv i32 %38, %inc
+  %40 = srem i32 %39, 2
+  %41 = icmp eq i32 %40, 0
+  br i1 %41, label %TtexSecure_2, label %for.body5
+
+TtexSecure_2:                                     ; preds = %TtexSecure_1
+  call void @ompt_test(i32 0, i32 0, i32 0, i32 -1)
+  br label %for.body5
+
+TtexSecure_11:                                    ; preds = %for.cond.cleanup4
+  %phi3 = phi i32 [ %inc7, %for.cond.cleanup4 ]
+  %42 = sub i32 %phi3, 0
+  %43 = sdiv i32 %42, %inc7
+  %44 = srem i32 %43, 2
+  %45 = icmp eq i32 %44, 0
+  br i1 %45, label %TtexSecure_22, label %for.cond2.preheader
+
+TtexSecure_22:                                    ; preds = %TtexSecure_11
+  call void @ompt_test(i32 0, i32 1, i32 1, i32 -1)
+  br label %for.cond2.preheader
+}
+
+declare dso_local void @__kmpc_for_static_init_4(%struct.ident_t*, i32, i32, i32*, i32*, i32*, i32*, i32, i32, i32) local_unnamed_addr
+
+; Function Attrs: nounwind
+declare dso_local i32 @omp_get_thread_num() local_unnamed_addr #1
+
+; Function Attrs: nounwind
+declare void @__kmpc_for_static_fini(%struct.ident_t*, i32) local_unnamed_addr #25
+
+; Function Attrs: convergent nounwind
+declare void @__kmpc_barrier(%struct.ident_t*, i32) local_unnamed_addr #26
+
+; Function Attrs: nounwind
+declare i32 @__kmpc_global_thread_num(%struct.ident_t*) local_unnamed_addr #25
+
+; Function Attrs: nounwind
+declare void @__kmpc_push_num_threads(%struct.ident_t*, i32, i32) local_unnamed_addr #25
+
+; Function Attrs: nounwind
+declare !callback !82 void @__kmpc_fork_call(%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) local_unnamed_addr #25
+
+declare dso_local noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSolsEi(%"class.std::basic_ostream"* noundef, i32 noundef) local_unnamed_addr #0
+
 ; Function Attrs: uwtable
-define internal void @_GLOBAL__sub_I_testloop_9.cpp() #7 section ".text.startup" {
+define internal void @_GLOBAL__sub_I_testing.cpp() #7 section ".text.startup" {
 entry:
   tail call void @_ZNSt8ios_base4InitC1Ev(%"class.std::ios_base::Init"* noundef nonnull @_ZStL8__ioinit)
-  %0 = tail call i32 @__cxa_atexit(void (i8*)* bitcast (void (%"class.std::ios_base::Init"*)* @_ZNSt8ios_base4InitD1Ev to void (i8*)*), i8* getelementptr inbounds (%"class.std::ios_base::Init", %"class.std::ios_base::Init"* @_ZStL8__ioinit, i64 0, i32 0), i8* nonnull @__dso_handle) #27
+  %0 = tail call i32 @__cxa_atexit(void (i8*)* bitcast (void (%"class.std::ios_base::Init"*)* @_ZNSt8ios_base4InitD1Ev to void (i8*)*), i8* getelementptr inbounds (%"class.std::ios_base::Init", %"class.std::ios_base::Init"* @_ZStL8__ioinit, i64 0, i32 0), i8* nonnull @__dso_handle) #25
   store %"struct.std::__detail::_Hash_node_base"** getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 5), %"struct.std::__detail::_Hash_node_base"*** getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 0), align 8, !tbaa !19
   store i64 1, i64* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 1), align 8, !tbaa !20
-  tail call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(16) bitcast (%"struct.std::__detail::_Hash_node_base"** getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 2, i32 0) to i8*), i8 0, i64 16, i1 false) #27
-  store float 1.000000e+00, float* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 4, i32 0), align 8, !tbaa !82
-  tail call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(16) bitcast (i64* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 4, i32 1) to i8*), i8 0, i64 16, i1 false) #27
-  %1 = tail call i32 @__cxa_atexit(void (i8*)* bitcast (void (%"class.std::unordered_map"*)* @_ZNSt13unordered_mapIiSt6vectorI12timeout_nodeSaIS1_EESt4hashIiESt8equal_toIiESaISt4pairIKiS3_EEED2Ev to void (i8*)*), i8* bitcast (%"class.std::unordered_map"* @log_data to i8*), i8* nonnull @__dso_handle) #27
+  tail call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(16) bitcast (%"struct.std::__detail::_Hash_node_base"** getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 2, i32 0) to i8*), i8 0, i64 16, i1 false) #25
+  store float 1.000000e+00, float* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 4, i32 0), align 8, !tbaa !84
+  tail call void @llvm.memset.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(16) bitcast (i64* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 4, i32 1) to i8*), i8 0, i64 16, i1 false) #25
+  %1 = tail call i32 @__cxa_atexit(void (i8*)* bitcast (void (%"class.std::unordered_map"*)* @_ZNSt13unordered_mapIiSt6vectorI12timeout_nodeSaIS1_EESt4hashIiESt8equal_toIiESaISt4pairIKiS3_EEED2Ev to void (i8*)*), i8* bitcast (%"class.std::unordered_map"* @log_data to i8*), i8* nonnull @__dso_handle) #25
   ret void
 }
 
@@ -4049,13 +4361,13 @@ declare noundef i32 @puts(i8* nocapture noundef readonly) local_unnamed_addr #2
 declare noundef i32 @putchar(i32 noundef) local_unnamed_addr #2
 
 ; Function Attrs: nofree nosync nounwind readnone speculatable willreturn
-declare i64 @llvm.smin.i64(i64, i64) #28
+declare i64 @llvm.smin.i64(i64, i64) #27
 
 ; Function Attrs: nofree nosync nounwind readnone speculatable willreturn
-declare i64 @llvm.smax.i64(i64, i64) #28
+declare i64 @llvm.smax.i64(i64, i64) #27
 
 ; Function Attrs: inaccessiblememonly nofree nosync nounwind willreturn
-declare void @llvm.assume(i1 noundef) #29
+declare void @llvm.assume(i1 noundef) #28
 
 declare noalias i8* @malloc(i64)
 
@@ -4082,17 +4394,16 @@ attributes #19 = { mustprogress nofree nosync nounwind readnone willreturn "fram
 attributes #20 = { nofree "frame-pointer"="none" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #21 = { mustprogress uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #22 = { nounwind uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #23 = { mustprogress noreturn nounwind uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #24 = { noreturn nounwind "frame-pointer"="none" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #25 = { mustprogress norecurse nounwind uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #26 = { alwaysinline norecurse nounwind uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #27 = { nounwind }
-attributes #28 = { nofree nosync nounwind readnone speculatable willreturn }
-attributes #29 = { inaccessiblememonly nofree nosync nounwind willreturn }
-attributes #30 = { noreturn nounwind }
-attributes #31 = { allocsize(0) }
-attributes #32 = { nounwind readnone willreturn }
-attributes #33 = { noreturn }
+attributes #23 = { mustprogress norecurse uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #24 = { alwaysinline norecurse nounwind uwtable "frame-pointer"="none" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #25 = { nounwind }
+attributes #26 = { convergent nounwind }
+attributes #27 = { nofree nosync nounwind readnone speculatable willreturn }
+attributes #28 = { inaccessiblememonly nofree nosync nounwind willreturn }
+attributes #29 = { noreturn nounwind }
+attributes #30 = { allocsize(0) }
+attributes #31 = { nounwind readnone willreturn }
+attributes #32 = { noreturn }
 
 !llvm.module.flags = !{!0, !1, !2}
 !llvm.ident = !{!3}
@@ -4170,14 +4481,16 @@ attributes #33 = { noreturn }
 !69 = !{!29, !9, i64 32}
 !70 = !{!29, !9, i64 40}
 !71 = distinct !{!71, !18}
-!72 = !{[0 x i32] zeroinitializer}
-!73 = !{i32 1}
-!74 = !{!75, !75, i64 0}
-!75 = !{!"vtable pointer", !8, i64 0}
-!76 = !{!77, !6, i64 240}
-!77 = !{!"_ZTSSt9basic_iosIcSt11char_traitsIcEE", !6, i64 216, !7, i64 224, !31, i64 225, !6, i64 232, !6, i64 240, !6, i64 248, !6, i64 256}
-!78 = !{!79, !7, i64 56}
-!79 = !{!"_ZTSSt5ctypeIcE", !6, i64 16, !31, i64 24, !6, i64 32, !6, i64 40, !6, i64 48, !7, i64 56, !7, i64 57, !7, i64 313, !7, i64 569}
-!80 = !{!81}
-!81 = !{i64 2, i64 -1, i64 -1, i1 true}
-!82 = !{!11, !12, i64 0}
+!72 = !{!73, !73, i64 0}
+!73 = !{!"vtable pointer", !8, i64 0}
+!74 = !{!75, !6, i64 240}
+!75 = !{!"_ZTSSt9basic_iosIcSt11char_traitsIcEE", !6, i64 216, !7, i64 224, !31, i64 225, !6, i64 232, !6, i64 240, !6, i64 248, !6, i64 256}
+!76 = !{!77, !7, i64 56}
+!77 = !{!"_ZTSSt5ctypeIcE", !6, i64 16, !31, i64 24, !6, i64 32, !6, i64 40, !6, i64 48, !7, i64 56, !7, i64 57, !7, i64 313, !7, i64 569}
+!78 = !{[2 x i32] [i32 -1, i32 2]}
+!79 = !{[2 x i32] [i32 1, i32 2]}
+!80 = !{i32 1}
+!81 = distinct !{!81, !18}
+!82 = !{!83}
+!83 = !{i64 2, i64 -1, i64 -1, i1 true}
+!84 = !{!11, !12, i64 0}

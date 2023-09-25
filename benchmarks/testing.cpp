@@ -38,9 +38,11 @@ int main() {
     #pragma omp parallel num_threads(4)
     {
         int local_sum = 0;
+        int upper_val = 30;
+        int upper_inner_val = 20;
 
-        for(int i = 0 ; i < 30 ; i++) {
-            for(int j = 0 ; j < 20 ; j++) {
+        for(int i = 0 ; i < upper_val ; i++) {
+            for(int j = 0 ; j < upper_inner_val ; j++) {
                 check();
             }
         }
