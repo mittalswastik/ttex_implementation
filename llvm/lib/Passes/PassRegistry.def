@@ -120,6 +120,7 @@ MODULE_PASS("pseudo-probe-update", PseudoProbeUpdatePass())
 //MODULE_PASS("ttex-pass", TestingNewPass())
 MODULE_PASS("ttexloadtophi", TtexLoadToPhiPass())
 MODULE_PASS("ttexupdate", TtexUpdatePass())
+MODULE_PASS("ttexupdate_2", TtexUpdatePassV2())
 #undef MODULE_PASS
 
 #ifndef MODULE_PASS_WITH_PARAMS

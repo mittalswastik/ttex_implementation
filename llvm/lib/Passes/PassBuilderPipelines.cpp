@@ -115,6 +115,7 @@
 #include "llvm/Transforms/Scalar/TestingNewPass.h"
 #include "llvm/Transforms/Scalar/TtexLoadToPhi.h"
 #include "llvm/Transforms/Scalar/TtexUpdate.h"
+#include "llvm/Transforms/Scalar/TtexUpdate_2.h"
 #include "llvm/Transforms/Scalar/SpeculativeExecution.h"
 #include "llvm/Transforms/Scalar/TailRecursionElimination.h"
 #include "llvm/Transforms/Scalar/WarnMissedTransforms.h"
@@ -197,6 +198,10 @@ static cl::opt<bool> MyOption("ttex",
 static cl::opt<bool> MyTtex("ttex_update",
   cl::desc("Description of my custom option for ttex_update"),
   cl::init(false));
+
+ static cl::opt<bool> MyTtex2("ttex_update_2",
+  cl::desc("Description of my custom option for ttex_update"),
+  cl::init(false)); 
 
 PipelineTuningOptions::PipelineTuningOptions() {
   LoopInterleaving = true;
@@ -1319,11 +1324,18 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
     //MPM.addPass(TestingNewPass());
   }
 
-  if (Options.count("ttex_update") && MyTtex) {
+  // if (Options.count("ttex_update") && MyTtex) {
+  //   //MPM.addPass(createModuleToFunctionPassAdaptor(LoopRotatePass()));
+  //   //MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+  //   MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+  //   MPM.addPass(TtexUpdatePass());
+  // }
+
+  if (Options.count("ttex_update_2") && MyTtex2) {
     //MPM.addPass(createModuleToFunctionPassAdaptor(LoopRotatePass()));
-    MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+    //MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
     MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
-    MPM.addPass(TtexUpdatePass());
+    MPM.addPass(TtexUpdatePassV2());
   }
 
   return MPM;
@@ -1842,10 +1854,16 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
     //MPM.addPass(TestingNewPass());
   }
 
-  if (Options.count("ttex_update") && MyTtex) {
-    MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+  // if (Options.count("ttex_update") && MyTtex) {
+  //   //MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+  //   MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
+  //   MPM.addPass(TtexUpdatePass());
+  // }
+
+  if (Options.count("ttex_update_2") && MyTtex2) {
+    //MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
     MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
-    MPM.addPass(TtexUpdatePass());
+    MPM.addPass(TtexUpdatePassV2());
   }
 
   return MPM;

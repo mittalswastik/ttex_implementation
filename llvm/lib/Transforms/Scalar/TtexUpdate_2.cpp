@@ -44,7 +44,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
-#include "llvm/Transforms/Scalar/TtexUpdate.h"
+#include "llvm/Transforms/Scalar/TtexUpdate_2.h"
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/LoopPeel.h"
 #include "llvm/Transforms/Utils/LoopSimplify.h"
@@ -78,112 +78,23 @@ using namespace llvm;
 //   void initializeTtexPassPass (PassRegistry&);
 // } // end namespace llvm
 
-std::vector< std::vector< std::pair<int,int> > > astdata; //storing the sub region info -- but need to fix the id's to correct location
-std::vector<int> sizes;
-std::vector< std::vector<int> > loop_split;
+std::vector< std::vector< std::pair<int,int> > > astdata_2; //storing the sub region info -- but need to fix the id's to correct location
+std::vector<int> sizes_2;
+std::vector< std::vector<int> > loop_split_2;
 
-int loop_counter = 0;
+int loop_counter_2 = 0;
 
-bool maxvuln_set = true;
+bool maxvuln_set_2 = true;
 
 #define omp_for_ref -1
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
-Value *IndItr;
-Value *IndLower;
-
-PHINode* retreiveInductionVariable(Loop *L){
-  BasicBlock *LatchBlock = L->getLoopLatch();
-  BasicBlock *Header = L->getHeader();
-  BasicBlock* PreHeader = L->getLoopPreheader();
-  for(llvm::BasicBlock::iterator I = LatchBlock->begin(), Iend = LatchBlock->end(); I != Iend ; ++I){
-    Instruction *Inst = &*I;
-    if(auto *binaryinst = dyn_cast<BinaryOperator>(Inst)){
-      if(binaryinst->getOpcode() == llvm::Instruction::Add || binaryinst->getOpcode() == llvm::Instruction::Sub){
-        if(isa<Constant> (binaryinst->getOperand(1)) || isa<Constant> (binaryinst->getOperand(0))){
-          for(llvm::BasicBlock::iterator I_2 = LatchBlock->begin(), Iend_2 = LatchBlock->end(); I_2 != Iend_2 ; ++I_2){
-            Instruction *Inst_2 = &*I_2;
-            
-            if(auto *binary_inst = dyn_cast<BinaryOperator>(Inst_2)){
-              if(binary_inst->getOpcode() == llvm::Instruction::Add || binary_inst->getOpcode() == llvm::Instruction::Sub){
-                if(binaryinst->getOperand(0) == binary_inst->getOperand(0) && binaryinst != binary_inst){
-                  break;  
-                }
-              }
-            } // two different binary statements would mean different step count ... current implementation and general loops assume constant count
-
-            if(auto *cmpinst = dyn_cast<CmpInst>(Inst_2)){
-              if(cmpinst->getOperand(0) == Inst){
-                for(PHINode &phivar: Header->phis()){
-                  if(Inst == phivar.getIncomingValueForBlock(LatchBlock)){
-                    IndItr = binaryinst;
-                    IndLower = phivar.getIncomingValueForBlock(PreHeader);
-                    std::string inditr, indl;
-                    raw_string_ostream stream1(inditr), stream2(indl);
-                    IndItr->print(stream1, false);
-                    IndLower->print(stream2, false); 
-                    errs() << "IndItr value: " << inditr <<"\n";
-                    errs() << "IndLower value: "<< indl <<"\n";
-                    errs()<<"--------------- found the induction variable -----------------\n";
-                    return &phivar;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return nullptr;
-}
-
-void DeleteAddedBlocks(BasicBlock* btemp1, BasicBlock* btemp2){
-  btemp1->eraseFromParent();
-  btemp2->eraseFromParent();
-}
-
-bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter){
+bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter){
 
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
   BasicBlock *LatchBlock = L->getLoopLatch();
-  //PHINode *IndVar = L->getInductionVariableTemp(*SE);
-  PHINode* IndVar = retreiveInductionVariable(L);
-  //auto LB = L->getBounds(*SE);
-
-  if(!IndVar){
-    errs() <<"--------------------------- induction variable is nullptr ----------------\n";
-    return false; // induction variable not found for the loop
-  }
-
-  if(IndVar->getName().contains("sections")){
-    return false;
-  }
-
-  //auto bound = Loop::LoopBounds::getBounds(*L, *IndVar, *SE);
-
-  Value *incomingValue;
-  BasicBlock *incomingBlock;
-  int index;
-
-  for (unsigned i = 0; i < IndVar->getNumIncomingValues(); ++i) {
-    if(IndVar->getIncomingBlock(i) == LatchBlock){
-      incomingValue = IndVar->getIncomingValue(i);
-      incomingBlock = IndVar->getIncomingBlock(i);
-      index = i;
-      break;
-      errs() << "Incoming value #" << i << ": " << *incomingValue << "\n";
-      errs() << "Incoming block #" << i << ": " << incomingBlock->getName() << "\n";
-    }
-  }
-
-  if(!incomingValue){
-    errs() << "Incorrect loop or other error \n";
-    return false;
-  }
 
   std::vector<BasicBlock *> OriginalLoopBlocks = L->getBlocks();
 
@@ -196,34 +107,7 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
   llvm::ConstantInt *secure_counter;
   llvm::ConstantInt *compare_to_zero;
   IRBuilder<> security(Secure_1);
-
   PHINode *phisecure;
-
-  if(IntegerType *it = dyn_cast<IntegerType> (IndVar->getType())){
-    if(it->getBitWidth() == 32){
-      secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
-      compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
-      phisecure = security.CreatePHI(llvm::Type::getInt32Ty(CTX), 2, "phi");
-    }
-
-    else {
-      secure_counter = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),count,false);
-      compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(CTX),0,false);
-      //security.CreatePHI(llvm::Type::getInt64Ty(CTX), 2, "phi");
-      phisecure = security.CreatePHI(llvm::Type::getInt64Ty(CTX), 2, "phi");
-    }
-
-    errs() << "-------------------------- before add incoming for Ttex Secure block ----------------\n";
-
-    phisecure->addIncoming(IndItr, LatchBlock);
-  }
-
-  else {
-    errs() <<"wrong induction variable format\n";
-    DeleteAddedBlocks(Secure_1, Secure_2);
-    return false;
-  }
-
   IRBuilder<> security_2(Secure_2);
 
   FunctionType *testing = FunctionType::get(
@@ -275,82 +159,17 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
   //security_2.CreateBr(Header);
   llvm::BranchInst::Create(Header,Secure_2);
 
-  // conitnuing secure 1
-  Value* lower_val;
-  if(auto* loadlower = dyn_cast<LoadInst>(IndLower)){
-    lower_val = security.CreateLoad((loadlower->getPointerOperandType())->getContainedType(0),loadlower->getPointerOperand(),"store_lower");
-  } 
   
-  else if(isa<Constant> (IndLower)){
-    lower_val = IndLower;
-  }
+  PHINode* counter_val = PHINode::Create(llvm::Type::getInt32Ty(CTX), 3, "phi",&Header->front()); 
 
-  else {
-    errs()<< "--------------- some issue with start value ------------\n";
-    DeleteAddedBlocks(Secure_1, Secure_2);
-    return false;
-  }
-  
-  Value* iteration;
-  if(Instruction *IndItrInst = dyn_cast<Instruction>(IndItr)){
-    if(isa<Constant> (IndItrInst->getOperand(0))){
-      iteration = IndItrInst->getOperand(0);
-    }
-
-    else if(isa<Constant> (IndItrInst->getOperand(1))){
-      iteration = IndItrInst->getOperand(1);
-    }
-
-    else {
-      errs()<<"---- iteration is not a constant -------\n";
-      DeleteAddedBlocks(Secure_1, Secure_2);
-      return false;
-    }
-  }
-
-  else {
-    DeleteAddedBlocks(Secure_1, Secure_2);
-    return false;
-  }
-  
-
-  Value *ind_sub_lower = security.CreateSub(phisecure,lower_val);
-  Value *val_div_step = security.CreateSDiv(ind_sub_lower, iteration);
-  Value* temp = security.CreateSRem(val_div_step, secure_counter);
+  Value* ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
+  Value* temp = security.CreateSRem(ctr_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false));
+  compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
   Value* compare = security.CreateICmpEQ(temp,compare_to_zero);
 
-  /*Print function call for testing*/
-
-  // Constant *formatStr = ConstantDataArray::getString(CTX, "String: %s, Value 1: %d, Value 2: %d, Value 3: %d\n");
-  //     GlobalVariable *formatGV = new GlobalVariable(
-  //         *M,
-  //         formatStr->getType(),
-  //         true,
-  //         GlobalValue::InternalLinkage,
-  //         formatStr,
-  //         ".str");
-
-  // Constant *stringToPrint = ConstantDataArray::getString(CTX, "Hello, LLVM!");
-  //     GlobalVariable *stringGV = new GlobalVariable(
-  //         *M,
-  //         stringToPrint->getType(),
-  //         true,
-  //         GlobalValue::InternalLinkage,
-  //         stringToPrint,
-  //         ".str");
-
-
-  // Value *valueToPrint = ConstantInt::get(Type::getInt32Ty(CTX), 42);
-
-  // // Create the printf call
-  // FunctionType *printfType =
-  //     FunctionType::get(Type::getInt32Ty(CTX), {Type::getInt8PtrTy(CTX)}, true);
-  // FunctionCallee printfFunc = M->getOrInsertFunction("printf", printfType);
-  // Value *formatArg = security.CreatePointerCast(formatGV, Type::getInt8PtrTy(CTX));
-  // Value *args_print[] = {formatArg, stringToPrint, lower_val, iteration, phisecure};
-  // security.CreateCall(printfFunc, args_print);
-
-  /*End of print function call*/
+  counter_val->addIncoming(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false),Preheader);
+  counter_val->addIncoming(ctr_val,Secure_1);
+  counter_val->addIncoming(ctr_val,Secure_2);
 
   security.CreateCondBr(compare, Secure_2, Header);
 
@@ -370,40 +189,18 @@ bool LoopSplit(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, in
       llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
     }
   }
-
-  errs() <<"--------------------------------- before adding add incoming for header ------------------\n";
-
-  IndVar->setIncomingBlock(index, Secure_1);
-  IndVar->addIncoming(incomingValue, Secure_2);
-  //Header->removePredecessor(LatchBlock);
-
-  errs() <<"--------------------------------- before adding add incoming to other values ------------------\n";
-
-  for(llvm::BasicBlock::iterator I = Header->begin(), Iend = Header->end(); I != Iend ; ++I){
-    Instruction &Inst = *I;
-    if(PHINode *Temp = dyn_cast<PHINode>(I)){
-      if(Temp != IndVar){
-        for (unsigned i = 0; i < Temp->getNumIncomingValues(); ++i) {
-          if(Temp->getIncomingBlock(i) == LatchBlock){
-            Temp->setIncomingBlock(i,Secure_1);
-            Temp->addIncoming(Temp->getIncomingValue(i),Secure_2);
-          }
-        }
-      }
-    }
-  } // change all other phi nodes in the header since predecessor basic blocks have been modified
-
+  
   return true;
 }
 
-void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_context){
+void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_context){
 
 
   //llvm::Constant* init = llvm::ConstantDataArray::get(llvm_context, sizes);
   //GlobalVariable *gvar = new GlobalVariable(init->getType(),true,GlobalValue::CommonLinkage,init,"sizes");
   //Instruction* loadInst_global =  new LoadInst(init->getType(),M.getGlobalVariable("sizes"));
   //new StoreInst(init,M.getGlobalVariable("sizes"),B->getTerminator());
-  M.getGlobalVariable("parallel_size")->setInitializer(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),sizes.size(), false));
+  M.getGlobalVariable("parallel_size")->setInitializer(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),sizes_2.size(), false));
   GlobalVariable* G_ref_array = M.getGlobalVariable("parallel_arr_size");
   Type* T_arr = G_ref_array->getType();
   Type* T_arr_1 = T_arr->getContainedType(0); //*int
@@ -414,11 +211,11 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
   Type* T_arr_1_loop = T_arr->getContainedType(0); //*int
   Type* T_arr_2_loop = T_arr_1->getContainedType(0); //int
 
-  ConstantInt *sizes_array = ConstantInt::get(Type::getInt64Ty(B->getContext()), sizes.size());
+  ConstantInt *sizes_array = ConstantInt::get(Type::getInt64Ty(B->getContext()), sizes_2.size());
   Constant *sizes_array_val = ConstantExpr::getSizeOf(T_arr_2);
   Instruction* malloc_sizes_array = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_arr_2, sizes_array_val, sizes_array, nullptr, "malloced");
   
-  ConstantInt *sizes_array_loop = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split.size());
+  ConstantInt *sizes_array_loop = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split_2.size());
   Constant *sizes_array_val_loop = ConstantExpr::getSizeOf(T_arr_2_loop);
   Instruction* malloc_sizes_array_loop = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_arr_2_loop, sizes_array_val_loop, sizes_array_loop, nullptr, "malloced");
   
@@ -448,20 +245,20 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
 
   errs()<<"------------------- load Instruction Complete ---------------------------\n";
 
-  for(int i = 0 ; i < sizes.size() ; i++){
+  for(int i = 0 ; i < sizes_2.size() ; i++){
     std::vector<llvm::Value*> sizes_indices;
     sizes_indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
     GetElementPtrInst *sizes_gepinst = GetElementPtrInst::Create(T_arr_2, load_sizes_array, sizes_indices, "", B->getTerminator());
     sizes_gepinst->getType()->print(stream1,false);
     errs()<<"gepinst inst type is: "<<str1<<"\n";
-    new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, sizes[i], true)),sizes_gepinst,B->getTerminator());
+    new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, sizes_2[i], true)),sizes_gepinst,B->getTerminator());
   }
 
-  for(int i = 0 ; i < loop_split.size() ; i++){
+  for(int i = 0 ; i < loop_split_2.size() ; i++){
     std::vector<llvm::Value*> sizes_indices;
     sizes_indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
     GetElementPtrInst *sizes_gepinst = GetElementPtrInst::Create(T_arr_2_loop, load_sizes_array_loop, sizes_indices, "", B->getTerminator());
-    new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split[i].size(), true)),sizes_gepinst,B->getTerminator());
+    new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split_2[i].size(), true)),sizes_gepinst,B->getTerminator());
   }
 
   // Above done storing the sizes array
@@ -480,7 +277,7 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
   Type* T_2_loop = T_1_loop->getContainedType(0); // *details
   Type* T_3_loop = T_2_loop->getContainedType(0); // details
 
-  ConstantInt *arraysize_para_region = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata.size());
+  ConstantInt *arraysize_para_region = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata_2.size());
   Constant* allocsize_para_region = ConstantExpr::getSizeOf(T_2);
   // allocsize_para_region = ConstantExpr::getTruncOrBitCast(allocsize_para_region, Type::getInt64Ty(B->getContext()));
   Instruction *malloced_para_region = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_2, allocsize_para_region, arraysize_para_region, nullptr, "malloced");
@@ -498,13 +295,13 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
     Global storage for loop split info below
   */
 
-  ConstantInt *arraysize_para_region_loop = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split.size());
+  ConstantInt *arraysize_para_region_loop = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split_2.size());
   Constant* allocsize_para_region_loop = ConstantExpr::getSizeOf(T_2_loop);
   Instruction *malloced_para_region_loop = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_2_loop, allocsize_para_region_loop, arraysize_para_region_loop, nullptr, "malloced");
   Instruction *store_para_region_loop = new StoreInst(malloced_para_region_loop,M.getGlobalVariable("loop_execution"),B->getTerminator());
 
-  for(int i = 0 ; i < loop_split.size() ; i++){
-    ConstantInt *arraysize = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split[i].size());
+  for(int i = 0 ; i < loop_split_2.size() ; i++){
+    ConstantInt *arraysize = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split_2[i].size());
     Constant* allocsize = ConstantExpr::getSizeOf(T_3_loop);
     //allocsize = ConstantExpr::getTruncOrBitCast(allocsize, Type::getInt64Ty(B->getContext()));
     //ConstantInt* allocsize_new = ConstantInt::get(Type::getInt64Ty(B->getContext()), M.getDataLayout().getTypeAllocSize(T_3));
@@ -521,8 +318,8 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
 
   errs()<<"------------- parallel region storage complete ------------------\n";
 
-  for(int i = 0 ; i < astdata.size() ; i++){
-    ConstantInt *arraysize = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata[i].size());
+  for(int i = 0 ; i < astdata_2.size() ; i++){
+    ConstantInt *arraysize = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata_2[i].size());
     Constant* allocsize = ConstantExpr::getSizeOf(T_3);
     //allocsize = ConstantExpr::getTruncOrBitCast(allocsize, Type::getInt64Ty(B->getContext()));
     //ConstantInt* allocsize_new = ConstantInt::get(Type::getInt64Ty(B->getContext()), M.getDataLayout().getTypeAllocSize(T_3));
@@ -541,7 +338,7 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
 
     errs()<<"----------------- parallel region "<<i<<" storage works\n";
 
-    for(int j = 0 ; j < astdata[i].size() ; j++){
+    for(int j = 0 ; j < astdata_2[i].size() ; j++){
       //errs()<<"ast value is "<<astdata[i][j]<<" "<<i<<" "<<j<<"\n";
       std::vector<llvm::Value*> indices;
       indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
@@ -560,7 +357,7 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
       indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
       indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),0, false)); // this i64 will give access error as struct value accessed is int
       GetElementPtrInst *gepinst_4 = GetElementPtrInst::Create(T_3,gepinst_3,indices_3,"",B->getTerminator());
-      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, astdata[i][j].first, true)),gepinst_4,B->getTerminator());
+      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, astdata_2[i][j].first, true)),gepinst_4,B->getTerminator());
       // use option to see if maxvul is set
 
       // errs()<<"checking for error3"<<"\n";
@@ -586,24 +383,24 @@ void setLookUpTable(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_con
   }
 }
 
-std::vector<Loop*> allLoops;
+std::vector<Loop*> allLoops_2;
 
-void generateAllLoops(Loop *L) { // gets outer loop
+void generateAllLoops_2(Loop *L) { // gets outer loop
   if(L->getSubLoops().size() == 0){
-    allLoops.push_back(L);
+    allLoops_2.push_back(L);
     return;
   }
 
   std::vector<Loop*> temp = L->getSubLoops();
   for(int i = 0 ; i < temp.size() ; i++){
-    generateAllLoops(temp[i]);
+    generateAllLoops_2(temp[i]);
   }
 
-  allLoops.push_back(L);
+  allLoops_2.push_back(L);
   return;
 }
 
-std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel_region_id, ModuleAnalysisManager &MA){
+std::vector<int> splitFor_2(Module &M, Function &F, LLVMContext &CTX, int parallel_region_id, ModuleAnalysisManager &MA){
   
   std::vector<int> temp;
   auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
@@ -671,19 +468,19 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
       //int counter = 0;
       //for(LoopInfoBase<BasicBlock, Loop>::iterator loop_iter = LIB->begin(), loop_iter_end = LIB->end(); loop_iter != loop_iter_end; ++loop_iter){
       for (Loop *ltemp : *LI) { // gives all the outer loops
-        generateAllLoops(ltemp);
+        generateAllLoops_2(ltemp);
       }  
         //testing
         //Loop *ltemp = *loop_iter;
 
-      for(int i = 0 ; i < allLoops.size(); i++) {
-        Loop* ltemp = allLoops[i];
-        // simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
+      for(int i = 0 ; i < allLoops_2.size(); i++) {
+        Loop* ltemp = allLoops_2[i];
+        simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
         // formLCSSARecursively(*ltemp, *DT, LI, SE);
       }
 
-      for(int i = 0 ; i < allLoops.size(); i++) {
-        Loop* ltemp = allLoops[i];
+      for(int i = 0 ; i < allLoops_2.size(); i++) {
+        Loop* ltemp = allLoops_2[i];
         BasicBlock *header = ltemp->getHeader();
 
         BasicBlock *Preheader = ltemp->getLoopPreheader();
@@ -734,13 +531,13 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
 
         errs()<<"Found a loop"<<"\n";
 
-        bool split_check = LoopSplit(ltemp, 2, SE, parallel_region_id, loop_counter, loop_counter);
+        bool split_check = LoopSplit_2(ltemp, 2, SE, parallel_region_id, loop_counter_2, loop_counter_2);
         if(split_check){
-          llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter); // llvm::MDNode* temp_meta = llvm::MDNode::get(context, llvm::MDString::get(context, "checking123"));
+          llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2); // llvm::MDNode* temp_meta = llvm::MDNode::get(context, llvm::MDString::get(context, "checking123"));
           llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
           //ltemp->setLoopID(loop_id_value);
           temp.push_back(1);
-          loop_counter++;
+          loop_counter_2++;
         }
       }
     }  
@@ -749,7 +546,7 @@ std::vector<int> splitFor(Module &M, Function &F, LLVMContext &CTX, int parallel
   return temp;
 }
 
-int setAstData(Module &M, Function &F, LLVMContext &CTX, int ctr, int pid, BasicBlock &callblock){
+int setAstData_2(Module &M, Function &F, LLVMContext &CTX, int ctr, int pid, BasicBlock &callblock){
 
   std::vector<std::pair<int,int> > temp;
   MDNode* ttex_array = F.getMetadata("ttex_array");
@@ -776,14 +573,14 @@ int setAstData(Module &M, Function &F, LLVMContext &CTX, int ctr, int pid, Basic
     }
   }
 
-  astdata[pid] = temp;
-  sizes[pid] = temp.size();
+  astdata_2[pid] = temp;
+  sizes_2[pid] = temp.size();
 }
 
-std::string dumptest;
-raw_string_ostream dumpdata(dumptest);
+std::string dumptest_2;
+raw_string_ostream dumpdata_2(dumptest_2);
 
-void updateWorkId(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisManager &MA){
+void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisManager &MA){
   int ctr = 1, p_id;
   MDNode* parallel_id = F.getMetadata("parallel_id");
   Value* parallel_id_temp = dyn_cast<ValueAsMetadata>(parallel_id->getOperand(0))->getValue();
@@ -797,20 +594,20 @@ void updateWorkId(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisManage
       if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
         Function* fn = call_inst->getCalledFunction();
         //errs()<<fn->dump()<<"\n";
-        call_inst->print(dumpdata,false);
-        errs()<<"call instruction is "<<dumptest<<"\n";
+        call_inst->print(dumpdata_2,false);
+        errs()<<"call instruction is "<<dumptest_2<<"\n";
         if(fn){
             if(fn->getName() == "__kmpc_for_static_init_4"){
                 llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
                 call_inst->setOperand(9,itr_ci);
-                setAstData(M,F,CTX,ctr,p_id,B);
+                setAstData_2(M,F,CTX,ctr,p_id,B);
                 ctr++;
             }
 
             else if(fn->getName() == "__kmpc_single"){
                 llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
                 call_inst->setOperand(2,itr_ci);
-                setAstData(M,F,CTX,ctr,p_id,B);
+                setAstData_2(M,F,CTX,ctr,p_id,B);
                 ctr++;
             }
         }
@@ -820,14 +617,14 @@ void updateWorkId(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisManage
 
   /*loop split code*/
 
-  if(maxvuln_set){
-    loop_split[p_id] = splitFor(M,F,CTX,p_id,MA);
+  if(maxvuln_set_2){
+    loop_split_2[p_id] = splitFor_2(M,F,CTX,p_id,MA);
   }
 
   /*end of loop split code*/
 }
 
-PreservedAnalyses TtexUpdatePass::run(Module &M, ModuleAnalysisManager &MA) {
+PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
 
     LLVMContext &CTX = M.getContext();
 
@@ -853,9 +650,9 @@ PreservedAnalyses TtexUpdatePass::run(Module &M, ModuleAnalysisManager &MA) {
     // now we could go through all omp_outlined again read metadata and parallel id and assign values according to id's
     // However clang parses the same way as we check in the pass that is every function in a module so no need for above
 
-    sizes = sizes_temp;
-    astdata = astdata_temp;
-    loop_split = temp_loop_split;
+    sizes_2 = sizes_temp;
+    astdata_2 = astdata_temp;
+    loop_split_2 = temp_loop_split;
 
 
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
@@ -867,7 +664,7 @@ PreservedAnalyses TtexUpdatePass::run(Module &M, ModuleAnalysisManager &MA) {
         if(F.getName().contains(".omp_outlined.") && F.getName() != ".omp_outlined._debug__"){
           //errs()<<"omp outlined function called\n";
           //errs()<<"Function name is:"<<F.getName()<<"\n";
-          updateWorkId(M,F,CTX,MA);
+          updateWorkId_2(M,F,CTX,MA);
         }
       }
     }
@@ -880,7 +677,7 @@ PreservedAnalyses TtexUpdatePass::run(Module &M, ModuleAnalysisManager &MA) {
         if(F.getName().contains("ompt_start_tool")){
           BasicBlock* B;
           B = &*(F.begin());
-          setLookUpTable(M,F,B,CTX);
+          setLookUpTable_2(M,F,B,CTX);
           break;
         }
       }
@@ -897,7 +694,7 @@ llvmGetPassPluginInfo() {
       PB.registerPipelineParsingCallback(
         [](StringRef PassName, ModulePassManager &MPM, ...) {
           if(PassName == "texupdate"){
-            MPM.addPass(TtexUpdatePass());
+            MPM.addPass(TtexUpdatePassV2());
             return true;
           }
           return false;
