@@ -98,6 +98,7 @@
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
 #include "llvm/Transforms/Scalar/LoopRotation.h"
 #include "llvm/Transforms/Scalar/LoopSimplifyCFG.h"
+#include "llvm/Transforms/Utils/FixIrreducible.h"
 #include "llvm/Transforms/Scalar/LoopSink.h"
 #include "llvm/Transforms/Scalar/LoopUnrollAndJamPass.h"
 #include "llvm/Transforms/Scalar/LoopUnrollPass.h"
@@ -1334,6 +1335,7 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   if (Options.count("ttex_update_2") && MyTtex2) {
     //MPM.addPass(createModuleToFunctionPassAdaptor(LoopRotatePass()));
     //MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+    MPM.addPass(createModuleToFunctionPassAdaptor(FixIrreduciblePass()));
     MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
     MPM.addPass(TtexUpdatePassV2());
   }
@@ -1862,6 +1864,7 @@ ModulePassManager PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
 
   if (Options.count("ttex_update_2") && MyTtex2) {
     //MPM.addPass(createModuleToFunctionPassAdaptor(createFunctionToLoopPassAdaptor(LoopRotatePass())));
+    MPM.addPass(createModuleToFunctionPassAdaptor(FixIrreduciblePass()));
     MPM.addPass(createModuleToFunctionPassAdaptor(LoopSimplifyPass()));
     MPM.addPass(TtexUpdatePassV2());
   }

@@ -48,6 +48,7 @@
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/LoopPeel.h"
 #include "llvm/Transforms/Utils/LoopSimplify.h"
+#include "llvm/Transforms/Utils/FixIrreducible.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
 #include "llvm/Transforms/Utils/SizeOpts.h"
 #include "llvm/Transforms/Utils/UnrollLoop.h"
@@ -90,7 +91,7 @@ bool maxvuln_set_2 = true;
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
-bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter){
+bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter, LoopInfo *LI){
 
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
@@ -101,6 +102,31 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
   llvm::Function* Func = Header->getParent();
   llvm::Module *M = Func->getParent();
   llvm::LLVMContext &CTX = M->getContext();
+
+  std::vector<BasicBlock*> PredecessorBlocks;
+  SmallVector<BasicBlock*> AllLatches;
+  //std::vector<BasicBlock*> *AllLatches;
+
+  for(BasicBlock *B: predecessors(Header)){
+    PredecessorBlocks.push_back(B);
+  }
+
+  if(PredecessorBlocks.size() == 0){
+    errs()<<"no predecessor block found\n";
+    // there can be zero predecessors but let's go with an exeception here and add another entry point to a function than just starting with a loop
+    return false;
+  }
+
+  if(LatchBlock == nullptr){
+    L->getLoopLatches(AllLatches);
+    if(AllLatches.size() == 0){
+      errs()<<"no latch block found\n";
+      return false;
+    }
+  }
+
+  PHINode* counter_val = PHINode::Create(llvm::Type::getInt32Ty(CTX), 3, "phi",&Header->front());
+
   llvm::BasicBlock *Secure_1 = BasicBlock::Create(CTX, "TtexSecure_1", Func);
   llvm::BasicBlock *Secure_2 = BasicBlock::Create(CTX, "TtexSecure_2", Func);
 
@@ -157,36 +183,116 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
   //attr_set.addAttribute(CTX, AttributeSet::FunctionIndex, Attribute::NoInline);
   //fn_test_2->addAttributes(0, AttributeSet::get(c, AttributeSet::FunctionIndex, attr));
   //security_2.CreateBr(Header);
-  llvm::BranchInst::Create(Header,Secure_2);
-
-  
-  PHINode* counter_val = PHINode::Create(llvm::Type::getInt32Ty(CTX), 3, "phi",&Header->front()); 
+  llvm::BranchInst::Create(Header,Secure_2); 
 
   Value* ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
-  Value* temp = security.CreateSRem(ctr_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false));
+  Value* temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false));
   compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
   Value* compare = security.CreateICmpEQ(temp,compare_to_zero);
 
-  counter_val->addIncoming(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false),Preheader);
+
+  for(int i = 0 ; i < PredecessorBlocks.size() ; i++){ // latch block will no longer be the predecessor block
+    if(LatchBlock == nullptr){
+      for(int i = 0 ; i < AllLatches.size() ; i++){
+        BasicBlock *LatchBlock_temp = AllLatches[i];
+        if(PredecessorBlocks[i] != LatchBlock_temp){
+          counter_val->addIncoming(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false),PredecessorBlocks[i]); 
+        }
+      }  
+    }
+
+    else {
+      if(PredecessorBlocks[i] != LatchBlock){
+        counter_val->addIncoming(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false),PredecessorBlocks[i]);
+      }
+    }
+  }
+
   counter_val->addIncoming(ctr_val,Secure_1);
   counter_val->addIncoming(ctr_val,Secure_2);
 
   security.CreateCondBr(compare, Secure_2, Header);
 
-  llvm::Instruction *Linst = LatchBlock->getTerminator();
-  if(BranchInst *BI = dyn_cast<BranchInst>(LatchBlock->getTerminator())){
-    llvm::BasicBlock * ExitMain = BI->getSuccessor(1);
-    if(ExitMain == Header){
-      ExitMain = BI->getSuccessor(0);
-      Value *conditionValue = BI->getCondition();
-      Linst->eraseFromParent();
-      llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock);
-    }
+  if(LatchBlock == nullptr){
+    for(int i = 0 ; i < AllLatches.size() ; i++){
+      BasicBlock *LatchBlock_temp = AllLatches[i];
+      llvm::Instruction *Linst = LatchBlock_temp->getTerminator();
+      if(BranchInst *BI = dyn_cast<BranchInst>(Linst)){
+        llvm::BasicBlock * ExitMain = BI->getSuccessor(0);
+        if(BI->isConditional()) {
+          if(ExitMain == Header){
+            ExitMain = BI->getSuccessor(1);
+            Value *conditionValue = BI->getCondition();
+            Linst->eraseFromParent();
+            llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock_temp);
+          }
 
-    else {
-      Value *conditionValue = BI->getCondition();
-      Linst->eraseFromParent();
-      llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
+          else {
+            Value *conditionValue = BI->getCondition();
+            Linst->eraseFromParent();
+            llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock_temp);
+          }
+        }
+
+        else {
+          Linst->eraseFromParent();
+          llvm::BranchInst::Create(Secure_1,LatchBlock_temp);
+        }
+      }
+    }
+  }
+
+  else {
+    
+    llvm::Instruction *Linst = LatchBlock->getTerminator();
+    if(BranchInst *BI = dyn_cast<BranchInst>(LatchBlock->getTerminator())){
+      llvm::BasicBlock * ExitMain = BI->getSuccessor(0);
+      if(BI->isConditional()) {
+        if(ExitMain == Header){
+          ExitMain = BI->getSuccessor(1);
+          Value *conditionValue = BI->getCondition();
+          Linst->eraseFromParent();
+          llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock);
+        }
+
+        else {
+          Value *conditionValue = BI->getCondition();
+          Linst->eraseFromParent();
+          llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
+        }
+      }
+
+      else {
+        Linst->eraseFromParent();
+        llvm::BranchInst::Create(Secure_1,LatchBlock);
+      }
+    }
+  }
+  
+
+  for(llvm::BasicBlock::iterator I = Header->begin(), Iend = Header->end(); I != Iend ; ++I){
+    Instruction &Inst = *I;
+    if(PHINode *Temp = dyn_cast<PHINode>(I)){
+      if(Temp != counter_val){
+        for (unsigned i = 0; i < Temp->getNumIncomingValues(); ++i) {
+          if(LatchBlock == nullptr) {
+            for(int j = 0 ; j < AllLatches.size() ; j++){
+              BasicBlock *LatchBlock_temp = AllLatches[j];
+              if(Temp->getIncomingBlock(i) == LatchBlock_temp){
+                Temp->setIncomingBlock(i,Secure_1);
+                Temp->addIncoming(Temp->getIncomingValue(i),Secure_2);
+              }
+            }
+          }
+
+          else {
+            if(Temp->getIncomingBlock(i) == LatchBlock){
+              Temp->setIncomingBlock(i,Secure_1);
+              Temp->addIncoming(Temp->getIncomingValue(i),Secure_2);
+            }
+          }
+        }
+      }
     }
   }
   
@@ -404,10 +510,10 @@ std::vector<int> splitFor_2(Module &M, Function &F, LLVMContext &CTX, int parall
   
   std::vector<int> temp;
   auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
-  // //FM.registerPass(DominatorTreeAnalysis());
-  //FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
+  // // FM.registerPass(DominatorTreeAnalysis());
+  // FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
   FunctionPassManager FPM;
-  // //FPM.run(createLoopSimplifyPass());
+  // // FPM.run(createLoopSimplifyPass());
   // // FPM.addPass(createLoopSimplifyPass());
 
   // if(!FM.empty()){
@@ -473,11 +579,12 @@ std::vector<int> splitFor_2(Module &M, Function &F, LLVMContext &CTX, int parall
         //testing
         //Loop *ltemp = *loop_iter;
 
-      for(int i = 0 ; i < allLoops_2.size(); i++) {
-        Loop* ltemp = allLoops_2[i];
-        simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
-        // formLCSSARecursively(*ltemp, *DT, LI, SE);
-      }
+      // for(int i = 0 ; i < allLoops_2.size(); i++) {
+      //   Loop* ltemp = allLoops_2[i];
+      //   //simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
+      //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
+      //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
+      // }
 
       for(int i = 0 ; i < allLoops_2.size(); i++) {
         Loop* ltemp = allLoops_2[i];
@@ -531,7 +638,7 @@ std::vector<int> splitFor_2(Module &M, Function &F, LLVMContext &CTX, int parall
 
         errs()<<"Found a loop"<<"\n";
 
-        bool split_check = LoopSplit_2(ltemp, 2, SE, parallel_region_id, loop_counter_2, loop_counter_2);
+        bool split_check = LoopSplit_2(ltemp, 2, SE, parallel_region_id, loop_counter_2, loop_counter_2, LI);
         if(split_check){
           llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2); // llvm::MDNode* temp_meta = llvm::MDNode::get(context, llvm::MDString::get(context, "checking123"));
           llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));

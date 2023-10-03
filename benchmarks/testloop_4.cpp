@@ -11,10 +11,10 @@ int main() {
 
     #pragma omp parallel num_threads(4)
     {
-        for(int i = 0 ; i < 30 ; i++) {
-            for(int j = 0 ; j < 20 ; j++) {
+        for(int i = 0 ; i < sum ; i++) {
+            for(int j = 0 ; j < upper_bound ; j++) {
                 usleep(1000);
-                for(int k = 0 ; k < 20 ; k++) {
+                for(int k = 0 ; k < upper_bound ; k++) {
                     usleep(1000);
                 }
             }
