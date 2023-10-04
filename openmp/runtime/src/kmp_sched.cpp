@@ -81,7 +81,7 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
                                   kmp_int32 sub_parallel_id
 #endif
 ) {
-  __kmp_printf("------------------------- checking id value in static init------------%d\n",sub_parallel_id);
+  __kmp_printf("&&&&&&&&&&---------------- checking id value in static init------------%d\n",sub_parallel_id);
   KMP_COUNT_BLOCK(OMP_LOOP_STATIC);
   KMP_PUSH_PARTITIONED_TIMER(OMP_loop_static);
   KMP_PUSH_PARTITIONED_TIMER(OMP_loop_static_scheduling);
