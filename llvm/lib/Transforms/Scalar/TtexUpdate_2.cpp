@@ -91,13 +91,15 @@ bool maxvuln_set_2 = true;
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
-bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, int sub_id, int counter, LoopInfo *LI){
+bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int counter){
 
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
   BasicBlock *LatchBlock = L->getLoopLatch();
 
   std::vector<BasicBlock *> OriginalLoopBlocks = L->getBlocks();
+
+  bool no_latch = false;
 
   llvm::Function* Func = Header->getParent();
   llvm::Module *M = Func->getParent();
@@ -122,6 +124,7 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
     if(AllLatches.size() == 0){
       errs()<<"no latch block found\n";
       return false;
+      //no_latch = true; // header is the exiting blocks as well - back edge to itself
     }
   }
 
@@ -144,7 +147,7 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
 
   FunctionCallee hookTest = M->getOrInsertFunction("ompt_test", testing);
   if (Value *calleeFunction = hookTest.getCallee()) {
-    if(Function* Fn = dyn_cast<Function>(calleeFunction)){
+    if(Function* Fn = dyn_cast<Function>(calleeFunction)) {
       Fn->addFnAttr(Attribute::NoInline);
     }
   }
@@ -198,7 +201,7 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
         if(PredecessorBlocks[i] != LatchBlock_temp){
           counter_val->addIncoming(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0, false),PredecessorBlocks[i]); 
         }
-      }  
+      } 
     }
 
     else {
@@ -224,17 +227,17 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
             ExitMain = BI->getSuccessor(1);
             Value *conditionValue = BI->getCondition();
             Linst->eraseFromParent();
-            llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock_temp);
+            llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock_temp);
           }
 
           else {
             Value *conditionValue = BI->getCondition();
             Linst->eraseFromParent();
-            llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock_temp);
+            llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock_temp);
           }
         }
 
-        else {
+        else { // case: if header has the exit condition - that header is the exiting block then latch only has a branch 
           Linst->eraseFromParent();
           llvm::BranchInst::Create(Secure_1,LatchBlock_temp);
         }
@@ -252,17 +255,17 @@ bool LoopSplit_2(Loop *L, unsigned count, ScalarEvolution *SE, int parallel_id, 
           ExitMain = BI->getSuccessor(1);
           Value *conditionValue = BI->getCondition();
           Linst->eraseFromParent();
-          llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock);
+          llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
         }
 
         else {
           Value *conditionValue = BI->getCondition();
           Linst->eraseFromParent();
-          llvm::BranchInst::Create(Secure_1,ExitMain,conditionValue,LatchBlock);
+          llvm::BranchInst::Create(ExitMain,Secure_1,conditionValue,LatchBlock);
         }
       }
 
-      else {
+      else { // case: if header has the exit condition - that header is the exiting block then latch only has a branch 
         Linst->eraseFromParent();
         llvm::BranchInst::Create(Secure_1,LatchBlock);
       }
@@ -373,15 +376,15 @@ void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_c
 
   GlobalVariable* G = M.getGlobalVariable("parallel_region");
   Type* T = G->getType(); //***details
-  Type* T_1 = T->getContainedType(0); // **details
-  Type* T_2 = T_1->getContainedType(0); // *details
-  Type* T_3 = T_2->getContainedType(0); // details
+  Type* T_1 = T->getContainedType(0); //**details
+  Type* T_2 = T_1->getContainedType(0); //*details
+  Type* T_3 = T_2->getContainedType(0); //details
 
   GlobalVariable* G_loop = M.getGlobalVariable("loop_execution");
   Type* T_loop = G_loop->getType(); //***details
-  Type* T_1_loop = T_loop->getContainedType(0); // **details
-  Type* T_2_loop = T_1_loop->getContainedType(0); // *details
-  Type* T_3_loop = T_2_loop->getContainedType(0); // details
+  Type* T_1_loop = T_loop->getContainedType(0); //**details
+  Type* T_2_loop = T_1_loop->getContainedType(0); //*details
+  Type* T_3_loop = T_2_loop->getContainedType(0); //details
 
   ConstantInt *arraysize_para_region = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata_2.size());
   Constant* allocsize_para_region = ConstantExpr::getSizeOf(T_2);
@@ -489,165 +492,158 @@ void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_c
   }
 }
 
-std::vector<Loop*> allLoops_2;
-
-void generateAllLoops_2(Loop *L) { // gets outer loop
+std::vector<Loop*> generateAllLoops_2(std::vector<Loop*> allLoops_2, Loop *L) { // gets outer loop
   if(L->getSubLoops().size() == 0){
     allLoops_2.push_back(L);
-    return;
+    return allLoops_2;
   }
 
   std::vector<Loop*> temp = L->getSubLoops();
   for(int i = 0 ; i < temp.size() ; i++){
-    generateAllLoops_2(temp[i]);
+    allLoops_2 = generateAllLoops_2(allLoops_2, temp[i]);
   }
 
   allLoops_2.push_back(L);
-  return;
+  return allLoops_2;
 }
 
-std::vector<int> splitFor_2(Module &M, Function &F, LLVMContext &CTX, int parallel_region_id, ModuleAnalysisManager &MA){
+
+std::vector<Loop*> retrieveLoopsFunc(Function &F, ModuleAnalysisManager &MA){
   
-  std::vector<int> temp;
-  auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
-  // // FM.registerPass(DominatorTreeAnalysis());
-  // FM.registerPass([]() { return llvm::DominatorTreeAnalysis(); });
+  llvm::Module *M = F.getParent();
+  llvm::LLVMContext &CTX = M->getContext();
+  std::vector<Loop*> allLoops_2;
+  auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(*M).getManager();
   FunctionPassManager FPM;
-  // // FPM.run(createLoopSimplifyPass());
-  // // FPM.addPass(createLoopSimplifyPass());
+  DominatorTree* DT;// = &FM.getResult<DominatorTreeAnalysis>(F);
+  FM.invalidate(F,PreservedAnalyses::none());
+  LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
+  DT = &FM.getResult<DominatorTreeAnalysis>(F);
+  //auto &AC = FM.getResult<AssumptionAnalysis>(F);
+  auto &ORE = FM.getResult<OptimizationRemarkEmitterAnalysis>(F);
+  ScalarEvolution *SE = FM.getCachedResult<ScalarEvolutionAnalysis>(F);
+  AssumptionCache *AC = &FM.getResult<AssumptionAnalysis>(F);
+  auto *MSSAAnalysis = FM.getCachedResult<MemorySSAAnalysis>(F);
+  std::unique_ptr<MemorySSAUpdater> MSSAU;
+  if (MSSAAnalysis) {
+    auto *MSSA = &MSSAAnalysis->getMSSA();
+    MSSAU = std::make_unique<MemorySSAUpdater>(MSSA);
+  }
 
-  // if(!FM.empty()){
-  //   errs()<<"---- Is function analysis manager empty ------- for Function: "<<F.getName()<<"\n";
-  //   //errs()<<FAM.getResult<LoopAnalysis>(F);
+  errs()<<"--------------- Loop details evaluated ------------\n";
+
+  errs()<<"checking for errors"<<"\n";
+
+  for (Loop *ltemp : *LI) { // gives all the outer loops
+    allLoops_2 = generateAllLoops_2(allLoops_2, ltemp);
+  }
+
+  for (BasicBlock &BB : F) {
+    for (Instruction &I : BB) {
+        if (CallInst *CI = dyn_cast<CallInst>(&I)) {
+            // It's a call instruction
+            Function *CalledFunc = CI->getCalledFunction();
+            errs()<<"Function name for loop split is:"<<CalledFunc->getName()<<"\n";
+            if (CalledFunc && !CalledFunc->isDeclaration()) {
+              errs()<<"Function is not a declaration\n";
+              if(!CalledFunc->getName().contains(".omp_outlined.")){
+                errs()<<"Function is also not omp_outlined\n";
+                std::vector<Loop*> temp_loops = retrieveLoopsFunc(*CalledFunc,MA);
+                allLoops_2.insert(allLoops_2.end(),temp_loops.begin(),temp_loops.end());
+              }
+            } else {
+                // Indirect function call, handle accordingly
+            }
+        }
+
+        else if (InvokeInst *CI= dyn_cast<InvokeInst>(&I)){
+          // It's a call instruction
+            Function *CalledFunc = CI->getCalledFunction();
+            errs()<<"Function name for loop split is:"<<CalledFunc->getName()<<"\n";
+            if (CalledFunc && !CalledFunc->isDeclaration()) {
+              errs()<<"Function is not a declaration\n";
+              if(!CalledFunc->getName().contains(".omp_outlined.")){
+                errs()<<"Function is also not omp_outlined\n";
+                std::vector<Loop*> temp_loops = retrieveLoopsFunc(*CalledFunc,MA);
+                allLoops_2.insert(allLoops_2.end(),temp_loops.begin(),temp_loops.end());
+              }
+            } else {
+                // Indirect function call, handle accordingly
+            }
+        }
+    }
+  }
+
+  //testing
+  //Loop *ltemp = *loop_iter;
+
+  // for(int i = 0 ; i < allLoops_2.size(); i++) {
+  //   Loop* ltemp = allLoops_2[i];
+  //   //simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
+  //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
+  //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
   // }
+
+  return allLoops_2; // return
+}
+
+std::vector<int> splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
+  std::vector<int> temp;
   
-  DominatorTree* DT = &FM.getResult<DominatorTreeAnalysis>(F);
-  //DominatorTree DT = llvm::DominatorTree();
-  //DT.recalculate(F);
-  errs()<<"We get the dominator tree\n";
-  // DT->recalculate(F);
-  //LoopInfoBase<BasicBlock, Loop>* LIB = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
-  // //LIB->releaseMemory();
-  //LIB->analyze(*DT);
+  llvm::Module *M = F.getParent();
+  llvm::LLVMContext &CTX = M->getContext();
+  std::vector<Loop*> allLoops_2 = retrieveLoopsFunc(F,MA);
+  for(int i = 0 ; i < allLoops_2.size(); i++) {
+    Loop* ltemp = allLoops_2[i];
+    BasicBlock *header = ltemp->getHeader();
 
-  // DominatorTree DT = llvm::DominatorTree();
-  // DT.recalculate(F);
-  LoopInfoBase<BasicBlock, Loop>* LInfo = new llvm::LoopInfoBase<llvm::BasicBlock, llvm::Loop>();
-  LInfo->releaseMemory();
-  LInfo->analyze(*DT);
-
-  LoopInfoBase<BasicBlock, Loop> *LIB;
-  //DT->recalculate(F);
-  //LIB->analyze(*DT);
-
-  //LoopInfo LI;
-  //LI.analyze(FM.getResult<DominatorTreeAnalysis>(F));
-
-  if(LInfo){
-    if(LInfo->begin() == LInfo->end()){
-      errs()<<"no loop info\n";
+    BasicBlock *Preheader = ltemp->getLoopPreheader();
+    //BasicBlock *Header = ltemp->getHeader();
+    BasicBlock *LatchBlock = ltemp->getLoopLatch();
+    BasicBlock *ExitingBlock = ltemp->getExitingBlock();
+    BasicBlock *ExitBlock = ltemp->getExitBlock();
+    std::string ph_label, h_label, eg_label, l_label, ex_label;
+    raw_string_ostream stream1(ph_label), stream2(h_label), stream3(eg_label), stream4(l_label), stream5(ex_label);
+    if(Preheader){
+      errs()<<"preheader found"<<"\n";
+      Preheader->printAsOperand(stream1,false);
+      errs()<<ph_label<<"\n";
+    }
+    // printAsOperand is the parent class Value function storing in output stream
+    if(header){
+      errs()<<"header found"<<"\n";
+      header->printAsOperand(stream2,false);
+      errs()<<h_label<<"\n";
+    }
+    
+    if(ExitingBlock){
+      errs()<<"exiting found"<<"\n";
+      ExitingBlock->printAsOperand(stream3,false);
+      errs()<<eg_label<<"\n";
     }
 
-    // else {
-    //   errs()<<"\n";
-    // }
+    if(LatchBlock){
+      errs()<<"LatchBlock found"<<"\n";
+      LatchBlock->printAsOperand(stream4,false);
+      errs()<<l_label<<"\n";
+    }
 
-    else {
-      FM.invalidate(F,PreservedAnalyses::none());
-      LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
-      DT = &FM.getResult<DominatorTreeAnalysis>(F);
-      //auto &AC = FM.getResult<AssumptionAnalysis>(F);
-      auto &ORE = FM.getResult<OptimizationRemarkEmitterAnalysis>(F);
-      ScalarEvolution *SE = FM.getCachedResult<ScalarEvolutionAnalysis>(F);
-      AssumptionCache *AC = &FM.getResult<AssumptionAnalysis>(F);
-      auto *MSSAAnalysis = FM.getCachedResult<MemorySSAAnalysis>(F);
-      std::unique_ptr<MemorySSAUpdater> MSSAU;
-      if (MSSAAnalysis) {
-        auto *MSSA = &MSSAAnalysis->getMSSA();
-        MSSAU = std::make_unique<MemorySSAUpdater>(MSSA);
-      }
+    if(ExitBlock){
+      errs()<<"exitblock found"<<"\n";
+      ExitBlock->printAsOperand(stream5,false);
+      errs()<<ex_label<<"\n";
+    }
 
-      errs()<<"--------------- Loop details evaluated ------------\n";
+    errs()<<"Found a loop"<<"\n";
 
-      errs()<<"checking for errors"<<"\n";
-
-      //int counter = 0;
-      //for(LoopInfoBase<BasicBlock, Loop>::iterator loop_iter = LIB->begin(), loop_iter_end = LIB->end(); loop_iter != loop_iter_end; ++loop_iter){
-      for (Loop *ltemp : *LI) { // gives all the outer loops
-        generateAllLoops_2(ltemp);
-      }  
-        //testing
-        //Loop *ltemp = *loop_iter;
-
-      // for(int i = 0 ; i < allLoops_2.size(); i++) {
-      //   Loop* ltemp = allLoops_2[i];
-      //   //simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
-      //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
-      //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
-      // }
-
-      for(int i = 0 ; i < allLoops_2.size(); i++) {
-        Loop* ltemp = allLoops_2[i];
-        BasicBlock *header = ltemp->getHeader();
-
-        BasicBlock *Preheader = ltemp->getLoopPreheader();
-        //BasicBlock *Header = ltemp->getHeader();
-        BasicBlock *LatchBlock = ltemp->getLoopLatch();
-        BasicBlock *ExitingBlock = ltemp->getExitingBlock();
-        BasicBlock *ExitBlock = ltemp->getExitBlock();
-        std::string ph_label, h_label, eg_label, l_label, ex_label;
-        raw_string_ostream stream1(ph_label), stream2(h_label), stream3(eg_label), stream4(l_label), stream5(ex_label);
-        if(Preheader){
-          errs()<<"preheader found"<<"\n";
-          Preheader->printAsOperand(stream1,false);
-          errs()<<ph_label<<"\n";
-        }
-        // printAsOperand is the parent class Value function storing in output stream
-        if(header){
-          errs()<<"header found"<<"\n";
-          header->printAsOperand(stream2,false);
-          errs()<<h_label<<"\n";
-        }
-        
-        if(ExitingBlock){
-          errs()<<"exiting found"<<"\n";
-          ExitingBlock->printAsOperand(stream3,false);
-          errs()<<eg_label<<"\n";
-        }
-
-        if(LatchBlock){
-          errs()<<"LatchBlock found"<<"\n";
-          LatchBlock->printAsOperand(stream4,false);
-          errs()<<l_label<<"\n";
-        }
-
-        if(ExitBlock){
-          errs()<<"exitblock found"<<"\n";
-          ExitBlock->printAsOperand(stream5,false);
-          errs()<<ex_label<<"\n";
-        }
-
-        // std::string h_label;
-        // raw_string_ostream stream2(h_label);
-
-        // if(header){
-        //   errs()<<"header found"<<"\n";
-        //   header->printAsOperand(stream2,false);
-        //   errs()<<h_label<<"\n";
-        // }
-
-        errs()<<"Found a loop"<<"\n";
-
-        bool split_check = LoopSplit_2(ltemp, 2, SE, parallel_region_id, loop_counter_2, loop_counter_2, LI);
-        if(split_check){
-          llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2); // llvm::MDNode* temp_meta = llvm::MDNode::get(context, llvm::MDString::get(context, "checking123"));
-          llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
-          //ltemp->setLoopID(loop_id_value);
-          temp.push_back(1);
-          loop_counter_2++;
-        }
-      }
-    }  
+    bool split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, loop_counter_2);
+    if(split_check){
+      llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2);
+      llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
+      //ltemp->setLoopID(loop_id_value);
+      temp.push_back(loop_counter_2);
+      loop_counter_2++;
+    }
   }
 
   return temp;
@@ -659,7 +655,6 @@ int setAstData_2(Module &M, Function &F, LLVMContext &CTX, int ctr, int pid, Bas
   MDNode* ttex_array = F.getMetadata("ttex_array");
   MDNode* ttex_sub_array = F.getMetadata("ttex_sub_array");
   
-
   if(ttex_array && ttex_sub_array){
     errs()<<"ttex array available"<<"\n";
     Value* v = dyn_cast<ValueAsMetadata> (ttex_array->getOperand(0))->getValue();
@@ -725,7 +720,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
   /*loop split code*/
 
   if(maxvuln_set_2){
-    loop_split_2[p_id] = splitFor_2(M,F,CTX,p_id,MA);
+    loop_split_2[p_id] = splittingLoops(F,p_id,MA);
   }
 
   /*end of loop split code*/

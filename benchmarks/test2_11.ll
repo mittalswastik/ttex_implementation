@@ -1,5 +1,5 @@
-; ModuleID = 'test'
-source_filename = "testingloop_10.cpp"
+; ModuleID = 'test11'
+source_filename = "testingloop_11.cpp"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
@@ -16,6 +16,21 @@ target triple = "x86_64-unknown-linux-gnu"
 %"struct.std::__detail::_Hash_node_base" = type { %"struct.std::__detail::_Hash_node_base"* }
 %"struct.std::__detail::_Prime_rehash_policy" = type { float, i64 }
 %union.ompt_data_t = type { i64 }
+%"class.std::basic_ostream" = type { i32 (...)**, %"class.std::basic_ios" }
+%"class.std::basic_ios" = type { %"class.std::ios_base", %"class.std::basic_ostream"*, i8, i8, %"class.std::basic_streambuf"*, %"class.std::ctype"*, %"class.std::num_put"*, %"class.std::num_get"* }
+%"class.std::ios_base" = type { i32 (...)**, i64, i64, i32, i32, i32, %"struct.std::ios_base::_Callback_list"*, %"struct.std::ios_base::_Words", [8 x %"struct.std::ios_base::_Words"], i32, %"struct.std::ios_base::_Words"*, %"class.std::locale" }
+%"struct.std::ios_base::_Callback_list" = type { %"struct.std::ios_base::_Callback_list"*, void (i32, %"class.std::ios_base"*, i32)*, i32, i32 }
+%"struct.std::ios_base::_Words" = type { i8*, i64 }
+%"class.std::locale" = type { %"class.std::locale::_Impl"* }
+%"class.std::locale::_Impl" = type { i32, %"class.std::locale::facet"**, i64, %"class.std::locale::facet"**, i8** }
+%"class.std::locale::facet" = type <{ i32 (...)**, i32, [4 x i8] }>
+%"class.std::basic_streambuf" = type { i32 (...)**, i8*, i8*, i8*, i8*, i8*, i8*, %"class.std::locale" }
+%"class.std::ctype" = type <{ %"class.std::locale::facet.base", [4 x i8], %struct.__locale_struct*, i8, [7 x i8], i32*, i32*, i16*, i8, [256 x i8], [256 x i8], i8, [6 x i8] }>
+%"class.std::locale::facet.base" = type <{ i32 (...)**, i32 }>
+%struct.__locale_struct = type { [13 x %struct.__locale_data*], i16*, i32*, i32*, [13 x i8*] }
+%struct.__locale_data = type opaque
+%"class.std::num_put" = type { %"class.std::locale::facet.base", [4 x i8] }
+%"class.std::num_get" = type { %"class.std::locale::facet.base", [4 x i8] }
 %struct.ident_t = type { i32, i32, i32, i32, i8* }
 %"struct.std::__detail::_Hash_node" = type { %"struct.std::__detail::_Hash_node_value_base" }
 %"struct.std::__detail::_Hash_node_value_base" = type { %"struct.std::__detail::_Hash_node_base", %"struct.__gnu_cxx::__aligned_buffer" }
@@ -102,34 +117,38 @@ $_ZNSt10_HashtableIiSt4pairIKiSt6vectorI12timeout_nodeSaIS3_EEESaIS6_ENSt8__deta
 @.str.53 = private unnamed_addr constant [13 x i8] c"Loop Id: %d\0A\00", align 1
 @.str.54 = private unnamed_addr constant [45 x i8] c"%d seconds and %ld nanoseconds have elapsed!\00", align 1
 @_ZZ15ompt_start_toolE22ompt_start_tool_result = internal global { i32 (void ()* (i8*)*, i32, %union.ompt_data_t*)*, void (%union.ompt_data_t*)*, { i8* } } { i32 (void ()* (i8*)*, i32, %union.ompt_data_t*)* @ompt_initialize, void (%union.ompt_data_t*)* @ompt_finalize, { i8* } zeroinitializer }, align 8
+@t = dso_local local_unnamed_addr global i32 0, align 4
+@a = dso_local local_unnamed_addr global [20 x i32] zeroinitializer, align 16
+@_ZSt4cout = external dso_local global %"class.std::basic_ostream", align 8
+@.str.58 = private unnamed_addr constant [9 x i8] c"Checking\00", align 1
 @0 = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
 @1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 514, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @2 = private unnamed_addr constant %struct.ident_t { i32 0, i32 66, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @3 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 22, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
-@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @_GLOBAL__sub_I_testingloop_10.cpp, i8* null }]
+@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @_GLOBAL__sub_I_testingloop_11.cpp, i8* null }]
 @str = private unnamed_addr constant [23 x i8] c"modification call made\00", align 1
-@str.58 = private unnamed_addr constant [18 x i8] c"Testing OMPT Test\00", align 1
-@str.60 = private unnamed_addr constant [62 x i8] c"----------------------- thread begin 1_2---------------------\00", align 1
-@str.61 = private unnamed_addr constant [60 x i8] c"----------------------- thread begin 2---------------------\00", align 1
-@str.62 = private unnamed_addr constant [59 x i8] c"----------------------- thread begin ---------------------\00", align 1
-@str.63 = private unnamed_addr constant [27 x i8] c"Cannot open device file...\00", align 1
-@str.64 = private unnamed_addr constant [32 x i8] c"scheduling policy not retreived\00", align 1
-@str.65 = private unnamed_addr constant [57 x i8] c"----------------------- size empty ---------------------\00", align 1
-@str.66 = private unnamed_addr constant [43 x i8] c"-------- end of parallel begin -----------\00", align 1
-@str.68 = private unnamed_addr constant [19 x i8] c"checking for error\00", align 1
-@str.69 = private unnamed_addr constant [19 x i8] c"value is----------\00", align 1
-@str.70 = private unnamed_addr constant [36 x i8] c"timer is been set for callback work\00", align 1
-@str.71 = private unnamed_addr constant [17 x i8] c"Checking initial\00", align 1
-@str.72 = private unnamed_addr constant [59 x i8] c"0: Could not register callback 'ompt_callback_sync_region'\00", align 1
-@str.73 = private unnamed_addr constant [52 x i8] c"0: Could not register callback 'ompt_callback_work'\00", align 1
-@str.74 = private unnamed_addr constant [58 x i8] c"0: Could not register callback 'ompt_callback_thread_end'\00", align 1
-@str.75 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_thread_begin'\00", align 1
-@str.76 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_parallel_end'\00", align 1
-@str.77 = private unnamed_addr constant [62 x i8] c"0: Could not register callback 'ompt_callback_parallel_begin'\00", align 1
-@str.78 = private unnamed_addr constant [14 x i8] c"Logging\0A\0A\0A\0A\0A\0A\00", align 1
-@str.79 = private unnamed_addr constant [15 x i8] c"Checking final\00", align 1
-@str.80 = private unnamed_addr constant [61 x i8] c"------------------------------------------------------------\00", align 1
-@str.81 = private unnamed_addr constant [3 x i8] c"\0A\0A\00", align 1
+@str.59 = private unnamed_addr constant [18 x i8] c"Testing OMPT Test\00", align 1
+@str.61 = private unnamed_addr constant [62 x i8] c"----------------------- thread begin 1_2---------------------\00", align 1
+@str.62 = private unnamed_addr constant [60 x i8] c"----------------------- thread begin 2---------------------\00", align 1
+@str.63 = private unnamed_addr constant [59 x i8] c"----------------------- thread begin ---------------------\00", align 1
+@str.64 = private unnamed_addr constant [27 x i8] c"Cannot open device file...\00", align 1
+@str.65 = private unnamed_addr constant [32 x i8] c"scheduling policy not retreived\00", align 1
+@str.66 = private unnamed_addr constant [57 x i8] c"----------------------- size empty ---------------------\00", align 1
+@str.67 = private unnamed_addr constant [43 x i8] c"-------- end of parallel begin -----------\00", align 1
+@str.69 = private unnamed_addr constant [19 x i8] c"checking for error\00", align 1
+@str.70 = private unnamed_addr constant [19 x i8] c"value is----------\00", align 1
+@str.71 = private unnamed_addr constant [36 x i8] c"timer is been set for callback work\00", align 1
+@str.72 = private unnamed_addr constant [17 x i8] c"Checking initial\00", align 1
+@str.73 = private unnamed_addr constant [59 x i8] c"0: Could not register callback 'ompt_callback_sync_region'\00", align 1
+@str.74 = private unnamed_addr constant [52 x i8] c"0: Could not register callback 'ompt_callback_work'\00", align 1
+@str.75 = private unnamed_addr constant [58 x i8] c"0: Could not register callback 'ompt_callback_thread_end'\00", align 1
+@str.76 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_thread_begin'\00", align 1
+@str.77 = private unnamed_addr constant [60 x i8] c"0: Could not register callback 'ompt_callback_parallel_end'\00", align 1
+@str.78 = private unnamed_addr constant [62 x i8] c"0: Could not register callback 'ompt_callback_parallel_begin'\00", align 1
+@str.79 = private unnamed_addr constant [14 x i8] c"Logging\0A\0A\0A\0A\0A\0A\00", align 1
+@str.80 = private unnamed_addr constant [15 x i8] c"Checking final\00", align 1
+@str.81 = private unnamed_addr constant [61 x i8] c"------------------------------------------------------------\00", align 1
+@str.82 = private unnamed_addr constant [3 x i8] c"\0A\0A\00", align 1
 
 declare dso_local void @_ZNSt8ios_base4InitC1Ev(%"class.std::ios_base::Init"* noundef) unnamed_addr #0
 
@@ -799,7 +818,7 @@ entry:
   br i1 %4, label %return, label %if.end
 
 if.end:                                           ; preds = %entry
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([18 x i8], [18 x i8]* @str.58, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([18 x i8], [18 x i8]* @str.59, i64 0, i64 0))
   %call6 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @.str.4, i64 0, i64 0), i32 noundef %parallel_region_id, i32 noundef %sub_id, i32 noundef %loop_id)
   %5 = load %union.ompt_data_t* ()*, %union.ompt_data_t* ()** @_ZL20ompt_get_thread_data, align 8, !tbaa !25
   %call7 = tail call noundef %union.ompt_data_t* %5()
@@ -1032,7 +1051,7 @@ entry:
   %policy = alloca i32, align 4
   %cpuset = alloca %struct.cpu_set_t, align 8
   %id35 = alloca i32, align 4
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.62, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.63, i64 0, i64 0))
   %0 = load i32, i32* getelementptr inbounds (%struct.timeout_node, %struct.timeout_node* @thread_begin, i64 0, i32 0), align 8, !tbaa !48
   %call1 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @.str.7, i64 0, i64 0), i32 noundef %0)
   %call2 = tail call noalias align 16 dereferenceable_or_null(40) i8* @calloc(i64 noundef 1, i64 noundef 40) #25
@@ -1043,7 +1062,7 @@ entry:
   store i32 %conv.i, i32* %id, align 16, !tbaa !49
   %counter = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 3
   store i32 0, i32* %counter, align 4, !tbaa !43
-  %puts110 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.60, i64 0, i64 0))
+  %puts110 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.61, i64 0, i64 0))
   %_M_start.i.i.i = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 4, i32 0, i32 0, i32 0
   %3 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i.i.i, align 16, !tbaa !25
   %_M_finish.i.i.i = getelementptr inbounds %struct.thread_info, %struct.thread_info* %1, i64 0, i32 4, i32 0, i32 0, i32 1
@@ -1059,8 +1078,8 @@ if.then.i.i.i.i.i:                                ; preds = %entry
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %if.then.i.i.i.i.i, %entry
-  %puts111 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.61, i64 0, i64 0))
-  %puts115 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([57 x i8], [57 x i8]* @str.65, i64 0, i64 0))
+  %puts111 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.62, i64 0, i64 0))
+  %puts115 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([57 x i8], [57 x i8]* @str.66, i64 0, i64 0))
   %call2.i.i.i.i.i = tail call noalias noundef nonnull i8* @_Znwm(i64 noundef 56) #30
   tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* noundef nonnull align 8 dereferenceable(56) %call2.i.i.i.i.i, i8* noundef nonnull align 8 dereferenceable(56) bitcast (%struct.timeout_node* @thread_begin to i8*), i64 56, i1 false) #25, !tbaa.struct !40
   %incdec.ptr.i.i = getelementptr inbounds i8, i8* %call2.i.i.i.i.i, i64 56
@@ -1070,7 +1089,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %if.then.i.i
   store i8* %incdec.ptr.i.i, i8** %7, align 8, !tbaa !27
   %8 = bitcast %struct.timeout_node** %_M_end_of_storage.i.i.i to i8**
   store i8* %incdec.ptr.i.i, i8** %8, align 16, !tbaa !39
-  %puts112 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.62, i64 0, i64 0))
+  %puts112 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.63, i64 0, i64 0))
   %9 = atomicrmw add i64* @_ZZ10my_core_idE2ID, i64 1 seq_cst, align 8
   %conv.i118 = trunc i64 %9 to i32
   %rem = srem i32 %conv.i118, 6
@@ -1088,7 +1107,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %if.then.i.i
   br i1 %cmp17.not, label %if.else, label %if.then18
 
 if.then18:                                        ; preds = %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit
-  %puts114 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([32 x i8], [32 x i8]* @str.64, i64 0, i64 0))
+  %puts114 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([32 x i8], [32 x i8]* @str.65, i64 0, i64 0))
   br label %if.end21
 
 if.else:                                          ; preds = %_ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit
@@ -1129,7 +1148,7 @@ cond.end:                                         ; preds = %cond.true, %if.end2
   br i1 %cmp31, label %if.then32, label %if.end34
 
 if.then32:                                        ; preds = %cond.end
-  %puts113 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @str.63, i64 0, i64 0))
+  %puts113 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([27 x i8], [27 x i8]* @str.64, i64 0, i64 0))
   br label %cleanup
 
 if.end34:                                         ; preds = %cond.end
@@ -1421,7 +1440,7 @@ _ZNSt6vectorI12timeout_nodeSaIS0_EE9push_backERKS0_.exit: ; preds = %_ZNSt6vecto
   %call4.i = call i32 (i32, i64, ...) @ioctl(i32 noundef %37, i64 noundef 1079858179, %struct.modified_timer* noundef nonnull %test.i) #25
   %puts.i = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([23 x i8], [23 x i8]* @str, i64 0, i64 0)) #25
   call void @llvm.lifetime.end.p0i8(i64 16, i8* nonnull %38) #25
-  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([43 x i8], [43 x i8]* @str.66, i64 0, i64 0))
+  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([43 x i8], [43 x i8]* @str.67, i64 0, i64 0))
   ret void
 }
 
@@ -1493,7 +1512,7 @@ if.then6:                                         ; preds = %if.then
   %retval.sroa.3.0.i = select i1 %cmp.i, i64 %add.i, i64 %sub.i
   store i64 %retval.sroa.0.0.p.i, i64* %temp_2.sroa.0.0..sroa_idx, align 8, !tbaa.struct !36
   store i64 %retval.sroa.3.0.i, i64* %temp_2.sroa.4.0..sroa_idx298, align 8, !tbaa.struct !38
-  %puts404 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([36 x i8], [36 x i8]* @str.70, i64 0, i64 0))
+  %puts404 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([36 x i8], [36 x i8]* @str.71, i64 0, i64 0))
   br label %if.end
 
 if.end:                                           ; preds = %if.then6, %if.then
@@ -1656,7 +1675,7 @@ if.else:                                          ; preds = %if.end
   ]
 
 if.then69:                                        ; preds = %if.else
-  %puts403 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.69, i64 0, i64 0))
+  %puts403 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.70, i64 0, i64 0))
   %46 = load %struct.details**, %struct.details*** @parallel_region, align 8, !tbaa !25
   %47 = load i64, i64* %value, align 8, !tbaa !26
   %arrayidx74 = getelementptr inbounds %struct.details*, %struct.details** %46, i64 %47
@@ -2054,7 +2073,7 @@ invoke.cont163:                                   ; preds = %_ZNSt6vectorI12time
   br label %_ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit718
 
 _ZNSt6vectorI12timeout_nodeSaIS0_EED2Ev.exit718:  ; preds = %invoke.cont163, %invoke.cont131, %invoke.cont80, %invoke.cont36
-  %puts402 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.68, i64 0, i64 0))
+  %puts402 = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([19 x i8], [19 x i8]* @str.69, i64 0, i64 0))
   %.pre868 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i, align 8, !tbaa !27
   %.pre869 = load %struct.timeout_node*, %struct.timeout_node** %_M_start.i, align 8, !tbaa !14
   %.pre870 = ptrtoint %struct.timeout_node* %.pre868 to i64
@@ -2114,7 +2133,7 @@ if.then204:                                       ; preds = %if.else192
   %retval.sroa.3.0.i742 = select i1 %cmp.i739, i64 %add.i740, i64 %sub.i738
   store i64 %retval.sroa.0.0.p.i741, i64* %temp_2213.sroa.0.0..sroa_idx, align 8, !tbaa.struct !36
   store i64 %retval.sroa.3.0.i742, i64* %temp_2213.sroa.4.0..sroa_idx284, align 8, !tbaa.struct !38
-  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([36 x i8], [36 x i8]* @str.70, i64 0, i64 0))
+  %puts = call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([36 x i8], [36 x i8]* @str.71, i64 0, i64 0))
   %.pre866 = load %struct.timeout_node*, %struct.timeout_node** %_M_finish.i719, align 8, !tbaa !27
   br label %if.end231
 
@@ -3619,7 +3638,7 @@ entry:
   br i1 %cmp, label %if.then, label %if.end
 
 if.then:                                          ; preds = %entry
-  %puts68 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.77, i64 0, i64 0))
+  %puts68 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @str.78, i64 0, i64 0))
   br label %if.end
 
 if.end:                                           ; preds = %if.then, %entry
@@ -3628,7 +3647,7 @@ if.end:                                           ; preds = %if.then, %entry
   br i1 %cmp8, label %if.then9, label %if.end11
 
 if.then9:                                         ; preds = %if.end
-  %puts67 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.76, i64 0, i64 0))
+  %puts67 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.77, i64 0, i64 0))
   br label %if.end11
 
 if.end11:                                         ; preds = %if.then9, %if.end
@@ -3637,7 +3656,7 @@ if.end11:                                         ; preds = %if.then9, %if.end
   br i1 %cmp16, label %if.then17, label %if.end19
 
 if.then17:                                        ; preds = %if.end11
-  %puts66 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.75, i64 0, i64 0))
+  %puts66 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([60 x i8], [60 x i8]* @str.76, i64 0, i64 0))
   br label %if.end19
 
 if.end19:                                         ; preds = %if.then17, %if.end11
@@ -3646,7 +3665,7 @@ if.end19:                                         ; preds = %if.then17, %if.end1
   br i1 %cmp24, label %if.then25, label %if.end27
 
 if.then25:                                        ; preds = %if.end19
-  %puts65 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([58 x i8], [58 x i8]* @str.74, i64 0, i64 0))
+  %puts65 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([58 x i8], [58 x i8]* @str.75, i64 0, i64 0))
   br label %if.end27
 
 if.end27:                                         ; preds = %if.then25, %if.end19
@@ -3655,7 +3674,7 @@ if.end27:                                         ; preds = %if.then25, %if.end1
   br i1 %cmp32, label %if.then33, label %if.end35
 
 if.then33:                                        ; preds = %if.end27
-  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @str.73, i64 0, i64 0))
+  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @str.74, i64 0, i64 0))
   br label %if.end35
 
 if.end35:                                         ; preds = %if.then33, %if.end27
@@ -3664,13 +3683,13 @@ if.end35:                                         ; preds = %if.then33, %if.end2
   br i1 %cmp40, label %if.then41, label %if.end43
 
 if.then41:                                        ; preds = %if.end35
-  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.72, i64 0, i64 0))
+  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([59 x i8], [59 x i8]* @str.73, i64 0, i64 0))
   br label %if.end43
 
 if.end43:                                         ; preds = %if.then41, %if.end35
   tail call void @ompt_test(i32 noundef -1, i32 noundef -1, i32 noundef -1, i32 noundef -1)
   %call46 = tail call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull @start_time) #25
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([17 x i8], [17 x i8]* @str.71, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([17 x i8], [17 x i8]* @str.72, i64 0, i64 0))
   ret i32 1
 }
 
@@ -3681,7 +3700,7 @@ declare dso_local i32 @clock_gettime(i32 noundef, %struct.timespec* noundef) loc
 define dso_local void @ompt_finalize(%union.ompt_data_t* nocapture readnone %data) #22 {
 entry:
   %call = tail call i32 @clock_gettime(i32 noundef 1, %struct.timespec* noundef nonnull @end_time) #25
-  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([14 x i8], [14 x i8]* @str.78, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([14 x i8], [14 x i8]* @str.79, i64 0, i64 0))
   %0 = load i64, i64* getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 3), align 8, !tbaa !58
   %call3 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @.str.47, i64 0, i64 0), i64 noundef %0)
   %__begin1.sroa.0.087 = load %"struct.std::__detail::_Hash_node"*, %"struct.std::__detail::_Hash_node"** bitcast (%"struct.std::__detail::_Hash_node_base"** getelementptr inbounds (%"class.std::unordered_map", %"class.std::unordered_map"* @log_data, i64 0, i32 0, i32 2, i32 0) to %"struct.std::__detail::_Hash_node"**), align 8, !tbaa !13
@@ -3689,7 +3708,7 @@ entry:
   br i1 %cmp.i.not88, label %for.cond.cleanup, label %for.body
 
 for.cond.cleanup:                                 ; preds = %for.cond.cleanup17, %entry
-  %puts62 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([15 x i8], [15 x i8]* @str.79, i64 0, i64 0))
+  %puts62 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([15 x i8], [15 x i8]* @str.80, i64 0, i64 0))
   ret void
 
 for.body:                                         ; preds = %for.cond.cleanup17, %entry
@@ -3697,7 +3716,7 @@ for.body:                                         ; preds = %for.cond.cleanup17,
   %_M_storage.i.i.i = getelementptr inbounds %"struct.std::__detail::_Hash_node", %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089, i64 0, i32 0, i32 1
   %first.i.i = bitcast %"struct.__gnu_cxx::__aligned_buffer"* %_M_storage.i.i.i to i32*
   %second.i.i = getelementptr inbounds %"struct.std::__detail::_Hash_node", %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089, i64 0, i32 0, i32 1, i32 0, i32 0, i64 8
-  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([61 x i8], [61 x i8]* @str.80, i64 0, i64 0))
+  %puts63 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([61 x i8], [61 x i8]* @str.81, i64 0, i64 0))
   %1 = load i32, i32* %first.i.i, align 4, !tbaa !41
   %call14 = tail call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([15 x i8], [15 x i8]* @.str.49, i64 0, i64 0), i32 noundef %1)
   %_M_finish.i = getelementptr inbounds %"struct.std::__detail::_Hash_node", %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089, i64 0, i32 0, i32 1, i32 0, i32 0, i64 16
@@ -3709,7 +3728,7 @@ for.body:                                         ; preds = %for.cond.cleanup17,
   br i1 %5, label %for.cond.cleanup17, label %for.body18
 
 for.cond.cleanup17:                               ; preds = %for.body18, %for.body
-  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([3 x i8], [3 x i8]* @str.81, i64 0, i64 0))
+  %puts64 = tail call i32 @puts(i8* nonnull dereferenceable(1) getelementptr inbounds ([3 x i8], [3 x i8]* @str.82, i64 0, i64 0))
   %6 = bitcast %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.089 to %"struct.std::__detail::_Hash_node"**
   %__begin1.sroa.0.0 = load %"struct.std::__detail::_Hash_node"*, %"struct.std::__detail::_Hash_node"** %6, align 8, !tbaa !13
   %cmp.i.not = icmp eq %"struct.std::__detail::_Hash_node"* %__begin1.sroa.0.0, null
@@ -3792,138 +3811,132 @@ entry:
   ret %struct.ompt_start_tool_result_t* bitcast ({ i32 (void ()* (i8*)*, i32, %union.ompt_data_t*)*, void (%union.ompt_data_t*)*, { i8* } }* @_ZZ15ompt_start_toolE22ompt_start_tool_result to %struct.ompt_start_tool_result_t*)
 }
 
+; Function Attrs: mustprogress uwtable
+define dso_local void @_Z5checkv() local_unnamed_addr #21 {
+entry:
+  %call1.i = tail call noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* noundef nonnull getelementptr inbounds ([9 x i8], [9 x i8]* @.str.58, i64 0, i64 0), i64 noundef 8)
+  ret void
+}
+
+declare dso_local noundef nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l(%"class.std::basic_ostream"* noundef nonnull align 8 dereferenceable(8), i8* noundef, i64 noundef) local_unnamed_addr #0
+
 ; Function Attrs: mustprogress norecurse nounwind uwtable
 define dso_local noundef i32 @main() local_unnamed_addr #23 {
 entry:
-  %upper_bound = alloca i32, align 4
-  %cap = alloca i32, align 4
-  %0 = bitcast i32* %upper_bound to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %0) #25
-  store i32 10, i32* %upper_bound, align 4, !tbaa !41
-  %1 = bitcast i32* %cap to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %1) #25
-  store i32 20, i32* %cap, align 4, !tbaa !41
-  call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull @3, i32 2, void (i32*, i32*, ...)* bitcast (void (i32*, i32*, i32*, i32*)* @.omp_outlined. to void (i32*, i32*, ...)*), i32 1, i32* nonnull %upper_bound, i32* nonnull %cap)
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %1) #25
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %0) #25
+  store <4 x i32> <i32 0, i32 1, i32 2, i32 3>, <4 x i32>* bitcast ([20 x i32]* @a to <4 x i32>*), align 16, !tbaa !41
+  store <4 x i32> <i32 4, i32 5, i32 6, i32 7>, <4 x i32>* bitcast (i32* getelementptr inbounds ([20 x i32], [20 x i32]* @a, i64 0, i64 4) to <4 x i32>*), align 16, !tbaa !41
+  store <4 x i32> <i32 8, i32 9, i32 10, i32 11>, <4 x i32>* bitcast (i32* getelementptr inbounds ([20 x i32], [20 x i32]* @a, i64 0, i64 8) to <4 x i32>*), align 16, !tbaa !41
+  store <4 x i32> <i32 12, i32 13, i32 14, i32 15>, <4 x i32>* bitcast (i32* getelementptr inbounds ([20 x i32], [20 x i32]* @a, i64 0, i64 12) to <4 x i32>*), align 16, !tbaa !41
+  store <4 x i32> <i32 16, i32 17, i32 18, i32 19>, <4 x i32>* bitcast (i32* getelementptr inbounds ([20 x i32], [20 x i32]* @a, i64 0, i64 16) to <4 x i32>*), align 16, !tbaa !41
+  tail call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull @3, i32 0, void (i32*, i32*, ...)* bitcast (void (i32*, i32*)* @.omp_outlined. to void (i32*, i32*, ...)*), i32 1)
   ret i32 0
 }
 
 ; Function Attrs: alwaysinline norecurse nounwind uwtable
-define internal void @.omp_outlined.(i32* noalias nocapture noundef readonly %.global_tid., i32* noalias nocapture noundef readnone %.bound_tid., i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %upper_bound, i32* nocapture noundef nonnull readonly align 4 dereferenceable(4) %cap) #24 personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*) !ttex_array !72 !ttex_sub_array !73 !parallel_id !74 {
+define internal void @.omp_outlined.(i32* noalias nocapture noundef readonly %.global_tid., i32* noalias nocapture noundef readnone %.bound_tid.) #24 !ttex_array !72 !ttex_sub_array !73 !parallel_id !74 {
 entry:
   %.omp.lb = alloca i32, align 4
   %.omp.ub = alloca i32, align 4
   %.omp.stride = alloca i32, align 4
   %.omp.is_last = alloca i32, align 4
-  %0 = load i32, i32* %upper_bound, align 4, !tbaa !41
-  %sub2 = add nsw i32 %0, -1
-  %cmp = icmp sgt i32 %0, 0
-  br i1 %cmp, label %omp.precond.then, label %entry.omp.precond.end_crit_edge
-
-entry.omp.precond.end_crit_edge:                  ; preds = %entry
-  %.pre34 = load i32, i32* %.global_tid., align 4, !tbaa !41
-  br label %omp.precond.end
-
-omp.precond.then:                                 ; preds = %entry
-  %1 = bitcast i32* %.omp.lb to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %1) #25
+  %0 = bitcast i32* %.omp.lb to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %0) #25
   store i32 0, i32* %.omp.lb, align 4, !tbaa !41
-  %2 = bitcast i32* %.omp.ub to i8*
+  %1 = bitcast i32* %.omp.ub to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %1) #25
+  store i32 19, i32* %.omp.ub, align 4, !tbaa !41
+  %2 = bitcast i32* %.omp.stride to i8*
   call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %2) #25
-  store i32 %sub2, i32* %.omp.ub, align 4, !tbaa !41
-  %3 = bitcast i32* %.omp.stride to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %3) #25
   store i32 1, i32* %.omp.stride, align 4, !tbaa !41
-  %4 = bitcast i32* %.omp.is_last to i8*
-  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %4) #25
+  %3 = bitcast i32* %.omp.is_last to i8*
+  call void @llvm.lifetime.start.p0i8(i64 4, i8* nonnull %3) #25
   store i32 0, i32* %.omp.is_last, align 4, !tbaa !41
-  %5 = load i32, i32* %.global_tid., align 4, !tbaa !41
-  call void @__kmpc_for_static_init_4(%struct.ident_t* nonnull @1, i32 %5, i32 34, i32* nonnull %.omp.is_last, i32* nonnull %.omp.lb, i32* nonnull %.omp.ub, i32* nonnull %.omp.stride, i32 1, i32 1, i32 1) #25
-  %6 = load i32, i32* %.omp.ub, align 4, !tbaa !41
-  %cmp4 = icmp sgt i32 %6, %sub2
-  %cond = select i1 %cmp4, i32 %sub2, i32 %6
+  %4 = load i32, i32* %.global_tid., align 4, !tbaa !41
+  call void @__kmpc_for_static_init_4(%struct.ident_t* nonnull @1, i32 %4, i32 34, i32* nonnull %.omp.is_last, i32* nonnull %.omp.lb, i32* nonnull %.omp.ub, i32* nonnull %.omp.stride, i32 1, i32 1, i32 1) #25
+  %5 = load i32, i32* %.omp.ub, align 4, !tbaa !41
+  %6 = icmp slt i32 %5, 19
+  %cond = select i1 %6, i32 %5, i32 19
   store i32 %cond, i32* %.omp.ub, align 4, !tbaa !41
   %7 = load i32, i32* %.omp.lb, align 4, !tbaa !41
-  %cmp5.not31 = icmp sle i32 %7, %cond
-  %8 = load i32, i32* %cap, align 4
-  %9 = icmp sgt i32 %8, 0
-  %or.cond36 = select i1 %cmp5.not31, i1 %9, i1 false
-  br i1 %or.cond36, label %for.cond.preheader, label %omp.loop.exit
+  %cmp1.not29 = icmp sgt i32 %7, %cond
+  br i1 %cmp1.not29, label %omp.loop.exit, label %for.cond.preheader.preheader
 
-for.cond.preheader:                               ; preds = %TtexSecure_12, %TtexSecure_23, %omp.precond.then
-  %phi1 = phi i32 [ 0, %omp.precond.then ], [ %22, %TtexSecure_12 ], [ %22, %TtexSecure_23 ]
-  %10 = phi i32 [ %16, %TtexSecure_12 ], [ %cond, %omp.precond.then ], [ %16, %TtexSecure_23 ]
-  %11 = phi i32 [ %17, %TtexSecure_12 ], [ %8, %omp.precond.then ], [ %17, %TtexSecure_23 ]
-  %.omp.iv.032 = phi i32 [ %add8, %TtexSecure_12 ], [ %7, %omp.precond.then ], [ %add8, %TtexSecure_23 ]
-  %cmp629 = icmp sgt i32 %11, 0
-  br i1 %cmp629, label %for.body, label %cleanup
+for.cond.preheader.preheader:                     ; preds = %entry
+  %t.promoted26 = load i32, i32* @t, align 4
+  %8 = sext i32 %7 to i64
+  %9 = add nsw i32 %cond, 1
+  br label %for.cond.preheader
 
-for.body:                                         ; preds = %TtexSecure_1, %TtexSecure_2, %for.cond.preheader
-  %phi = phi i32 [ 0, %for.cond.preheader ], [ %19, %TtexSecure_1 ], [ %19, %TtexSecure_2 ]
-  %j.030 = phi i32 [ %inc, %TtexSecure_1 ], [ 0, %for.cond.preheader ], [ %inc, %TtexSecure_2 ]
-  %call = invoke i32 @usleep(i32 noundef 1000)
-          to label %invoke.cont unwind label %lpad
+for.cond.preheader:                               ; preds = %TtexSecure_12, %TtexSecure_23, %for.cond.preheader.preheader
+  %phi1 = phi i32 [ 0, %for.cond.preheader.preheader ], [ %17, %TtexSecure_12 ], [ %17, %TtexSecure_23 ]
+  %indvars.iv33 = phi i64 [ %8, %for.cond.preheader.preheader ], [ %indvars.iv.next34, %TtexSecure_12 ], [ %indvars.iv.next34, %TtexSecure_23 ]
+  %storemerge18.lcssa.lcssa2830 = phi i32 [ %t.promoted26, %for.cond.preheader.preheader ], [ %storemerge18.lcssa.lcssa27, %TtexSecure_12 ], [ %storemerge18.lcssa.lcssa27, %TtexSecure_23 ]
+  %arrayidx = getelementptr inbounds [20 x i32], [20 x i32]* @a, i64 0, i64 %indvars.iv33
+  %10 = load i32, i32* %arrayidx, align 4, !tbaa !41
+  %cmp222 = icmp sgt i32 %10, 0
+  br i1 %cmp222, label %for.body.peel, label %for.cond.cleanup
 
-invoke.cont:                                      ; preds = %for.body
-  %12 = load i32, i32* %upper_bound, align 4, !tbaa !41
-  %cmp7 = icmp ne i32 %j.030, %12
-  %inc = add nuw nsw i32 %j.030, 1
-  %13 = load i32, i32* %cap, align 4
-  %cmp6 = icmp slt i32 %inc, %13
-  %or.cond = select i1 %cmp7, i1 %cmp6, i1 false
-  br i1 %or.cond, label %cleanup.loopexit, label %TtexSecure_1
+for.body.peel:                                    ; preds = %for.cond.preheader
+  %cmp5.not19.peel = icmp eq i32 %storemerge18.lcssa.lcssa2830, -4
+  br i1 %cmp5.not19.peel, label %for.inc.peel, label %while.body.preheader.peel
 
-lpad:                                             ; preds = %for.body
-  %14 = landingpad { i8*, i32 }
-          catch i8* null
-  %15 = extractvalue { i8*, i32 } %14, 0
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %4) #25
+while.body.preheader.peel:                        ; preds = %for.body.peel
+  store i32 0, i32* getelementptr inbounds ([20 x i32], [20 x i32]* @a, i64 0, i64 0), align 16, !tbaa !41
+  %.pre.peel = load i32, i32* %arrayidx, align 4, !tbaa !41
+  br label %for.inc.peel
+
+for.inc.peel:                                     ; preds = %while.body.preheader.peel, %for.body.peel
+  %11 = phi i32 [ %.pre.peel, %while.body.preheader.peel ], [ %10, %for.body.peel ]
+  %cmp2.peel = icmp sgt i32 %11, 1
+  br i1 %cmp2.peel, label %for.body, label %for.cond.for.cond.cleanup_crit_edge
+
+for.cond.for.cond.cleanup_crit_edge:              ; preds = %for.body, %for.inc.peel
+  store i32 -1, i32* @t, align 4, !tbaa !41
+  br label %for.cond.cleanup
+
+for.cond.cleanup:                                 ; preds = %for.cond.for.cond.cleanup_crit_edge, %for.cond.preheader
+  %storemerge18.lcssa.lcssa27 = phi i32 [ -1, %for.cond.for.cond.cleanup_crit_edge ], [ %storemerge18.lcssa.lcssa2830, %for.cond.preheader ]
+  %indvars.iv.next34 = add nsw i64 %indvars.iv33, 1
+  %lftr.wideiv = trunc i64 %indvars.iv.next34 to i32
+  %exitcond.not = icmp eq i32 %9, %lftr.wideiv
+  br i1 %exitcond.not, label %TtexSecure_12, label %omp.loop.exit
+
+for.body:                                         ; preds = %TtexSecure_1, %TtexSecure_2, %for.inc.peel
+  %phi = phi i32 [ 0, %for.inc.peel ], [ %14, %TtexSecure_1 ], [ %14, %TtexSecure_2 ]
+  %12 = phi i32 [ %.pre, %TtexSecure_1 ], [ %11, %for.inc.peel ], [ %.pre, %TtexSecure_2 ]
+  %indvars.iv = phi i64 [ %indvars.iv.next, %TtexSecure_1 ], [ 1, %for.inc.peel ], [ %indvars.iv.next, %TtexSecure_2 ]
+  %arrayidx8 = getelementptr inbounds [20 x i32], [20 x i32]* @a, i64 0, i64 %indvars.iv
+  store i32 0, i32* %arrayidx8, align 4, !tbaa !41
+  %.pre = load i32, i32* %arrayidx, align 4, !tbaa !41
+  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+  %13 = sext i32 %.pre to i64
+  %cmp2 = icmp slt i64 %indvars.iv.next, %13
+  br i1 %cmp2, label %for.cond.for.cond.cleanup_crit_edge, label %TtexSecure_1
+
+omp.loop.exit:                                    ; preds = %for.cond.cleanup, %entry
+  call void @__kmpc_for_static_fini(%struct.ident_t* nonnull @1, i32 %4)
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %3) #25
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %2) #25
   call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %1) #25
-  call void @__clang_call_terminate(i8* %15) #29
-  unreachable
-
-cleanup.loopexit:                                 ; preds = %invoke.cont
-  %.pre = load i32, i32* %.omp.ub, align 4, !tbaa !41
-  br label %cleanup
-
-cleanup:                                          ; preds = %cleanup.loopexit, %for.cond.preheader
-  %16 = phi i32 [ %.pre, %cleanup.loopexit ], [ %10, %for.cond.preheader ]
-  %17 = phi i32 [ %13, %cleanup.loopexit ], [ %11, %for.cond.preheader ]
-  %add8 = add nsw i32 %.omp.iv.032, 1
-  %cmp5.not.not = icmp slt i32 %.omp.iv.032, %16
-  br i1 %cmp5.not.not, label %omp.loop.exit, label %TtexSecure_12
-
-omp.loop.exit:                                    ; preds = %cleanup, %omp.precond.then
-  call void @__kmpc_for_static_fini(%struct.ident_t* nonnull @1, i32 %5)
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %4) #25
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %3) #25
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %2) #25
-  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %1) #25
-  br label %omp.precond.end
-
-omp.precond.end:                                  ; preds = %omp.loop.exit, %entry.omp.precond.end_crit_edge
-  %18 = phi i32 [ %.pre34, %entry.omp.precond.end_crit_edge ], [ %5, %omp.loop.exit ]
-  call void @__kmpc_barrier(%struct.ident_t* nonnull @2, i32 %18)
+  call void @llvm.lifetime.end.p0i8(i64 4, i8* nonnull %0) #25
+  call void @__kmpc_barrier(%struct.ident_t* nonnull @2, i32 %4)
   ret void
 
-TtexSecure_1:                                     ; preds = %invoke.cont
-  %19 = add nsw i32 %phi, 1
-  %20 = srem i32 %phi, 2
-  %21 = icmp eq i32 %20, 0
-  br i1 %21, label %TtexSecure_2, label %for.body
+TtexSecure_1:                                     ; preds = %for.body
+  %14 = add nsw i32 %phi, 1
+  %15 = srem i32 %phi, 2
+  %16 = icmp eq i32 %15, 0
+  br i1 %16, label %TtexSecure_2, label %for.body
 
 TtexSecure_2:                                     ; preds = %TtexSecure_1
   call void @ompt_test(i32 0, i32 0, i32 0, i32 -1)
   br label %for.body
 
-TtexSecure_12:                                    ; preds = %cleanup
-  %22 = add nsw i32 %phi1, 1
-  %23 = srem i32 %phi1, 2
-  %24 = icmp eq i32 %23, 0
-  br i1 %24, label %TtexSecure_23, label %for.cond.preheader
+TtexSecure_12:                                    ; preds = %for.cond.cleanup
+  %17 = add nsw i32 %phi1, 1
+  %18 = srem i32 %phi1, 2
+  %19 = icmp eq i32 %18, 0
+  br i1 %19, label %TtexSecure_23, label %for.cond.preheader
 
 TtexSecure_23:                                    ; preds = %TtexSecure_12
   call void @ompt_test(i32 0, i32 1, i32 1, i32 -1)
@@ -3931,8 +3944,6 @@ TtexSecure_23:                                    ; preds = %TtexSecure_12
 }
 
 declare dso_local void @__kmpc_for_static_init_4(%struct.ident_t*, i32, i32, i32*, i32*, i32*, i32*, i32, i32, i32) local_unnamed_addr
-
-declare dso_local i32 @usleep(i32 noundef) local_unnamed_addr #0
 
 ; Function Attrs: nounwind
 declare void @__kmpc_for_static_fini(%struct.ident_t*, i32) local_unnamed_addr #25
@@ -3944,7 +3955,7 @@ declare void @__kmpc_barrier(%struct.ident_t*, i32) local_unnamed_addr #26
 declare !callback !75 void @__kmpc_fork_call(%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) local_unnamed_addr #25
 
 ; Function Attrs: uwtable
-define internal void @_GLOBAL__sub_I_testingloop_10.cpp() #7 section ".text.startup" {
+define internal void @_GLOBAL__sub_I_testingloop_11.cpp() #7 section ".text.startup" {
 entry:
   tail call void @_ZNSt8ios_base4InitC1Ev(%"class.std::ios_base::Init"* noundef nonnull @_ZStL8__ioinit)
   %0 = tail call i32 @__cxa_atexit(void (i8*)* bitcast (void (%"class.std::ios_base::Init"*)* @_ZNSt8ios_base4InitD1Ev to void (i8*)*), i8* getelementptr inbounds (%"class.std::ios_base::Init", %"class.std::ios_base::Init"* @_ZStL8__ioinit, i64 0, i32 0), i8* nonnull @__dso_handle) #25
