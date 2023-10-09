@@ -42,6 +42,7 @@ using namespace std;
 #define parallel_end_id -3 
 #define work_begin_id -4 
 #define work_end_id -5  //  work end id can remain -5 as it does not provide an id in itself
+#define default_id -100
 
 uint64_t global_id = 0;
 
@@ -207,6 +208,27 @@ timespec timespec_normalise(timespec ts)
   }
   
   return ts;
+}
+
+timespec timespec_higher(timespec ts1, timespec ts2) {
+    ts1 = timespec_normalise(ts1);
+    ts2 = timespec_normalise(ts2);
+
+    if(ts1.tv_sec > ts2.tv_sec){
+        return ts1;
+    }
+
+    else if(ts1.tv_sec < ts2.tv_sec){
+        return ts2;
+    }
+
+    else if(ts1.tv_nsec > ts2.tv_nsec){
+        return ts1;
+    }
+
+    else {
+        return ts2;
+    }
 }
 
 timespec timespec_add(timespec ts1, timespec ts2)
@@ -655,30 +677,30 @@ extern "C" void initializeTimeoutData(){
   sync_region.wcet = max_timeout;
 
   parallel_begin.parallel_region_id = parallel_begin_id;
-  thread_begin.parallel_region_id = -100;
+  thread_begin.parallel_region_id = default_id;
   parallel_end.parallel_region_id = parallel_end_id;
-  work_begin.parallel_region_id = -100;
-  work_end.parallel_region_id = -100;
-  sync_region.parallel_region_id = -100;
+  work_begin.parallel_region_id = default_id;
+  work_end.parallel_region_id = default_id;
+  sync_region.parallel_region_id = default_id;
 
-  parallel_begin.sub_region_id = -100;
+  parallel_begin.sub_region_id = default_id;
   thread_begin.sub_region_id = thread_begin_id;
-  parallel_end.sub_region_id = -100;
+  parallel_end.sub_region_id = default_id;
   work_begin.sub_region_id = work_begin_id;
   work_end.sub_region_id = work_end_id;
-  sync_region.sub_region_id = -10;
+  sync_region.sub_region_id = default_id;
 
-  parallel_begin.sections_id = -10;
-  thread_begin.sections_id = -10;
-  parallel_end.sections_id = -10;
-  work_begin.sections_id = -10;
-  work_end.sections_id = -10;
+  parallel_begin.sections_id = default_id;
+  thread_begin.sections_id = default_id;
+  parallel_end.sections_id = default_id;
+  work_begin.sections_id = default_id;
+  work_end.sections_id = default_id;
 
-  parallel_begin.loop_id = -10;
-  thread_begin.loop_id = -10;
-  parallel_end.loop_id = -10;
-  work_begin.loop_id = -10;
-  work_end.loop_id = -10;
+  parallel_begin.loop_id = default_id;
+  thread_begin.loop_id = default_id;
+  parallel_end.loop_id = default_id;
+  work_begin.loop_id = default_id;
+  work_end.loop_id = default_id;
 
   parallel_begin.timer_set_flag = false;
   thread_begin.timer_set_flag = false;
@@ -692,15 +714,14 @@ extern "C" void initializeTimeoutData(){
   for(int i = 0 ; i < parallel_size; i++){
 
     printf("Parallel region 1 %d\n", sizeof(parallel_arr_size)/sizeof(int));
-  
 
     for (int j = 0 ; j < loop_arr_size[i] ; j++) {
       timeout_node temp;
       temp.wcet = exec_time;
-      temp.sub_region_id = -10; // this will be updated by previous timeout sub_region_id , counter for now
+      temp.sub_region_id = default_id; // this will be updated by previous timeout sub_region_id , counter for now
       temp.parallel_region_id = i;
       temp.loop_id = j;
-      temp.sections_id = -10;
+      temp.sections_id = default_id;
       temp.timer_set_flag = false;
       loop_execution[i][j].expected_execution = temp;
     }
@@ -729,7 +750,7 @@ extern "C" void initializeTimeoutData(){
           temp.sub_region_id = j;
           temp.parallel_region_id = i;
           temp.sections_id = k;
-          temp.loop_id = -10;
+          temp.loop_id = default_id;
           temp.timer_set_flag = false;
           parallel_region[i][j].expected_execution.push_back(temp); // that loops last line
         }
@@ -741,8 +762,8 @@ extern "C" void initializeTimeoutData(){
           temp.wcet = exec_time;
           temp.sub_region_id = j;
           temp.parallel_region_id = i;
-          temp.sections_id = -10;
-          temp.loop_id = -10;
+          temp.sections_id = default_id;
+          temp.loop_id = default_id;
           temp.timer_set_flag = false;
           parallel_region[i][j].expected_execution.push_back(temp);
       }
@@ -752,8 +773,8 @@ extern "C" void initializeTimeoutData(){
           temp.wcet = exec_time;
           temp.sub_region_id = j;
           temp.parallel_region_id = i;
-          temp.sections_id = -10;
-          temp.loop_id = -10;
+          temp.sections_id = default_id;
+          temp.loop_id = default_id;
           temp.timer_set_flag = false;
           parallel_region[i][j].expected_execution.push_back(temp);
       }
@@ -794,6 +815,46 @@ extern "C" int ompt_initialize(
   return 1; //success
 }
 
+void processLogData(){
+    // retreive all loop ids != default number for each thread
+    // retreive parallel ids of all those loops ids and
+    // generate wcet based on highest time value and set is as WCET time value in loop data structure for parallel region
+
+
+    // retreive all parallel ids and sub region ids for which thread begin etc is NULL
+    // places similarly to the data structure above
+
+    // generate wcet for thread begin and parallel begin in general and store everything in a file
+
+    for (const auto & [ key, value ] : log_data) {
+        for(int j = 0 ; j < value.size() ; j++){
+            if(value[j].loop_id != default_id){
+               loop_execution[value[j].parallel_id][value[j].loop_id].expected_execution.wcet = timespec_higher(log_loop_details[value[j].parallel_id][value[j].loop_id].expected_execution.wcet, value[j].et);
+               // process wcet if found higher one then set that as wcet 
+            }
+        }
+    }
+
+    for (const auto & [ key, value ] : log_data) {
+        for(int j = 0 ; j < value.size() ; j++){
+            // consider single for and sections here
+            if(value[j].sub_region_id != default_id){
+                if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref > omp_sections_ref){
+                    parallel_region[value[j].parallel_region_id][value[j].sub_region_id][value[j].sections_id].expected_execution.wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id][value[j].sections_id].expected_execution.wcet, value[j].et);
+                }
+
+                else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == omp_for_ref){
+                    parallel_region[value[j].parallel_region_id][value[j].sub_region_id][0].expected_execution.wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id][0].expected_execution.wcet, value[j].et);
+                }
+
+                else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == omp_single_ref){
+                    parallel_region[value[j].parallel_region_id][value[j].sub_region_id][0].expected_execution.wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id][0].expected_execution.wcet, value[j].et);
+                }
+            }
+        }
+    }
+}
+
 extern "C" void ompt_finalize(ompt_data_t* data)
 {
   clock_gettime(CLOCK_MONOTONIC, &end_time);
@@ -813,6 +874,9 @@ extern "C" void ompt_finalize(ompt_data_t* data)
     }
     printf("\n\n\n");
   }
+
+  processLogData();  
+
   printf("Checking final\n");
 }
 
