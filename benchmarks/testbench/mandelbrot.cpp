@@ -1,8 +1,8 @@
 #include <omp.h>
 #include "ttex_profiler_update.h"
 
-# define NPOINTS 100000
-# define MXITR 1000000
+# define NPOINTS 100
+# define MXITR 100
 
 struct d_complex{
     double r; double i;

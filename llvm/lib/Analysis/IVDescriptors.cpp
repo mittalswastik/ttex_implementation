@@ -1378,20 +1378,20 @@ bool InductionDescriptor::isInductionPHI(
     InductionDescriptor &D, const SCEV *Expr,
     SmallVectorImpl<Instruction *> *CastsToIgnore) {
 
-    errs() << "inside induction descriptor\n";  
+    //errs() << "inside induction descriptor\n";  
   Type *PhiTy = Phi->getType();
-   errs() << "get type issues an error\n";
+   //errs() << "get type issues an error\n";
   // We only handle integer and pointer inductions variables.
   if (!PhiTy->isIntegerTy() && !PhiTy->isPointerTy())
     return false;
 
-  errs() <<"not a type error\n";
+  // errs() <<"not a type error\n";
 
   // Check that the PHI is consecutive.
   const SCEV *PhiScev = Expr ? Expr : SE->getSCEV(Phi);
   const SCEVAddRecExpr *AR = dyn_cast<SCEVAddRecExpr>(PhiScev);
 
-  errs()<<"SCEV evaluation worked\n";
+  //errs()<<"SCEV evaluation worked\n";
 
   if (!AR) {
     LLVM_DEBUG(dbgs() << "LV: PHI is not a poly recurrence.\n");

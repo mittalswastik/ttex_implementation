@@ -309,6 +309,7 @@ void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_c
   //GlobalVariable *gvar = new GlobalVariable(init->getType(),true,GlobalValue::CommonLinkage,init,"sizes");
   //Instruction* loadInst_global =  new LoadInst(init->getType(),M.getGlobalVariable("sizes"));
   //new StoreInst(init,M.getGlobalVariable("sizes"),B->getTerminator());
+  errs()<<"===================== setting parallel size to ========="<<sizes_2.size()<<"=====\n";
   M.getGlobalVariable("parallel_size")->setInitializer(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),sizes_2.size(), false));
   GlobalVariable* G_ref_array = M.getGlobalVariable("parallel_arr_size");
   Type* T_arr = G_ref_array->getType();
@@ -547,9 +548,11 @@ std::vector<Loop*> retrieveLoopsFunc(Function &F, ModuleAnalysisManager &MA){
             if (CalledFunc && !CalledFunc->isDeclaration()) {
               errs()<<"Function is not a declaration\n";
               if(!CalledFunc->getName().contains(".omp_outlined.")){
-                errs()<<"Function is also not omp_outlined\n";
-                std::vector<Loop*> temp_loops = retrieveLoopsFunc(*CalledFunc,MA);
-                allLoops_2.insert(allLoops_2.end(),temp_loops.begin(),temp_loops.end());
+                if(CalledFunc->getName() != F.getName()){ // eliminate recursive calls
+                  errs()<<"Function is also not omp_outlined\n";
+                  std::vector<Loop*> temp_loops = retrieveLoopsFunc(*CalledFunc,MA);
+                  allLoops_2.insert(allLoops_2.end(),temp_loops.begin(),temp_loops.end());
+                }
               }
             } else {
                 // Indirect function call, handle accordingly
@@ -590,11 +593,16 @@ std::vector<Loop*> retrieveLoopsFunc(Function &F, ModuleAnalysisManager &MA){
 std::vector<int> splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
   std::vector<int> temp;
   
+  loop_counter_2 = 0;
+
   llvm::Module *M = F.getParent();
   llvm::LLVMContext &CTX = M->getContext();
   std::vector<Loop*> allLoops_2 = retrieveLoopsFunc(F,MA);
   for(int i = 0 ; i < allLoops_2.size(); i++) {
     Loop* ltemp = allLoops_2[i];
+    if(ltemp->isInvalid()){
+      continue;
+    }
     BasicBlock *header = ltemp->getHeader();
 
     BasicBlock *Preheader = ltemp->getLoopPreheader();
@@ -641,7 +649,7 @@ std::vector<int> splittingLoops(Function &F, int parallel_region_id, ModuleAnaly
       llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2);
       llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
       //ltemp->setLoopID(loop_id_value);
-      temp.push_back(loop_counter_2);
+      temp.push_back(loop_counter_2); // push back will actually be the split value as id will automatically be handled
       loop_counter_2++;
     }
   }
@@ -697,7 +705,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
         Function* fn = call_inst->getCalledFunction();
         //errs()<<fn->dump()<<"\n";
         call_inst->print(dumpdata_2,false);
-        errs()<<"call instruction is "<<dumptest_2<<"\n";
+        //errs()<<"call instruction is "<<dumptest_2<<"\n";
         if(fn){
             if(fn->getName() == "__kmpc_for_static_init_4"){
                 llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
@@ -753,16 +761,16 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     // However clang parses the same way as we check in the pass that is every function in a module so no need for above
 
     sizes_2 = sizes_temp;
+    errs() <<"------------------------ parallel regions ------"<<sizes_2.size()<<"\n";
     astdata_2 = astdata_temp;
     loop_split_2 = temp_loop_split;
-
 
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
     
       Function &F = *func_iter;
 
       if (!F.isDeclaration()) {
-        errs()<<"Function name is:"<<F.getName()<<"\n";
+        //errs()<<"Function name is:"<<F.getName()<<"\n";
         if(F.getName().contains(".omp_outlined.") && F.getName() != ".omp_outlined._debug__"){
           //errs()<<"omp outlined function called\n";
           //errs()<<"Function name is:"<<F.getName()<<"\n";
@@ -777,6 +785,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
       if (!F.isDeclaration()) {
         errs()<<"Function name is:"<<F.getName()<<"\n";
         if(F.getName().contains("ompt_start_tool")){
+          errs()<<"Function name is:"<<F.getName()<<"\n";
           BasicBlock* B;
           B = &*(F.begin());
           setLookUpTable_2(M,F,B,CTX);

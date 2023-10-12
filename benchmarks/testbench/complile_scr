@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export LD_LIBRARY_PATH=/home/swastik/dev/ttex/llvm/ttex_implementation/build/lib:$LD_LIBRARY_PATH 
+/home/swastik/dev/ttex/llvm/ttex_implementation/build/bin/clang++ -I/home/swastik/dev/ttex/llvm/ttex_implementation/build/projects/openmp/runtime/src -L/home/swastik/dev/ttex/llvm/ttex_implementation/build/lib  -fopenmp=libiomp5 mandelbrot.cpp -o ext2 
+
