@@ -81,7 +81,31 @@ using namespace llvm;
 
 std::vector< std::vector< std::pair<int,int> > > astdata_2; //storing the sub region info -- but need to fix the id's to correct location
 std::vector<int> sizes_2;
-std::vector< std::vector<int> > loop_split_2;
+std::vector< std::vector< std::pair<int,int> > > loop_split_2;
+
+long int secure_wcet_ns;
+
+typedef struct loop_details_pass {
+  int paralle_id;
+  int loop_id;
+  int split_factor;
+  int seq_split;
+  long int wcet_ns;
+} loop_details_pass;
+
+typedef struct para_details {
+  int parallel_id;
+  int id;
+  int ref;
+  int seq_split;
+  long int wcet_ns;
+} para_details;
+
+std::unordered_map<Loop*, loop_details_pass> secure_loops;
+// std::unordered_map<> // how to define map for code regions - they are not like loops or functions
+
+std::vector<loop_details_pass> loop_details_profiler;
+std::vector<para_details> region_details_profiler;
 
 int loop_counter_2 = 0;
 
@@ -91,7 +115,7 @@ bool maxvuln_set_2 = true;
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
-bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int counter){
+bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int loop_id, int counter){
 
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
@@ -157,9 +181,9 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int count
   //Function *hook = dyn_cast<Function>(hookTest.getCallee());
   std::vector<Value*> args;
   ConstantInt *arg1 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),parallel_id, false);
-  ConstantInt *arg2 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),sub_id, false);
-  ConstantInt *arg3 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),counter, false);
-  ConstantInt *arg4 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),-1, false);
+  ConstantInt *arg2 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),loop_id, false);
+  ConstantInt *arg3 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),loop_id, false);
+  ConstantInt *arg4 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),counter, false);
   args.push_back(arg1);
   args.push_back(arg2);
   args.push_back(arg3);
@@ -424,6 +448,37 @@ void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_c
     GetElementPtrInst *gepinst_1 = GetElementPtrInst::Create(T_2_loop,load_para_region,indices_parallel,"",B->getTerminator());
     Instruction *store_sub_region = new StoreInst(malloc_sub_region,gepinst_1,B->getTerminator());
     Instruction *load_para_region_1 = new LoadInst(T_1_loop,M.getGlobalVariable("loop_execution"),"",B->getTerminator());
+
+    for(int j = 0 ; j < loop_split_2[i].size() ; j++) {
+      std::vector<llvm::Value*> indices;
+      indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
+      GetElementPtrInst *gepinst_2 = GetElementPtrInst::Create(T_2_loop, load_para_region_1, indices,"",B->getTerminator());
+      Instruction *load_sub_para_region = new LoadInst(T_2_loop, gepinst_2,"",B->getTerminator());
+
+      //errs()<<"checking for error"<<"\n";
+
+      std::vector<llvm::Value*> indices_2;
+      indices_2.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),j, false));
+      GetElementPtrInst *gepinst_3 = GetElementPtrInst::Create(T_3_loop,load_sub_para_region,indices_2,"",B->getTerminator());
+
+      //errs()<<"checking for error2"<<"\n";
+
+      std::vector<llvm::Value*> indices_3;
+      indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
+      indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),0, false)); // this i64 will give access error as struct value accessed is int
+      GetElementPtrInst *gepinst_4 = GetElementPtrInst::Create(T_3_loop,gepinst_3,indices_3,"",B->getTerminator());
+      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split_2[i][j].first, true)),gepinst_4,B->getTerminator());
+      // use option to see if maxvul is set
+
+      // errs()<<"checking for error3"<<"\n";
+
+      std::vector<llvm::Value*> indices_4;
+      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
+      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),1, false)); // this i64 will give access error as struct value accessed is int
+      GetElementPtrInst *gepinst_5 = GetElementPtrInst::Create(T_3_loop,gepinst_3,indices_4,"",B->getTerminator());
+      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split_2[i][j].second , true)),gepinst_5,B->getTerminator());
+
+    }
   }
 
   errs()<<"------------- parallel region storage complete ------------------\n";
@@ -472,11 +527,11 @@ void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_c
 
       // errs()<<"checking for error3"<<"\n";
 
-      // std::vector<llvm::Value*> indices_4;
-      // indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
-      // indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),1, false)); // this i64 will give access error as struct value accessed is int
-      // GetElementPtrInst *gepinst_5 = GetElementPtrInst::Create(T_3,gepinst_3,indices_4,"",B->getTerminator());
-      // new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, astdata[i][j].second , true)),gepinst_5,B->getTerminator());
+      std::vector<llvm::Value*> indices_4;
+      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
+      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),1, false)); // this i64 will give access error as struct value accessed is int
+      GetElementPtrInst *gepinst_5 = GetElementPtrInst::Create(T_3,gepinst_3,indices_4,"",B->getTerminator());
+      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, astdata_2[i][j].second , true)),gepinst_5,B->getTerminator());
 
       // // load and read its value
 
@@ -491,6 +546,26 @@ void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_c
       // errs()<<"checking for error5"<<"\n";
     }
   }
+}
+
+void splitCodeRegions() {
+
+}
+
+void splitLoopIteration(Loop *L, int split_count) {
+  // further split an iteration into more code regions for finer WCET
+
+  /*algorithm:
+    - There might be functions with sequential code within the loop which might need a split or Loop within a loop
+    - Just a proof of concept is needed as sequential code is already broken by T-SYS - so algorithm does not have to be full proof
+  */
+
+  std::vector<BasicBlock *> OriginalLoopBlocks = L->getBlocks();
+
+  // for(int i = 0 ; i < OriginalLoopBlocks.size() ; i++){
+     
+  // }
+
 }
 
 std::vector<Loop*> generateAllLoops_2(std::vector<Loop*> allLoops_2, Loop *L) { // gets outer loop
@@ -590,8 +665,8 @@ std::vector<Loop*> retrieveLoopsFunc(Function &F, ModuleAnalysisManager &MA){
   return allLoops_2; // return
 }
 
-std::vector<int> splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
-  std::vector<int> temp;
+std::vector< std::pair<int,int> > splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
+  std::vector< std::pair<int,int> > temp;
   
   loop_counter_2 = 0;
 
@@ -644,12 +719,19 @@ std::vector<int> splittingLoops(Function &F, int parallel_region_id, ModuleAnaly
 
     errs()<<"Found a loop"<<"\n";
 
-    bool split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, loop_counter_2);
+    bool split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, 1);
     if(split_check){
+      loop_details_pass lt;
+      lt.paralle_id = parallel_region_id;
+      lt.loop_id = loop_counter_2;
+      lt.seq_split = 1;
+      lt.split_factor = 2;
+      lt.wcet_ns = 0;
+      secure_loops[ltemp] = lt; // loop has been secured
       llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2);
       llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
       //ltemp->setLoopID(loop_id_value);
-      temp.push_back(loop_counter_2); // push back will actually be the split value as id will automatically be handled
+      temp.push_back(std::make_pair(loop_counter_2,1)); // push back will actually be the split value as id will automatically be handled
       loop_counter_2++;
     }
   }
@@ -752,8 +834,8 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     }
 
     std::vector< std::pair<int,int> > temp;
-    std::vector<int> loop_split_temp;
-    std::vector< std::vector<int> > temp_loop_split(counter,loop_split_temp);
+    std::vector< std::pair<int,int> > loop_split_temp;
+    std::vector< std::vector< std::pair<int,int> > > temp_loop_split(counter,loop_split_temp);
     std::vector<int> sizes_temp(counter,0);
     std::vector< std::vector< std::pair<int,int> > >astdata_temp(counter,temp);
 
@@ -777,6 +859,40 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
           updateWorkId_2(M,F,CTX,MA);
         }
       }
+    }
+
+    // function to read the file for loop details  
+    // before updating look up table here, update the sequential iteration based on wcet
+
+    /**
+     * 
+     * process the complete unordered map and check wcet of any is > stored value - value stored should also be in the file
+     * profiler reads a file and updated by the pass and updates a file for the pass whereas pass reads both the file
+    */
+
+    std::vector<loop_details_pass> temp_loop_profile;
+
+    for(const auto& loop_val: secure_loops){
+      loop_details_pass lt = loop_val.second;
+      temp_loop_profile.push_back(lt);
+      std::cout<<"loop id:" << lt.loop_id << std::endl;
+      std::cout<<"Parallel id:" << lt.paralle_id << std::endl;
+      std::cout<<"split factor:" << lt.split_factor << std::endl;
+      std::cout<<"seq id:" << lt.seq_split << std::endl;
+    }
+
+    std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log.txt",std::ios::binary);
+
+    if (outFile) {
+        // Write the size of the vector
+        size_t vectorSize = temp_loop_profile.size();
+        outFile.write(reinterpret_cast<const char*>(&vectorSize), sizeof(vectorSize));
+
+        // Write the vector of structs to the file
+        outFile.write(reinterpret_cast<const char*>(temp_loop_profile.data()), temp_loop_profile.size() * sizeof(loop_details_pass));
+        outFile.close();
+    } else {
+        errs() << "Error opening the file for writing.\n";
     }
 
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {

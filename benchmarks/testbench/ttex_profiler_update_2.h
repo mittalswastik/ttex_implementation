@@ -113,25 +113,6 @@ typedef struct thread_info {
   vector<timeout_node> thread_current_timeout;
 } thread_info;
 
-typedef struct loop_details_pass {
-  int paralle_id;
-  int loop_id;
-  int split_factor;
-  int seq_split;
-  long int wcet_ns;
-} loop_details_pass;
-
-typedef struct para_details {
-  int parallel_id;
-  int id;
-  int ref;
-  int seq_split;
-  long int wcet_ns;
-} para_details;
-
-std::vector<loop_details_pass> l_data;
-std::vector<para_details> p_data;
-
 // predefine timeout nodes for parallel_begin, end, thread_begin, end --- these region should execute in similar time irrespective of anything
 
 timeout_node parallel_begin;
@@ -496,10 +477,10 @@ on_ompt_callback_work(
 
   ompt_data_t *current_thread = ompt_get_thread_data();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
+  
+  temp_thread_data->counter = sub_parallel_id;
 
   if(sub_parallel_id != 0){ // start of work
-
-    temp_thread_data->counter = sub_parallel_id-1;
 
     //printf("start of work, parallel id, sub_parallel_id%d %d\n", parallel_data->value, sub_parallel_id-1);
     printf("Thread id is **************** %d\n", temp_thread_data->id);
@@ -587,7 +568,6 @@ on_ompt_callback_work(
     
     temp_thread_data->thread_current_timeout.push_back(work_end);
     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
-    temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = temp_thread_data->counter;
   }
 
   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
@@ -698,27 +678,6 @@ do {                                                           \
 #define register_callback(name) register_callback_t(name, name##_t)
 
 extern "C" void initializeTimeoutData(){
-
-  std::ifstream inFile("data_log.txt", std::ios::binary);
-
-    if (inFile) {
-        // Read the data from the file
-        size_t vectorSize;
-        inFile.read(reinterpret_cast<char*>(&vectorSize), sizeof(vectorSize));
-        l_data.resize(vectorSize);
-        inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
-        inFile.close();
-
-        // Print the read data
-        for (const loop_details_pass& item : l_data) {
-          std::cout<<"loop id:" << item.loop_id << std::endl;
-          std::cout<<"Parallel id:" << item.paralle_id << std::endl;
-          std::cout<<"split factor:" << item.split_factor << std::endl;
-          std::cout<<"seq id:" << item.seq_split << std::endl;
-        }
-    } else {
-        std::cerr << "Error opening the file for reading." << std::endl;
-    }
 
   timespec exec_time;
   exec_time.tv_sec = 2;
@@ -899,60 +858,7 @@ extern "C" int ompt_initialize(
 }
 
 void logDataToFile(){
-  std::vector<loop_details_pass> temp_loop_profile;
-  std::vector<para_details> temp_para_profile;
 
-  for(int i = 0 ; i < parallel_size ; i++){
-    for (int j = 0 ; j < loop_arr_size[i] ; j++) {
-      for(int k = 0 ; k < loop_execution[i][j].expected_execution.size() ; k++) {
-        loop_details_pass temp;
-        temp.paralle_id = i;
-        temp.loop_id = j;
-        temp.split_factor = loop_execution[i][j].splits_in_iter;
-        temp.seq_split = loop_execution[i][j].sub_loop_id;
-        temp.wcet_ns = (loop_execution[i][j].expected_execution[k].wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution[k].wcet.tv_nsec;
-        temp_loop_profile.push_back(temp);
-      }
-    }    
-  }
-
-  for(int i = 0 ; i < parallel_size ; i++){
-    for(int j = 0 ; j < parallel_arr_size[i] ; j++){
-      if(parallel_region[i][j].ref > omp_sections_ref){
-        for(int k = 0 ; k < parallel_region[i][j].expected_execution.size() ; i++){
-          for(int z = 0 ; z < parallel_region[i][j].expected_execution[k].size() ; z++){
-            para_details temp;
-            temp.parallel_id = i;
-            temp.ref = parallel_region[i][j].ref;
-            temp.id = parallel_region[i][j].sub_region_id;
-            temp.wcet_ns = (parallel_region[i][j].expected_execution[k][z].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k][z].wcet.tv_nsec;
-            temp_para_profile.push_back(temp);
-          }
-        }
-      } 
-    }
-  }
-
-   std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt",std::ios::binary);
-
-    if (outFile) {
-        // Write the size of the vector
-        size_t vectorSize = temp_loop_profile.size();
-        outFile.write(reinterpret_cast<const char*>(&vectorSize), sizeof(vectorSize));
-
-        // Write the vector of structs to the file
-        outFile.write(reinterpret_cast<const char*>(temp_loop_profile.data()), temp_loop_profile.size() * sizeof(loop_details_pass));
-        
-        size_t vector2Size = temp_para_profile.size();
-        outFile.write(reinterpret_cast<const char*>(&vector2Size), sizeof(vector2Size));
-
-        // Write the vector of structs to the file
-        outFile.write(reinterpret_cast<const char*>(temp_para_profile.data()), temp_para_profile.size() * sizeof(para_details));
-        
-        outFile.close();
-    } else { 
-        std::cout<< "Error opening the file for writing.\n";
-    }
 }
 
 void processLogData(){
@@ -971,13 +877,12 @@ void processLogData(){
     for (const auto & [ key, value ] : log_data) {
         for(int j = 0 ; j < value.size() ; j++){
             if(value[j].loop_id != default_id){
-                if(timespec_compare(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet,max_timeout)){
-                  loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet = value[j].et;
+               if(timespec_compare(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet,max_timeout)){
+                 loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet = value[j].et;
+               }
 
-                }
-
-                loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet = timespec_higher(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet, value[j].et);
-                // process wcet if found higher one then set that as wcet 
+               loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet = timespec_higher(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet, value[j].et);
+               // process wcet if found higher one then set that as wcet 
             }
         }
     }
@@ -992,7 +897,7 @@ void processLogData(){
                 if(temp_id == parallel_begin_id || temp_id == parallel_end_id || temp_id == thread_begin_id || temp_id == work_end_id || temp_id == work_begin_id )
                     continue;
 
-                //printf("parallel id is: %d and sub region id is: %d\n",value[j].parallel_region_id,value[j].sub_region_id);   
+                printf("parallel id is: %d and sub region id is: %d\n",value[j].parallel_region_id,value[j].sub_region_id);   
 
                 if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref > omp_sections_ref){
                   if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id][value[j].sub_timer_id].wcet,max_timeout)){
@@ -1002,24 +907,27 @@ void processLogData(){
                 }
 
                 else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == omp_for_ref){
-                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet,max_timeout)){
-                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = value[j].et;
-                  }
-                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet, value[j].et);
+                    if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet,max_timeout)){
+                        parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = value[j].et;
+                    }
+                    parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet, value[j].et);
                 }
 
                 else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == omp_single_ref){
-                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet,max_timeout)){
-                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = value[j].et;
-                  }
-                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet, value[j].et);
+                    if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet,max_timeout)){
+                        parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = value[j].et;
+                    }
+                    parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet, value[j].et);
                 }
             }
         }
     }
 
     printf("checking log parallel region prints\n");
-    logDataToFile();
+
+
+
+    //logDataToFile();
 }
 
 extern "C" void ompt_finalize(ompt_data_t* data)
