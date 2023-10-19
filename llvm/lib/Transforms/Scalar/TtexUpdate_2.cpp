@@ -79,14 +79,20 @@ using namespace llvm;
 //   void initializeTtexPassPass (PassRegistry&);
 // } // end namespace llvm
 
+static cl::opt<bool> Myfile("check_file",
+  cl::desc("read update from file"),
+  cl::init(false)); 
+
 std::vector< std::vector< std::pair<int,int> > > astdata_2; //storing the sub region info -- but need to fix the id's to correct location
 std::vector<int> sizes_2;
 std::vector< std::vector< std::pair<int,int> > > loop_split_2;
 
+bool check = false;
+
 long int secure_wcet_ns;
 
 typedef struct loop_details_pass {
-  int paralle_id;
+  int parallel_id;
   int loop_id;
   int split_factor;
   int seq_split;
@@ -104,8 +110,11 @@ typedef struct para_details {
 std::unordered_map<Loop*, loop_details_pass> secure_loops;
 // std::unordered_map<> // how to define map for code regions - they are not like loops or functions
 
-std::vector<loop_details_pass> loop_details_profiler;
-std::vector<para_details> region_details_profiler;
+std::vector< std::vector<loop_details_pass> > loop_details_profiler;
+std::vector< std::vector<para_details> > region_details_profiler;
+
+// std::vector< std::vector<loop_details_pass> > loop_details_from_profiler;
+// std::vector< std::vector<para_details> > region_details_from_profiler;
 
 int loop_counter_2 = 0;
 
@@ -673,6 +682,8 @@ std::vector< std::pair<int,int> > splittingLoops(Function &F, int parallel_regio
   llvm::Module *M = F.getParent();
   llvm::LLVMContext &CTX = M->getContext();
   std::vector<Loop*> allLoops_2 = retrieveLoopsFunc(F,MA);
+  auto &Options = cl::getRegisteredOptions();
+  std::vector<loop_details_pass> loop_data;
   for(int i = 0 ; i < allLoops_2.size(); i++) {
     Loop* ltemp = allLoops_2[i];
     if(ltemp->isInvalid()){
@@ -719,21 +730,41 @@ std::vector< std::pair<int,int> > splittingLoops(Function &F, int parallel_regio
 
     errs()<<"Found a loop"<<"\n";
 
-    bool split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, 1);
+    bool split_check;
+
+    if (!Options.count("check_file") && Myfile){
+      split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, 1);
+      if(split_check){
+        loop_details_pass lt;
+        lt.parallel_id = parallel_region_id;
+        lt.loop_id = loop_counter_2;
+        lt.seq_split = 1;
+        lt.split_factor = 2;
+        lt.wcet_ns = 0;
+        secure_loops[ltemp] = lt; // loop has been secured - this map helps me check during sequential split (since no simplify two loops can share header having bulk code)
+        loop_data.push_back(lt);
+      }
+    }
+
+    else {  // this will change on the basis of new split analysis given wcet
+      split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, 1); // parameters will change for iteration split
+      if(split_check){
+        loop_details_profiler[parallel_region_id][loop_counter_2].seq_split = 1; // seq split is updated later
+        secure_loops[ltemp] = loop_details_profiler[parallel_region_id][loop_counter_2];
+      }
+    }
+
     if(split_check){
-      loop_details_pass lt;
-      lt.paralle_id = parallel_region_id;
-      lt.loop_id = loop_counter_2;
-      lt.seq_split = 1;
-      lt.split_factor = 2;
-      lt.wcet_ns = 0;
-      secure_loops[ltemp] = lt; // loop has been secured
       llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2);
       llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
       //ltemp->setLoopID(loop_id_value);
       temp.push_back(std::make_pair(loop_counter_2,1)); // push back will actually be the split value as id will automatically be handled
       loop_counter_2++;
     }
+  }
+
+  if (!Options.count("check_file") && Myfile){
+    loop_details_profiler.push_back(loop_data); // all loops for the particular parallel region are pushed back
   }
 
   return temp;
@@ -822,6 +853,53 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
 
     int counter = 0;
 
+    auto &Options = cl::getRegisteredOptions();
+    if (Options.count("check_file") && Myfile){
+      std::ifstream inFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt",std::ios::binary);
+
+      if (inFile) {
+          // Read the data from the file
+          size_t vectorSizeRow;
+          inFile.read(reinterpret_cast<char*>(&vectorSizeRow), sizeof(vectorSizeRow));
+          loop_details_profiler.resize(vectorSizeRow);
+          for (auto& row : loop_details_profiler) {
+              size_t vectorSizeColumn;
+              inFile.read(reinterpret_cast<char*>(&vectorSizeColumn), sizeof(vectorSizeColumn));
+              row.resize(vectorSizeColumn);
+              for (auto& cell : row) {
+                  inFile.read(reinterpret_cast<char*>(&cell), sizeof(loop_details_pass));
+              }
+          }
+
+          size_t vector2SizeRow;
+          region_details_profiler.resize(vector2SizeRow);
+          for (auto& row : region_details_profiler) {
+              size_t vector2SizeColumn;
+              inFile.read(reinterpret_cast<char*>(&vector2SizeColumn), sizeof(vector2SizeColumn));
+              row.resize(vector2SizeColumn);
+              for (auto& cell : row) {
+                  inFile.read(reinterpret_cast<char*>(&cell), sizeof(para_details));
+              }
+          }
+          //inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
+          inFile.close();
+
+          // Print the read data
+          for (const auto& item : loop_details_profiler) {
+            for(const loop_details_pass& item_2: item) {
+              std::cout<<"loop id:" << item_2.loop_id << std::endl;
+              std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
+              std::cout<<"split factor:" << item_2.split_factor << std::endl;
+              std::cout<<"seq id:" << item_2.seq_split << std::endl;
+            }
+
+            std::cout<<std::endl;
+          }
+      } else {
+          std::cerr << "Error opening the file for reading." << std::endl;
+      }
+    }
+
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
       Function &F = *func_iter;
 
@@ -876,7 +954,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
       loop_details_pass lt = loop_val.second;
       temp_loop_profile.push_back(lt);
       std::cout<<"loop id:" << lt.loop_id << std::endl;
-      std::cout<<"Parallel id:" << lt.paralle_id << std::endl;
+      std::cout<<"Parallel id:" << lt.parallel_id << std::endl;
       std::cout<<"split factor:" << lt.split_factor << std::endl;
       std::cout<<"seq id:" << lt.seq_split << std::endl;
     }
@@ -884,15 +962,34 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log.txt",std::ios::binary);
 
     if (outFile) {
-        // Write the size of the vector
-        size_t vectorSize = temp_loop_profile.size();
-        outFile.write(reinterpret_cast<const char*>(&vectorSize), sizeof(vectorSize));
+        // Write the number of rows
+        size_t numRows = loop_details_profiler.size();
+        outFile.write(reinterpret_cast<const char*>(&numRows), sizeof(numRows));
 
-        // Write the vector of structs to the file
-        outFile.write(reinterpret_cast<const char*>(temp_loop_profile.data()), temp_loop_profile.size() * sizeof(loop_details_pass));
+        // Write each row's size and data
+        for (const auto& row : loop_details_profiler) {
+            size_t rowSize = row.size();
+            outFile.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
+            for (const loop_details_pass& cell : row) {
+                outFile.write(reinterpret_cast<const char*>(&cell), sizeof(loop_details_pass));
+            }
+        }
+
+        size_t num2Rows = region_details_profiler.size();
+        outFile.write(reinterpret_cast<const char*>(&num2Rows), sizeof(num2Rows));
+
+        // Write each row's size and data
+        for (const auto& row : region_details_profiler) {
+            size_t rowSize = row.size();
+            outFile.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
+            for (const para_details& cell : row) {
+                outFile.write(reinterpret_cast<const char*>(&cell), sizeof(para_details));
+            }
+        }
+
         outFile.close();
-    } else {
-        errs() << "Error opening the file for writing.\n";
+    } else { 
+        std::cout<< "Error opening the file for writing.\n";
     }
 
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {

@@ -114,7 +114,7 @@ typedef struct thread_info {
 } thread_info;
 
 typedef struct loop_details_pass {
-  int paralle_id;
+  int parallel_id;
   int loop_id;
   int split_factor;
   int seq_split;
@@ -129,8 +129,8 @@ typedef struct para_details {
   long int wcet_ns;
 } para_details;
 
-std::vector<loop_details_pass> l_data;
-std::vector<para_details> p_data;
+std::vector< std::vector<loop_details_pass> > l_data;
+std::vector< std::vector<para_details> > p_data;
 
 // predefine timeout nodes for parallel_begin, end, thread_begin, end --- these region should execute in similar time irrespective of anything
 
@@ -703,18 +703,30 @@ extern "C" void initializeTimeoutData(){
 
     if (inFile) {
         // Read the data from the file
-        size_t vectorSize;
-        inFile.read(reinterpret_cast<char*>(&vectorSize), sizeof(vectorSize));
-        l_data.resize(vectorSize);
-        inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
+        size_t vectorSizeRow;
+        inFile.read(reinterpret_cast<char*>(&vectorSizeRow), sizeof(vectorSizeRow));
+        l_data.resize(vectorSizeRow);
+        for (auto& row : l_data) {
+            size_t vectorSizeColumn;
+            inFile.read(reinterpret_cast<char*>(&vectorSizeColumn), sizeof(vectorSizeColumn));
+            row.resize(vectorSizeColumn);
+            for (auto& cell : row) {
+                inFile.read(reinterpret_cast<char*>(&cell), sizeof(loop_details_pass));
+            }
+        }
+        //inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
         inFile.close();
 
         // Print the read data
-        for (const loop_details_pass& item : l_data) {
-          std::cout<<"loop id:" << item.loop_id << std::endl;
-          std::cout<<"Parallel id:" << item.paralle_id << std::endl;
-          std::cout<<"split factor:" << item.split_factor << std::endl;
-          std::cout<<"seq id:" << item.seq_split << std::endl;
+        for (const auto& item : l_data) {
+          for(const loop_details_pass& item_2: item) {
+            std::cout<<"loop id:" << item_2.loop_id << std::endl;
+            std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
+            std::cout<<"split factor:" << item_2.split_factor << std::endl;
+            std::cout<<"seq id:" << item_2.seq_split << std::endl;
+          }
+
+          std::cout<<std::endl;
         }
     } else {
         std::cerr << "Error opening the file for reading." << std::endl;
@@ -899,35 +911,38 @@ extern "C" int ompt_initialize(
 }
 
 void logDataToFile(){
-  std::vector<loop_details_pass> temp_loop_profile;
-  std::vector<para_details> temp_para_profile;
 
   for(int i = 0 ; i < parallel_size ; i++){
     for (int j = 0 ; j < loop_arr_size[i] ; j++) {
       for(int k = 0 ; k < loop_execution[i][j].expected_execution.size() ; k++) {
-        loop_details_pass temp;
-        temp.paralle_id = i;
-        temp.loop_id = j;
-        temp.split_factor = loop_execution[i][j].splits_in_iter;
-        temp.seq_split = loop_execution[i][j].sub_loop_id;
-        temp.wcet_ns = (loop_execution[i][j].expected_execution[k].wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution[k].wcet.tv_nsec;
-        temp_loop_profile.push_back(temp);
+        //loop_details_pass temp;
+        std::cout<< "loop details value:" << i << " " << j << " " << k<<std::endl;
+        l_data[i][j].parallel_id = i;
+        l_data[i][j].loop_id = j;
+        std::cout<<"checking loophole "<<std::endl;
+        l_data[i][j].split_factor = loop_execution[i][j].splits_in_iter;
+        std::cout<<"checking loophole "<<std::endl;
+        l_data[i][j].seq_split = loop_execution[i][j].sub_loop_id;
+        std::cout<<"checking loophole "<<std::endl;
+        l_data[i][j].wcet_ns = (loop_execution[i][j].expected_execution[k].wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution[k].wcet.tv_nsec;
+        std::cout<<"checking loophole "<<std::endl;
+        //temp_loop_profile.push_back(temp);
       }
     }    
   }
 
+  std::cout<<"loop evaluated correctly"<<std::endl;
+
   for(int i = 0 ; i < parallel_size ; i++){
     for(int j = 0 ; j < parallel_arr_size[i] ; j++){
-      if(parallel_region[i][j].ref > omp_sections_ref){
-        for(int k = 0 ; k < parallel_region[i][j].expected_execution.size() ; i++){
-          for(int z = 0 ; z < parallel_region[i][j].expected_execution[k].size() ; z++){
-            para_details temp;
-            temp.parallel_id = i;
-            temp.ref = parallel_region[i][j].ref;
-            temp.id = parallel_region[i][j].sub_region_id;
-            temp.wcet_ns = (parallel_region[i][j].expected_execution[k][z].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k][z].wcet.tv_nsec;
-            temp_para_profile.push_back(temp);
-          }
+      for(int k = 0 ; k < parallel_region[i][j].expected_execution.size() ; k++){
+        for(int z = 0 ; z < parallel_region[i][j].expected_execution[k].size() ; z++){
+          //para_details temp;
+          p_data[i][j].parallel_id = i;
+          p_data[i][j].ref = parallel_region[i][j].ref;
+          p_data[i][j].id = parallel_region[i][j].sub_region_id;
+          p_data[i][j].wcet_ns = (parallel_region[i][j].expected_execution[k][z].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k][z].wcet.tv_nsec;
+          //temp_para_profile.push_back(temp);
         }
       } 
     }
@@ -936,19 +951,32 @@ void logDataToFile(){
    std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt",std::ios::binary);
 
     if (outFile) {
-        // Write the size of the vector
-        size_t vectorSize = temp_loop_profile.size();
-        outFile.write(reinterpret_cast<const char*>(&vectorSize), sizeof(vectorSize));
 
-        // Write the vector of structs to the file
-        outFile.write(reinterpret_cast<const char*>(temp_loop_profile.data()), temp_loop_profile.size() * sizeof(loop_details_pass));
-        
-        size_t vector2Size = temp_para_profile.size();
-        outFile.write(reinterpret_cast<const char*>(&vector2Size), sizeof(vector2Size));
+        size_t num2Rows = l_data.size();
+        outFile.write(reinterpret_cast<const char*>(&num2Rows), sizeof(num2Rows));
 
-        // Write the vector of structs to the file
-        outFile.write(reinterpret_cast<const char*>(temp_para_profile.data()), temp_para_profile.size() * sizeof(para_details));
-        
+        // Write each row's size and data
+        for (const auto& row : l_data) {
+            size_t rowSize = row.size();
+            outFile.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
+            for (const loop_details_pass& cell : row) {
+                outFile.write(reinterpret_cast<const char*>(&cell), sizeof(loop_details_pass));
+            }
+        }
+
+        // Write the number of rows
+        size_t numRows = p_data.size();
+        outFile.write(reinterpret_cast<const char*>(&numRows), sizeof(numRows));
+
+        // Write each row's size and data
+        for (const auto& row : p_data) {
+            size_t rowSize = row.size();
+            outFile.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
+            for (const para_details& cell : row) {
+                outFile.write(reinterpret_cast<const char*>(&cell), sizeof(para_details));
+            }
+        }
+
         outFile.close();
     } else { 
         std::cout<< "Error opening the file for writing.\n";
