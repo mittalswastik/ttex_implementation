@@ -80,7 +80,6 @@ typedef struct timeout_node {
   int sub_region_id;
   int sections_id;
   int loop_id;
-  int sub_timer_id; // for splits in sequential code (this id represents either split in code region or split in 1 iteration of a loop)
   timespec wcet;
   timespec et; // actual time taken
   bool timer_set_flag;
@@ -91,7 +90,7 @@ typedef struct details{
   int splits_in_iter;
   int sub_region_id; // there can be multiple regions of same type
   int sub_region_timer; // timer calls within the sequential code
-  vector< vector<timeout_node> > expected_execution; // vector for sections and second vector for sub_timer_id
+  vector<timeout_node> expected_execution; // vector for sections and second vector for sub_timer_id
 } details;
 
 details **parallel_region;
@@ -101,7 +100,7 @@ typedef struct loop_details {
   int loop_id;
   int splits_in_iter;
   int sub_loop_id;
-  vector<timeout_node> expected_execution; // vector based on sub timer id 
+  timeout_node expected_execution; // vector based on sub timer id 
 } loop_details;
 
 loop_details **loop_execution;
@@ -121,6 +120,7 @@ typedef struct loop_details_pass {
   int split_factor;
   int unique_loop_id;
   int seq_split;
+  int total_inst;
   long int wcet_ns;
 } loop_details_pass;
 
@@ -129,6 +129,7 @@ typedef struct para_details {
   int id;
   int ref;
   int seq_split;
+  int total_inst;
   long int wcet_ns;
 } para_details;
 
@@ -302,9 +303,9 @@ timespec timespec_sub(timespec ts1, timespec ts2)
 }
 
 extern "C" void __attribute__((noinline))
-ompt_test(int parallel_region_id, int sub_id, int loop_id, int split_id)
+ompt_test(int parallel_region_id, int sub_id, int loop_id)
 {
-  if(parallel_region_id == -1 && sub_id == -1 && loop_id == -1 && split_id == -1){
+  if(parallel_region_id == -1 && sub_id == -1 && loop_id == -1){
     return;
   }
 
@@ -335,10 +336,16 @@ ompt_test(int parallel_region_id, int sub_id, int loop_id, int split_id)
   }
 
   // do not need to check previous timer set or not in this case
-  temp_thread_data->thread_current_timeout.push_back(loop_execution[parallel_region_id][sub_id].expected_execution[split_id]);
+  if(loop_id != -1){
+    temp_thread_data->thread_current_timeout.push_back(loop_execution[parallel_region_id][loop_id].expected_execution);
+  }
+
+  else {
+    temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_region_id][sub_id].expected_execution[0]);
+  }
+  
   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
   //temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = temp_thread_data->counter-1;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].loop_id = loop_id;
   //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
   receive_timer t = receiveTime(temp_thread_data->fd);
   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_sec = 0;
@@ -486,7 +493,11 @@ on_ompt_callback_parallel_begin(
     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
   }
 
+    /**TODO*/
+  // can change to below once considering parallel begin as sub region 0  
+  //temp_thread_data->thread_current_timeout.push_back(parallel_region[id-1][0].expected_execution[0]);
   temp_thread_data->thread_current_timeout.push_back(parallel_begin);
+
   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
   //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
   receive_timer t = receiveTime(temp_thread_data->fd);
@@ -519,6 +530,7 @@ on_ompt_callback_work(
     //printf("start of work, parallel id, sub_parallel_id%d %d\n", parallel_data->value, sub_parallel_id-1);
     printf("Thread id is **************** %d\n", temp_thread_data->id);
     printf("Sub region is *************** %d\n", sub_parallel_id);
+    printf("Display section count to confirm if changed %d\n", count);
 
     if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
       timespec temp;
@@ -534,7 +546,7 @@ on_ompt_callback_work(
 
     if(parallel_region[parallel_data->value][sub_parallel_id-1].ref > omp_sections_ref && count != -1){ // -1 count means thread enters but not takes any section will go to work end
       printf("count value is: %d\n", count);
-      temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id-1].expected_execution[count-1][0]);
+      temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id].expected_execution[count-1]);
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id-1;
@@ -543,7 +555,7 @@ on_ompt_callback_work(
 
     else if (parallel_region[parallel_data->value][sub_parallel_id-1].ref == omp_for_ref){
       printf("value is----------\n");
-      temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id-1].expected_execution[0][0]); // only one vector in other case
+      temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id].expected_execution[0]); // only one vector in other case
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id-1;
@@ -552,7 +564,7 @@ on_ompt_callback_work(
 
     else if (parallel_region[parallel_data->value][sub_parallel_id-1].ref == omp_single_ref){
       printf("--------------ompt single is detected---------%d %d\n", parallel_data->value, sub_parallel_id-1);
-      temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id-1].expected_execution[0][0]); // only one vector in other case
+      temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id].expected_execution[0]); // only one vector in other case
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id-1;
       temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
@@ -822,17 +834,14 @@ extern "C" void initializeTimeoutData(){
     loop_execution[i] = (loop_details*) malloc(l_data[i].size()*sizeof(loop_details));
 
     for (int j = 0 ; j < l_data[i].size() ; j++) {
-      for(int k = 0 ; k < l_data[i][j].seq_split ; k++) {
         timeout_node temp;
         temp.wcet = max_timeout;
         temp.sub_region_id = default_id; // this will be updated by previous timeout sub_region_id , counter for now
         temp.parallel_region_id = i;
         temp.loop_id = j;
-        temp.sub_timer_id = k;
         temp.sections_id = default_id;
         temp.timer_set_flag = false;
-        loop_execution[i][j].expected_execution.push_back(temp);
-      }
+        loop_execution[i][j].expected_execution = temp;
     }
 
     /* 
@@ -848,65 +857,50 @@ extern "C" void initializeTimeoutData(){
 
     for(int j = 0 ; j < p_data[i].size() ; j++){
 
-      parallel_region[i] = (details*) malloc(p_data[i].size() * sizeof(details));
+        parallel_region[i] = (details*) malloc(p_data[i].size() * sizeof(details));
 
-      printf("sub parallel region id: %d\n", p_data[i][j].ref);
-      timeout_node temp;
+        printf("sub parallel region id: %d\n", p_data[i][j].ref);
+        timeout_node temp;
      
-      if(p_data[i][j].ref > omp_sections_ref){ //sections
+        if(p_data[i][j].ref > omp_sections_ref){ //sections
 
-        printf("Sections detected\n");
-        for(int k = 0 ; k < p_data[i][j].ref ; k++){
-          vector<timeout_node> temp_region;
-          for(int z = 0 ; z < p_data[i][j].seq_split ; z++){
-            // here will be another loop here for max vul ... then temp_v will have more noes per section
-            temp.wcet = max_timeout;
-            temp.sub_region_id = j;
-            temp.parallel_region_id = i;
-            temp.sections_id = k;
-            temp.loop_id = default_id;
-            temp.sub_timer_id = z;
-            temp.timer_set_flag = false;
-            temp_region.push_back(temp);
-          }
-
-          parallel_region[i][j].expected_execution.push_back(temp_region); // that loops last line
+            printf("Sections detected\n");
+            for(int k = 0 ; k < p_data[i][j].ref ; k++){
+            vector<timeout_node> temp_region;
+                // here will be another loop here for max vul ... then temp_v will have more noes per section
+                temp.wcet = max_timeout;
+                temp.sub_region_id = j;
+                temp.parallel_region_id = i;
+                temp.sections_id = k;
+                temp.loop_id = default_id;
+                temp.timer_set_flag = false;
+                parallel_region[i][j].expected_execution.push_back(temp);
+            }
+            // printf("checking parallel region impl ............... %d\n", parallel_region[i][j].expected_execution[1]->sections_id);
         }
-        // printf("checking parallel region impl ............... %d\n", parallel_region[i][j].expected_execution[1]->sections_id);
-      }
       
-      else if(p_data[i][j].ref == omp_single_ref) { // single
-          vector<timeout_node> temp_region;
-          for(int z = 0 ; z < p_data[i][j].seq_split ; z++){
+        else if(p_data[i][j].ref == omp_single_ref) { // single
+            vector<timeout_node> temp_region;
             temp.wcet = max_timeout;
             temp.sub_region_id = j;
             temp.parallel_region_id = i;
             temp.sections_id = default_id;
             temp.loop_id = default_id;
-            temp.sub_timer_id = z;
             temp.timer_set_flag = false;
-            temp_region.push_back(temp);
-          }
+            parallel_region[i][j].expected_execution.push_back(temp);
+        }
 
-          parallel_region[i][j].expected_execution.push_back(temp_region); 
-      }
-
-      else if(p_data[i][j].ref == omp_for_ref) { // omp for // *loop_split factor in the other case
+        else if(p_data[i][j].ref == omp_for_ref) { // omp for // *loop_split factor in the other case
         
-          vector<timeout_node> temp_region;
-          for(int z = 0 ; z < p_data[i][j].seq_split ; z++){
+            vector<timeout_node> temp_region;
             temp.wcet = max_timeout;
             temp.sub_region_id = j;
             temp.parallel_region_id = i;
             temp.sections_id = default_id;
             temp.loop_id = default_id;
-            temp.sub_timer_id = z;
             temp.timer_set_flag = false;
-            temp_region.push_back(temp);
-          }
-
-          parallel_region[i][j].expected_execution.push_back(temp_region); 
-      }
+            parallel_region[i][j].expected_execution.push_back(temp);
+        }
     }
   }
 }
@@ -936,7 +930,7 @@ extern "C" int ompt_initialize(
 
   //bool flag = true;
 
-  ompt_test(-1,-1,-1,-1);
+  ompt_test(-1,-1,-1);
 
   // pthread_mutex_init(&lock_t,NULL);
   clock_gettime(CLOCK_MONOTONIC, &start_time);
@@ -948,10 +942,9 @@ extern "C" int ompt_initialize(
 void logDataToFile(){
 
   for(int i = 0 ; i < l_data.size() ; i++){
-    for (int j = 0 ; j < l_data[i].size() ; j++) {
-      for(int k = 0 ; k < loop_execution[i][j].expected_execution.size() ; k++) {
+    for (int j = 0 ; j < l_data[i].size() ; j++) { 
         //loop_details_pass temp;
-        std::cout<< "loop details value:" << i << " " << j << " " << k<<std::endl;
+        std::cout<< "loop details value:" << i << " " << j <<std::endl;
         l_data[i][j].parallel_id = i;
         l_data[i][j].loop_id = j;
         std::cout<<"checking loophole "<<std::endl;
@@ -959,10 +952,9 @@ void logDataToFile(){
         std::cout<<"checking loophole "<<std::endl;
         l_data[i][j].seq_split = loop_execution[i][j].sub_loop_id;
         std::cout<<"checking loophole "<<std::endl;
-        l_data[i][j].wcet_ns = (loop_execution[i][j].expected_execution[k].wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution[k].wcet.tv_nsec;
+        l_data[i][j].wcet_ns = (loop_execution[i][j].expected_execution.wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution.wcet.tv_nsec;
         std::cout<<"checking loophole "<<std::endl;
         //temp_loop_profile.push_back(temp);
-      }
     }    
   }
 
@@ -971,14 +963,12 @@ void logDataToFile(){
   for(int i = 0 ; i < p_data.size() ; i++){
     for(int j = 0 ; j < p_data[i].size() ; j++){
       for(int k = 0 ; k < parallel_region[i][j].expected_execution.size() ; k++){
-        for(int z = 0 ; z < parallel_region[i][j].expected_execution[k].size() ; z++){
-          //para_details temp;
-          p_data[i][j].parallel_id = i;
-          p_data[i][j].ref = parallel_region[i][j].ref;
-          p_data[i][j].id = parallel_region[i][j].sub_region_id;
-          p_data[i][j].wcet_ns = (parallel_region[i][j].expected_execution[k][z].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k][z].wcet.tv_nsec;
-          //temp_para_profile.push_back(temp);
-        }
+        //para_details temp;
+        p_data[i][j].parallel_id = i;
+        p_data[i][j].ref = parallel_region[i][j].ref;
+        p_data[i][j].id = parallel_region[i][j].sub_region_id;
+        p_data[i][j].wcet_ns = (parallel_region[i][j].expected_execution[k].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k].wcet.tv_nsec;
+        //temp_para_profile.push_back(temp);
       } 
     }
   }
@@ -1034,12 +1024,11 @@ void processLogData(){
     for (const auto & [ key, value ] : log_data) {
         for(int j = 0 ; j < value.size() ; j++){
             if(value[j].loop_id != default_id){
-                if(timespec_compare(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet,max_timeout)){
-                  loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet = value[j].et;
-
+                if(timespec_compare(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution.wcet,max_timeout)){
+                  loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution.wcet = value[j].et;
                 }
 
-                loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet = timespec_higher(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution[value[j].sub_timer_id].wcet, value[j].et);
+                loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution.wcet = timespec_higher(loop_execution[value[j].parallel_region_id][value[j].loop_id].expected_execution.wcet, value[j].et);
                 // process wcet if found higher one then set that as wcet 
             }
         }
@@ -1058,24 +1047,24 @@ void processLogData(){
                 //printf("parallel id is: %d and sub region id is: %d\n",value[j].parallel_region_id,value[j].sub_region_id);   
 
                 if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref > omp_sections_ref){
-                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id][value[j].sub_timer_id].wcet,max_timeout)){
-                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id][value[j].sub_timer_id].wcet = value[j].et;
+                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id].wcet,max_timeout)){
+                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id].wcet = value[j].et;
                   }
-                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id][value[j].sub_timer_id].wcet, value[j].et);
+                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[value[j].sections_id].wcet, value[j].et);
                 }
 
                 else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == omp_for_ref){
-                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet,max_timeout)){
-                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = value[j].et;
+                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet,max_timeout)){
+                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = value[j].et;
                   }
-                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet, value[j].et);
+                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet, value[j].et);
                 }
 
                 else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == omp_single_ref){
-                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet,max_timeout)){
-                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = value[j].et;
+                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet,max_timeout)){
+                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = value[j].et;
                   }
-                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0][value[j].sub_timer_id].wcet, value[j].et);
+                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet, value[j].et);
                 }
             }
         }

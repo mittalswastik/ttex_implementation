@@ -1,5 +1,5 @@
 #include <omp.h>
-#include "ttex_profiler_update.h"
+#include "ttex_profiler_update_new.h"
 
 # define NPOINTS 100
 # define MXITR 100

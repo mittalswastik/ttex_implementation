@@ -83,19 +83,18 @@ static cl::opt<bool> Myfile("check_file",
   cl::desc("read update from file"),
   cl::init(false)); 
 
-std::vector< std::vector< std::pair<int,int> > > astdata_2; //storing the sub region info -- but need to fix the id's to correct location
-std::vector<int> sizes_2;
-std::vector< std::vector< std::pair<int,int> > > loop_split_2;
-
 bool check = false;
 
-long int secure_wcet_ns;
+long int secure_wcet_ns = 9000000000;
+int loop_unique_id = 0;
 
 typedef struct loop_details_pass {
   int parallel_id;
   int loop_id;
   int split_factor;
+  int unique_loop_id;
   int seq_split;
+  int total_inst;
   long int wcet_ns;
 } loop_details_pass;
 
@@ -104,10 +103,12 @@ typedef struct para_details {
   int id;
   int ref;
   int seq_split;
+  int total_inst;
   long int wcet_ns;
 } para_details;
 
-std::unordered_map<Loop*, loop_details_pass> secure_loops;
+std::unordered_map<Loop*, int> secure_loops;
+std::unordered_map<int, loop_details_pass> secure_loops_2;
 // std::unordered_map<> // how to define map for code regions - they are not like loops or functions
 
 std::vector< std::vector<loop_details_pass> > loop_details_profiler;
@@ -124,7 +125,63 @@ bool maxvuln_set_2 = true;
 #define omp_sections_ref 0
 #define omp_single_ref -2
 
-bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int loop_id, int counter){
+void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, BasicBlock *block, Instruction *Inst){
+  llvm::LLVMContext &CTX = M->getContext();
+
+  FunctionType *testing = FunctionType::get(
+      Type::getVoidTy(CTX),
+      {IntegerType::getInt32Ty(CTX), IntegerType::getInt32Ty(CTX), IntegerType::getInt32Ty(CTX),},
+      //PointerType::getPointerAddressSpace(),
+      /*IsVarArgs=*/false);
+
+  FunctionCallee hookTest = M->getOrInsertFunction("ompt_test", testing);
+  if (Value *calleeFunction = hookTest.getCallee()) {
+    if(Function* Fn = dyn_cast<Function>(calleeFunction)) {
+      Fn->addFnAttr(Attribute::NoInline);
+    }
+  }
+
+  Function *add_timer_calls = M->getFunction("ompt_test");
+  // hookTest.addFnAttr(Attribute::NoInline);
+  //Function *hook = dyn_cast<Function>(hookTest.getCallee());
+  std::vector<Value*> args;
+  ConstantInt *arg1 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),parallel_id, false);
+  ConstantInt *arg2 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),sub_id, false);
+  ConstantInt *arg3 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),loop_id, false);
+  args.push_back(arg1);
+  args.push_back(arg2);
+  args.push_back(arg3);
+  //hookTest->addAttribute(hook
+  //add_timer_calls->addFnAttr(Attribute::NoInline);
+  //Instruction *calltemp = security_2.CreateCall(add_timer_calls,args);
+  // DILocation *DebugLoc = calltemp->getDebugLoc();
+  // security_2.SetCurrentDebugLocation(DebugLoc);
+  Value *my_function = hookTest.getCallee();
+
+  if(Function* fn_test = dyn_cast<Function>(my_function)){
+    errs() <<"----- a function returned ----\n";
+  }
+
+  //my_function->addAttribute(AttributeList::FunctionIndex, Attribute::NoInline);
+  /* commenting 6 lines below for now*/
+  CallInst *callinst;
+  if(block == nullptr) {
+    callinst = llvm::CallInst::Create(hookTest,args,"",Inst);
+  }
+
+  else {
+    callinst = llvm::CallInst::Create(hookTest,args,"",block);
+  }
+  
+  Function *fn_test_2 = callinst->getCalledFunction();
+  std::vector<Attribute> attr_list;
+  AttributeSet attr_set = AttributeSet::get(CTX, attr_list);
+  fn_test_2->addFnAttr(Attribute::NoInline);
+  fn_test_2->addFnAttr(Attribute::NoUnwind);
+
+}
+
+bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_id){
 
   BasicBlock *Preheader = L->getLoopPreheader();
   BasicBlock *Header = L->getHeader();
@@ -172,50 +229,8 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int loop_id, int coun
   PHINode *phisecure;
   IRBuilder<> security_2(Secure_2);
 
-  FunctionType *testing = FunctionType::get(
-      Type::getVoidTy(CTX),
-      {IntegerType::getInt32Ty(CTX), IntegerType::getInt32Ty(CTX), IntegerType::getInt32Ty(CTX), IntegerType::getInt32Ty(CTX)},
-      //PointerType::getPointerAddressSpace(),
-      /*IsVarArgs=*/false);
+  AddFunction(M,parallel_id, sub_id,loop_id,Secure_2,nullptr);
 
-  FunctionCallee hookTest = M->getOrInsertFunction("ompt_test", testing);
-  if (Value *calleeFunction = hookTest.getCallee()) {
-    if(Function* Fn = dyn_cast<Function>(calleeFunction)) {
-      Fn->addFnAttr(Attribute::NoInline);
-    }
-  }
-
-  Function *add_timer_calls = M->getFunction("ompt_test");
-  // hookTest.addFnAttr(Attribute::NoInline);
-  //Function *hook = dyn_cast<Function>(hookTest.getCallee());
-  std::vector<Value*> args;
-  ConstantInt *arg1 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),parallel_id, false);
-  ConstantInt *arg2 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),loop_id, false);
-  ConstantInt *arg3 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),loop_id, false);
-  ConstantInt *arg4 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),counter, false);
-  args.push_back(arg1);
-  args.push_back(arg2);
-  args.push_back(arg3);
-  args.push_back(arg4);
-  //hookTest->addAttribute(hook
-  //add_timer_calls->addFnAttr(Attribute::NoInline);
-  //Instruction *calltemp = security_2.CreateCall(add_timer_calls,args);
-  // DILocation *DebugLoc = calltemp->getDebugLoc();
-  // security_2.SetCurrentDebugLocation(DebugLoc);
-  Value *my_function = hookTest.getCallee();
-
-  if(Function* fn_test = dyn_cast<Function>(my_function)){
-    errs() <<"----- a function returned ----\n";
-  }
-
-  //my_function->addAttribute(AttributeList::FunctionIndex, Attribute::NoInline);
-  /* commenting 6 lines below for now*/
-  CallInst *callinst = llvm::CallInst::Create(hookTest,args,"",Secure_2);
-  Function *fn_test_2 = callinst->getCalledFunction();
-  std::vector<Attribute> attr_list;
-  AttributeSet attr_set = AttributeSet::get(CTX, attr_list);
-  fn_test_2->addFnAttr(Attribute::NoInline);
-  fn_test_2->addFnAttr(Attribute::NoUnwind);
   //attr_set.addAttribute(CTX, AttributeSet::FunctionIndex, Attribute::NoInline);
   //fn_test_2->addAttributes(0, AttributeSet::get(c, AttributeSet::FunctionIndex, attr));
   //security_2.CreateBr(Header);
@@ -335,247 +350,113 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int loop_id, int coun
   return true;
 }
 
-void setLookUpTable_2(Module &M, Function &F, BasicBlock *B, LLVMContext &llvm_context){
+int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_id, int sub_id, int loop_id, int split_id, int count){
+  llvm::Module *M = F->getParent();
+  llvm::LLVMContext &CTX = M->getContext();
+  auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(*M).getManager();
+  FM.invalidate(*F,PreservedAnalyses::none());
+  LoopInfo *LI = &FM.getResult<LoopAnalysis>(*F);
 
+    for (BasicBlock &BB : *F) {
 
-  //llvm::Constant* init = llvm::ConstantDataArray::get(llvm_context, sizes);
-  //GlobalVariable *gvar = new GlobalVariable(init->getType(),true,GlobalValue::CommonLinkage,init,"sizes");
-  //Instruction* loadInst_global =  new LoadInst(init->getType(),M.getGlobalVariable("sizes"));
-  //new StoreInst(init,M.getGlobalVariable("sizes"),B->getTerminator());
-  errs()<<"===================== setting parallel size to ========="<<sizes_2.size()<<"=====\n";
-  M.getGlobalVariable("parallel_size")->setInitializer(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),sizes_2.size(), false));
-  GlobalVariable* G_ref_array = M.getGlobalVariable("parallel_arr_size");
-  Type* T_arr = G_ref_array->getType();
-  Type* T_arr_1 = T_arr->getContainedType(0); //*int
-  Type* T_arr_2 = T_arr_1->getContainedType(0); //int
+      // break if basic block is a part of a loop in that function
+      Loop *temp_loop = LI->getLoopFor(&BB); // will give null for inner loops?
+      if(temp_loop) {
+        continue; // not handling other loops (Will be handled on their call)
+      }
 
-  GlobalVariable* G_ref_array_loop = M.getGlobalVariable("loop_arr_size");
-  Type* T_arr_loop = G_ref_array_loop->getType();
-  Type* T_arr_1_loop = T_arr->getContainedType(0); //*int
-  Type* T_arr_2_loop = T_arr_1->getContainedType(0); //int
+      for (Instruction &I : BB) {
 
-  ConstantInt *sizes_array = ConstantInt::get(Type::getInt64Ty(B->getContext()), sizes_2.size());
-  Constant *sizes_array_val = ConstantExpr::getSizeOf(T_arr_2);
-  Instruction* malloc_sizes_array = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_arr_2, sizes_array_val, sizes_array, nullptr, "malloced");
-  
-  ConstantInt *sizes_array_loop = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split_2.size());
-  Constant *sizes_array_val_loop = ConstantExpr::getSizeOf(T_arr_2_loop);
-  Instruction* malloc_sizes_array_loop = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_arr_2_loop, sizes_array_val_loop, sizes_array_loop, nullptr, "malloced");
-  
+        if(count == split_id) {
+            AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,&I);
+        }
 
-  if(Value* v = dyn_cast<Value>(malloc_sizes_array)) {
-    errs()<<"---------------------- Global variable is a value type ------------------------- \n";
-  }
+        if (CallInst *CI = dyn_cast<CallInst>(&I)) {
+          Function *CalledFunc = CI->getCalledFunction();
+          if (CalledFunc && !CalledFunc->isDeclaration()) {
+            if(!CalledFunc->getName().contains(".omp_outlined.")){
+              if(CalledFunc->getName() != F->getName()){
+                count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+              }
+            }
+          }
+        }
 
-  else {
-    errs()<<"--------------------- not a value type --------------------------- \n";
-  }
+        else if (InvokeInst *CI= dyn_cast<InvokeInst>(&I)){
+          Function *CalledFunc = CI->getCalledFunction();
+          if (CalledFunc && !CalledFunc->isDeclaration()) {
+            if(!CalledFunc->getName().contains(".omp_outlined.")){
+              if(CalledFunc->getName() != F->getName()){
+                count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+              }
+            }
+          }
+        }
 
-  std::string str1, str2;
-  raw_string_ostream stream1(str1), stream2(str2);
-  // malloc_sizes_array->getType()->print(stream1,false);
-  M.getGlobalVariable("parallel_arr_size")->getType()->print(stream2, false);
+        count += 1;
+      }
+    }  
 
-  errs()<<"type of arg 1 and 2 is: " <<str1<<" "<<str2<<"\n";
-
-  Instruction *store_sizes_array = new StoreInst(malloc_sizes_array, M.getGlobalVariable("parallel_arr_size"), B->getTerminator());
-  Instruction *store_sizes_array_loop = new StoreInst(malloc_sizes_array_loop, M.getGlobalVariable("loop_arr_size"), B->getTerminator());
-
-  errs()<<"------------------- Store Instruction Complete ---------------------------\n";
-
-  Instruction *load_sizes_array = new LoadInst(T_arr_1, M.getGlobalVariable("parallel_arr_size"), "", B->getTerminator());
-  Instruction *load_sizes_array_loop = new LoadInst(T_arr_1_loop, M.getGlobalVariable("loop_arr_size"), "", B->getTerminator());
-
-  errs()<<"------------------- load Instruction Complete ---------------------------\n";
-
-  for(int i = 0 ; i < sizes_2.size() ; i++){
-    std::vector<llvm::Value*> sizes_indices;
-    sizes_indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
-    GetElementPtrInst *sizes_gepinst = GetElementPtrInst::Create(T_arr_2, load_sizes_array, sizes_indices, "", B->getTerminator());
-    sizes_gepinst->getType()->print(stream1,false);
-    errs()<<"gepinst inst type is: "<<str1<<"\n";
-    new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, sizes_2[i], true)),sizes_gepinst,B->getTerminator());
-  }
-
-  for(int i = 0 ; i < loop_split_2.size() ; i++){
-    std::vector<llvm::Value*> sizes_indices;
-    sizes_indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
-    GetElementPtrInst *sizes_gepinst = GetElementPtrInst::Create(T_arr_2_loop, load_sizes_array_loop, sizes_indices, "", B->getTerminator());
-    new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split_2[i].size(), true)),sizes_gepinst,B->getTerminator());
-  }
-
-  // Above done storing the sizes array
-
-  errs()<<"------------ loop completion ---------------"<<"\n";
-
-  GlobalVariable* G = M.getGlobalVariable("parallel_region");
-  Type* T = G->getType(); //***details
-  Type* T_1 = T->getContainedType(0); //**details
-  Type* T_2 = T_1->getContainedType(0); //*details
-  Type* T_3 = T_2->getContainedType(0); //details
-
-  GlobalVariable* G_loop = M.getGlobalVariable("loop_execution");
-  Type* T_loop = G_loop->getType(); //***details
-  Type* T_1_loop = T_loop->getContainedType(0); //**details
-  Type* T_2_loop = T_1_loop->getContainedType(0); //*details
-  Type* T_3_loop = T_2_loop->getContainedType(0); //details
-
-  ConstantInt *arraysize_para_region = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata_2.size());
-  Constant* allocsize_para_region = ConstantExpr::getSizeOf(T_2);
-  // allocsize_para_region = ConstantExpr::getTruncOrBitCast(allocsize_para_region, Type::getInt64Ty(B->getContext()));
-  Instruction *malloced_para_region = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_2, allocsize_para_region, arraysize_para_region, nullptr, "malloced");
-  
-  // errs()<<"--------------------------- printing sizes---------------------------"<<"\n";
-
-  // std::string temp_string;
-  // raw_string_ostream check(temp_string);M.getGlobalVariable("ast_size")
-  // allocsize_para_region->print(check);
-  // errs()<<"size of T_2 T_3 malloc_parallel= "<<M.getDataLayout().getTypeAllocSize(T_2)<<" "<<M.getDataLayout().getTypeAllocSize(T_3)<<" "<<M.getDataLayout().getTypeAllocSize(malloced_para_region->getType()->getContainedType(0))<<"\n";   //datalayout class is used in llvm
-  Instruction *store_para_region = new StoreInst(malloced_para_region,M.getGlobalVariable("parallel_region"),B->getTerminator());
-  // Instruction *load_para_region = new LoadInst(T_1,M.getGlobalVariable("parallel_region"),"",B->getTerminator());
-
-  /*
-    Global storage for loop split info below
-  */
-
-  ConstantInt *arraysize_para_region_loop = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split_2.size());
-  Constant* allocsize_para_region_loop = ConstantExpr::getSizeOf(T_2_loop);
-  Instruction *malloced_para_region_loop = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_2_loop, allocsize_para_region_loop, arraysize_para_region_loop, nullptr, "malloced");
-  Instruction *store_para_region_loop = new StoreInst(malloced_para_region_loop,M.getGlobalVariable("loop_execution"),B->getTerminator());
-
-  for(int i = 0 ; i < loop_split_2.size() ; i++){
-    ConstantInt *arraysize = ConstantInt::get(Type::getInt64Ty(B->getContext()), loop_split_2[i].size());
-    Constant* allocsize = ConstantExpr::getSizeOf(T_3_loop);
-    //allocsize = ConstantExpr::getTruncOrBitCast(allocsize, Type::getInt64Ty(B->getContext()));
-    //ConstantInt* allocsize_new = ConstantInt::get(Type::getInt64Ty(B->getContext()), M.getDataLayout().getTypeAllocSize(T_3));
-    Instruction *malloc_sub_region = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_3_loop, allocsize, arraysize, nullptr, "malloced");
-    // Instruction *loadMalloced = new LoadInst();
-    Instruction *load_para_region = new LoadInst(T_1_loop,M.getGlobalVariable("loop_execution"),"",B->getTerminator());
-    //errs()<<"Malloced size is = "<<M.getDataLayout().getTypeAllocSize(malloced->getType()->getContainedType(0))<<"\n";
-    std::vector<llvm::Value*> indices_parallel;
-    indices_parallel.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
-    GetElementPtrInst *gepinst_1 = GetElementPtrInst::Create(T_2_loop,load_para_region,indices_parallel,"",B->getTerminator());
-    Instruction *store_sub_region = new StoreInst(malloc_sub_region,gepinst_1,B->getTerminator());
-    Instruction *load_para_region_1 = new LoadInst(T_1_loop,M.getGlobalVariable("loop_execution"),"",B->getTerminator());
-
-    for(int j = 0 ; j < loop_split_2[i].size() ; j++) {
-      std::vector<llvm::Value*> indices;
-      indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
-      GetElementPtrInst *gepinst_2 = GetElementPtrInst::Create(T_2_loop, load_para_region_1, indices,"",B->getTerminator());
-      Instruction *load_sub_para_region = new LoadInst(T_2_loop, gepinst_2,"",B->getTerminator());
-
-      //errs()<<"checking for error"<<"\n";
-
-      std::vector<llvm::Value*> indices_2;
-      indices_2.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),j, false));
-      GetElementPtrInst *gepinst_3 = GetElementPtrInst::Create(T_3_loop,load_sub_para_region,indices_2,"",B->getTerminator());
-
-      //errs()<<"checking for error2"<<"\n";
-
-      std::vector<llvm::Value*> indices_3;
-      indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
-      indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),0, false)); // this i64 will give access error as struct value accessed is int
-      GetElementPtrInst *gepinst_4 = GetElementPtrInst::Create(T_3_loop,gepinst_3,indices_3,"",B->getTerminator());
-      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split_2[i][j].first, true)),gepinst_4,B->getTerminator());
-      // use option to see if maxvul is set
-
-      // errs()<<"checking for error3"<<"\n";
-
-      std::vector<llvm::Value*> indices_4;
-      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
-      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),1, false)); // this i64 will give access error as struct value accessed is int
-      GetElementPtrInst *gepinst_5 = GetElementPtrInst::Create(T_3_loop,gepinst_3,indices_4,"",B->getTerminator());
-      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, loop_split_2[i][j].second , true)),gepinst_5,B->getTerminator());
-
-    }
-  }
-
-  errs()<<"------------- parallel region storage complete ------------------\n";
-
-  for(int i = 0 ; i < astdata_2.size() ; i++){
-    ConstantInt *arraysize = ConstantInt::get(Type::getInt64Ty(B->getContext()), astdata_2[i].size());
-    Constant* allocsize = ConstantExpr::getSizeOf(T_3);
-    //allocsize = ConstantExpr::getTruncOrBitCast(allocsize, Type::getInt64Ty(B->getContext()));
-    //ConstantInt* allocsize_new = ConstantInt::get(Type::getInt64Ty(B->getContext()), M.getDataLayout().getTypeAllocSize(T_3));
-    Instruction *malloc_sub_region = CallInst::CreateMalloc(B->getTerminator(), Type::getInt64Ty(B->getContext()), T_3, allocsize, arraysize, nullptr, "malloced");
-    // Instruction *loadMalloced = new LoadInst();
-    Instruction *load_para_region = new LoadInst(T_1,M.getGlobalVariable("parallel_region"),"",B->getTerminator());
-    //errs()<<"Malloced size is = "<<M.getDataLayout().getTypeAllocSize(malloced->getType()->getContainedType(0))<<"\n";
-    std::vector<llvm::Value*> indices_parallel;
-    indices_parallel.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
-    GetElementPtrInst *gepinst_1 = GetElementPtrInst::Create(T_2,load_para_region,indices_parallel,"",B->getTerminator());
-    Instruction *store_sub_region = new StoreInst(malloc_sub_region,gepinst_1,B->getTerminator());
-    Instruction *load_para_region_1 = new LoadInst(T_1,M.getGlobalVariable("parallel_region"),"",B->getTerminator());
-    // errs()<<"checking"<<"\n";
-    //Instruction *loadinfo = new LoadInst(T_2,M.getGlobalVariable("info"),"",B->getTerminator());
-    //errs()<<"ASTDATA SIZE IS "<<astdata.size()<<"\n";
-
-    errs()<<"----------------- parallel region "<<i<<" storage works\n";
-
-    for(int j = 0 ; j < astdata_2[i].size() ; j++){
-      //errs()<<"ast value is "<<astdata[i][j]<<" "<<i<<" "<<j<<"\n";
-      std::vector<llvm::Value*> indices;
-      indices.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),i, false));
-      GetElementPtrInst *gepinst_2 = GetElementPtrInst::Create(T_2, load_para_region_1, indices,"",B->getTerminator());
-      Instruction *load_sub_para_region = new LoadInst(T_2, gepinst_2,"",B->getTerminator());
-
-      //errs()<<"checking for error"<<"\n";
-
-      std::vector<llvm::Value*> indices_2;
-      indices_2.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),j, false));
-      GetElementPtrInst *gepinst_3 = GetElementPtrInst::Create(T_3,load_sub_para_region,indices_2,"",B->getTerminator());
-
-      //errs()<<"checking for error2"<<"\n";
-
-      std::vector<llvm::Value*> indices_3;
-      indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
-      indices_3.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),0, false)); // this i64 will give access error as struct value accessed is int
-      GetElementPtrInst *gepinst_4 = GetElementPtrInst::Create(T_3,gepinst_3,indices_3,"",B->getTerminator());
-      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, astdata_2[i][j].first, true)),gepinst_4,B->getTerminator());
-      // use option to see if maxvul is set
-
-      // errs()<<"checking for error3"<<"\n";
-
-      std::vector<llvm::Value*> indices_4;
-      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
-      indices_4.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),1, false)); // this i64 will give access error as struct value accessed is int
-      GetElementPtrInst *gepinst_5 = GetElementPtrInst::Create(T_3,gepinst_3,indices_4,"",B->getTerminator());
-      new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, astdata_2[i][j].second , true)),gepinst_5,B->getTerminator());
-
-      // // load and read its value
-
-      errs()<<"checking for error4"<<"\n";
-
-      // std::vector<llvm::Value*> indices_5;
-      // indices_5.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt64Ty(B->getContext()),0, false));
-      // indices_5.push_back(llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(B->getContext()),2, false)); // this i64 will give access error as struct value accessed is int
-      // GetElementPtrInst *gepinst_6 = GetElementPtrInst::Create(T_3,gepinst_3,indices_5,"",B->getTerminator());
-      // new StoreInst(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, i+1, false)),gepinst_6,B->getTerminator());
-    
-      // errs()<<"checking for error5"<<"\n";
-    }
-  }
+  return count;
 }
 
-void splitCodeRegions() {
-
-}
-
-void splitLoopIteration(Loop *L, int split_count) {
-  // further split an iteration into more code regions for finer WCET
-
-  /*algorithm:
-    - There might be functions with sequential code within the loop which might need a split or Loop within a loop
-    - Just a proof of concept is needed as sequential code is already broken by T-SYS - so algorithm does not have to be full proof
-  */
-
+int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, int loop_id, int split_id, ModuleAnalysisManager &MA){
+  int count = 0;
   std::vector<BasicBlock *> OriginalLoopBlocks = L->getBlocks();
 
-  // for(int i = 0 ; i < OriginalLoopBlocks.size() ; i++){
-     
-  // }
+  llvm::Module *M = F.getParent();
+  llvm::LLVMContext &CTX = M->getContext();
+  auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(*M).getManager();
+  FM.invalidate(F,PreservedAnalyses::none());
+  LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
 
+  for(int i = 0 ; i < OriginalLoopBlocks.size() ; i++){
+    BasicBlock *LoopBlock = OriginalLoopBlocks[i];
+
+    Loop *temp_loop = LI->getLoopFor(LoopBlock);
+    if(temp_loop && temp_loop != L) {
+      continue;
+    }
+
+    for(llvm::BasicBlock::iterator I = LoopBlock->begin(), Iend = LoopBlock->end(); I != Iend ; ++I){
+      Instruction *Inst = &*I;
+      
+      if(count == split_id) {
+          AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst);
+      }
+      
+      if (CallInst *CI = dyn_cast<CallInst>(Inst)) {
+        // It's a call instruction
+        Function *CalledFunc = CI->getCalledFunction();
+        if (CalledFunc && !CalledFunc->isDeclaration()) {
+          if(!CalledFunc->getName().contains(".omp_outlined.")){
+            if(CalledFunc->getName() != F.getName()){ // eliminate recursive calls
+              count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+            }
+          }
+        }
+      }
+
+      else if (InvokeInst *CI= dyn_cast<InvokeInst>(Inst)){
+        // It's a call instruction
+        Function *CalledFunc = CI->getCalledFunction();
+        if (CalledFunc && !CalledFunc->isDeclaration()) {
+          if(!CalledFunc->getName().contains(".omp_outlined.")){
+            if(CalledFunc->getName() != F.getName()){ // eliminate recursive calls
+              count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+            }
+          }
+        }
+      }
+
+      // other instructions
+      count += 1; 
+    }
+  }
+
+  return count;
 }
+
 
 std::vector<Loop*> generateAllLoops_2(std::vector<Loop*> allLoops_2, Loop *L) { // gets outer loop
   if(L->getSubLoops().size() == 0){
@@ -674,8 +555,20 @@ std::vector<Loop*> retrieveLoopsFunc(Function &F, ModuleAnalysisManager &MA){
   return allLoops_2; // return
 }
 
-std::vector< std::pair<int,int> > splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
-  std::vector< std::pair<int,int> > temp;
+// void splittingLoopsPhase2(Function &F, int parallel_region_id){
+//   for(int i = 0 ; i < loop_details_profiler[parallel_region_id].size(); i++) {
+//     std::pair<int,int> test = std::make_pair(parallel_region_id, loop_details_profiler[parallel_region_id][i].loop_id);
+//     Loop* ltemp = secure_loops_2[test];
+//     if(ltemp->isInvalid()){
+//       continue;
+//     }
+
+
+
+//   }  
+// }
+
+void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
   
   loop_counter_2 = 0;
 
@@ -730,74 +623,107 @@ std::vector< std::pair<int,int> > splittingLoops(Function &F, int parallel_regio
 
     errs()<<"Found a loop"<<"\n";
 
-    bool split_check;
+    bool split_check = false;
 
-    if (!Options.count("check_file") && Myfile){
-      split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, 1);
-      if(split_check){
+    auto &Options = cl::getRegisteredOptions();
+    if (!(Options.count("check_file") && Myfile)){
+      if(secure_loops.find(ltemp) != secure_loops.end()){
+        // repeated loops are checked here
+        // secure_loops_2[loop_unique_id] = ltemp; // still need to add the details to other parallel region
         loop_details_pass lt;
-        lt.parallel_id = parallel_region_id;
+        lt = secure_loops_2[secure_loops[ltemp]];
+        lt.parallel_id = parallel_region_id; // don't need to change it?
         lt.loop_id = loop_counter_2;
-        lt.seq_split = 1;
-        lt.split_factor = 2;
-        lt.wcet_ns = 0;
-        secure_loops[ltemp] = lt; // loop has been secured - this map helps me check during sequential split (since no simplify two loops can share header having bulk code)
+        split_check = true;
         loop_data.push_back(lt);
+        loop_counter_2++;
       }
+
+      else {
+        split_check = LoopSplit_2(ltemp, 2, parallel_region_id, -1, loop_counter_2);
+        if(split_check){
+          loop_details_pass lt;
+          lt.parallel_id = parallel_region_id;
+          lt.loop_id = loop_counter_2;
+          lt.total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,-1,MA); // now add
+          lt.seq_split = -1;
+          lt.split_factor = 2;
+          lt.unique_loop_id = loop_unique_id;
+          lt.wcet_ns = 0;
+          secure_loops[ltemp] = loop_unique_id; // loop has been secured - this map helps me check during sequential split (since no simplify two loops can share header having bulk code)
+          //std::pair<int,int> test = std::make_pair(parallel_region_id,loop_counter_2);
+          secure_loops_2[loop_unique_id] = lt;
+          loop_data.push_back(lt);
+          loop_counter_2++;
+          loop_unique_id++;
+        }
+      } 
+
+    loop_details_profiler[parallel_region_id] = loop_data;
     }
 
     else {  // this will change on the basis of new split analysis given wcet
-      split_check = LoopSplit_2(ltemp, 2, parallel_region_id, loop_counter_2, 1); // parameters will change for iteration split
-      if(split_check){
-        loop_details_profiler[parallel_region_id][loop_counter_2].seq_split = 1; // seq split is updated later
-        secure_loops[ltemp] = loop_details_profiler[parallel_region_id][loop_counter_2];
+      if(secure_loops.find(ltemp) != secure_loops.end()){
+        // repeated loops are checked here
+        // secure_loops_2[loop_unique_id] = ltemp; // still need to add the details to other parallel region
+        loop_details_pass lt;
+        lt = secure_loops_2[secure_loops[ltemp]];
+        loop_details_profiler[parallel_region_id][loop_counter_2] = lt;
+        loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
+        loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2; //
+        split_check = true;
+        loop_counter_2++;
+        // check here for the wcet
       }
-    }
 
-    if(split_check){
-      llvm::Value *set_loop_id =  llvm::ConstantInt::get(llvm::Type::getInt32Ty(CTX),loop_counter_2);
-      llvm::MDNode* loop_id_value = llvm::MDNode::get(CTX, llvm::ValueAsMetadata::get(set_loop_id));
-      //ltemp->setLoopID(loop_id_value);
-      temp.push_back(std::make_pair(loop_counter_2,1)); // push back will actually be the split value as id will automatically be handled
-      loop_counter_2++;
-    }
-  }
-
-  if (!Options.count("check_file") && Myfile){
-    loop_details_profiler.push_back(loop_data); // all loops for the particular parallel region are pushed back
-  }
-
-  return temp;
-}
-
-int setAstData_2(Module &M, Function &F, LLVMContext &CTX, int ctr, int pid, BasicBlock &callblock){
-
-  std::vector<std::pair<int,int> > temp;
-  MDNode* ttex_array = F.getMetadata("ttex_array");
-  MDNode* ttex_sub_array = F.getMetadata("ttex_sub_array");
-  
-  if(ttex_array && ttex_sub_array){
-    errs()<<"ttex array available"<<"\n";
-    Value* v = dyn_cast<ValueAsMetadata> (ttex_array->getOperand(0))->getValue();
-    Value* v_sub = dyn_cast<ValueAsMetadata> (ttex_sub_array->getOperand(0))->getValue();
-    if(v && v_sub){
-      errs()<<"value received from ttex array"<<"\n";
-      // errs()<<"Retreiving num elements for each outlined 2"<<n<<"\n";
-      ConstantDataArray* init = dyn_cast<ConstantDataArray> (v);
-      ConstantDataArray* init_sub = dyn_cast<ConstantDataArray> (v_sub);
-      if(init && init_sub){
-        errs()<<"array value of ttex array received"<<"\n";
-        int n = init->getNumElements(); // num elements should be the same
-        for(unsigned i = 0 ; i < n ; i++){
-          temp.push_back(std::make_pair(init->getElementAsInteger(i),init_sub->getElementAsInteger(i)));
+      else {
+        if(secure_loops_2.find(loop_unique_id) == secure_loops_2.end()){
+          continue;
         }
-        //errs()<<"Retreiving num elements for each outlined "<<temp.size()<<"\n";
+
+        if(secure_loops_2[loop_unique_id].wcet_ns < secure_wcet_ns){
+          if(secure_loops_2[loop_unique_id].seq_split != -1){
+            secure_loops_2[loop_unique_id].seq_split += 1;
+          }
+
+          else {
+            secure_loops_2[loop_unique_id].split_factor += 1;
+          }
+
+          LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2);
+          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA);
+          secure_loops[ltemp] = loop_unique_id;
+          loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
+          loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
+          loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
+          loop_counter_2++;
+          loop_unique_id++;
+        }
+
+        else {
+          if(secure_loops_2[loop_unique_id].split_factor != 2){
+            secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 and then keep running multiple phases
+          }
+          LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2);
+          int val = secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns;
+          int split_val = secure_loops_2[loop_unique_id].total_inst/val;
+          if(secure_loops_2[loop_unique_id].seq_split == val){
+            split_val = split_val/2; // can be -1 or /2 just a proof of concept
+          }
+
+          secure_loops_2[loop_unique_id].seq_split = split_val;
+          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA);
+          secure_loops[ltemp] = loop_unique_id;
+          loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
+          loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
+          loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
+          loop_counter_2++;
+          loop_unique_id++;
+
+        }
       }
     }
   }
-
-  astdata_2[pid] = temp;
-  sizes_2[pid] = temp.size();
 }
 
 std::string dumptest_2;
@@ -810,10 +736,56 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
   auto* ci = dyn_cast<ConstantInt>(parallel_id_temp);
   p_id = ci->getZExtValue()-1;
 
+  auto &Options = cl::getRegisteredOptions();
+  if (!(Options.count("check_file") && Myfile)){
+    MDNode* ttex_array = F.getMetadata("ttex_array");
+    MDNode* ttex_sub_array = F.getMetadata("ttex_sub_array");
+
+    if(ttex_array && ttex_sub_array){
+      errs()<<"ttex array available"<<"\n";
+      Value* v = dyn_cast<ValueAsMetadata> (ttex_array->getOperand(0))->getValue();
+      Value* v_sub = dyn_cast<ValueAsMetadata> (ttex_sub_array->getOperand(0))->getValue();
+      if(v && v_sub){
+        errs()<<"value received from ttex array"<<"\n";
+        // errs()<<"Retreiving num elements for each outlined 2"<<n<<"\n";
+        ConstantDataArray* init = dyn_cast<ConstantDataArray> (v);
+        ConstantDataArray* init_sub = dyn_cast<ConstantDataArray> (v_sub);
+        if(init && init_sub){
+          errs()<<"array value of ttex array received"<<"\n";
+          int n = init->getNumElements(); // num elements should be the same
+          std::vector<para_details> pd_temp;
+          for(unsigned i = 0 ; i < n ; i++){
+            para_details pd;
+            pd.parallel_id = p_id;
+            pd.ref = init->getElementAsInteger(i);
+            pd.id = init_sub->getElementAsInteger(i);
+            pd.wcet_ns = 0;
+            pd.seq_split = -1;
+            pd_temp.push_back(pd);
+          }
+
+          region_details_profiler[p_id] = pd_temp;
+        }
+      }
+    }
+  }
+
+  auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
+  FM.invalidate(F,PreservedAnalyses::none());
+  LoopInfo *LI = &FM.getResult<LoopAnalysis>(F);
+
+  int count = 0;
+
   for (Function::iterator block_iter = F.begin(), block_iter_end = F.end(); block_iter != block_iter_end; ++block_iter) {
     BasicBlock &B = *block_iter;
+
     for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
       Instruction &I = *instr_iter;
+      Loop *temp_loop = LI->getLoopFor(&B);
+      if(temp_loop == nullptr) {
+        count++;
+      }
+
       if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
         Function* fn = call_inst->getCalledFunction();
         //errs()<<fn->dump()<<"\n";
@@ -823,27 +795,28 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
             if(fn->getName() == "__kmpc_for_static_init_4"){
                 llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
                 call_inst->setOperand(9,itr_ci);
-                setAstData_2(M,F,CTX,ctr,p_id,B);
+                region_details_profiler[p_id][ctr].total_inst = count;
+                count = 0;
                 ctr++;
             }
 
             else if(fn->getName() == "__kmpc_single"){
                 llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
                 call_inst->setOperand(2,itr_ci);
-                setAstData_2(M,F,CTX,ctr,p_id,B);
+                region_details_profiler[p_id][ctr].total_inst = count;
+                count = 0;
                 ctr++;
+            }
+
+            else {
+              count = returnInstCount(fn, MA, p_id, ctr, -1, region_details_profiler[p_id][ctr].seq_split, count);
             }
         }
       }
     }
   }
 
-  /*loop split code*/
-
-  if(maxvuln_set_2){
-    loop_split_2[p_id] = splittingLoops(F,p_id,MA);
-  }
-
+  splittingLoops(F,p_id,MA);
   /*end of loop split code*/
 }
 
@@ -871,6 +844,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
               }
           }
 
+          // remember to handler parallel begin as the first region
           size_t vector2SizeRow;
           region_details_profiler.resize(vector2SizeRow);
           for (auto& row : region_details_profiler) {
@@ -884,13 +858,24 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
           //inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
           inFile.close();
 
-          // Print the read data
+          // Common loops in two parallel regions are handled below - one with higher wcet is preferred if less take other one
           for (const auto& item : loop_details_profiler) {
             for(const loop_details_pass& item_2: item) {
               std::cout<<"loop id:" << item_2.loop_id << std::endl;
               std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
               std::cout<<"split factor:" << item_2.split_factor << std::endl;
               std::cout<<"seq id:" << item_2.seq_split << std::endl;
+              std::pair<int,int> temp = std::make_pair(item_2.parallel_id, item_2.loop_id);
+              //secure_loops[secure_loops_2[temp]] = item_2; // just to get the updated wcet
+              if(secure_loops_2.find(item_2.unique_loop_id) != secure_loops_2.end()){
+                if(secure_loops_2[item_2.unique_loop_id].wcet_ns < item_2.wcet_ns){
+                  secure_loops_2[item_2.unique_loop_id] = item_2; // store the higher wcet value as that needs to be split  
+                }
+              }
+
+              else {
+                secure_loops_2[item_2.unique_loop_id] = item_2;
+              }
             }
 
             std::cout<<std::endl;
@@ -911,19 +896,11 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
       }
     }
 
-    std::vector< std::pair<int,int> > temp;
-    std::vector< std::pair<int,int> > loop_split_temp;
-    std::vector< std::vector< std::pair<int,int> > > temp_loop_split(counter,loop_split_temp);
-    std::vector<int> sizes_temp(counter,0);
-    std::vector< std::vector< std::pair<int,int> > >astdata_temp(counter,temp);
-
-    // now we could go through all omp_outlined again read metadata and parallel id and assign values according to id's
-    // However clang parses the same way as we check in the pass that is every function in a module so no need for above
-
-    sizes_2 = sizes_temp;
-    errs() <<"------------------------ parallel regions ------"<<sizes_2.size()<<"\n";
-    astdata_2 = astdata_temp;
-    loop_split_2 = temp_loop_split;
+    if (!(Options.count("check_file") && Myfile)){
+      loop_details_profiler = std::vector < std::vector<loop_details_pass> > (counter, std::vector<loop_details_pass>());
+      region_details_profiler = std::vector < std::vector<para_details> > (counter, std::vector<para_details>());
+      errs()<<"---------------------------- file option not set----------------------\n";
+    }
 
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
     
@@ -948,16 +925,16 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
      * profiler reads a file and updated by the pass and updates a file for the pass whereas pass reads both the file
     */
 
-    std::vector<loop_details_pass> temp_loop_profile;
+    // std::vector<loop_details_pass> temp_loop_profile;
 
-    for(const auto& loop_val: secure_loops){
-      loop_details_pass lt = loop_val.second;
-      temp_loop_profile.push_back(lt);
-      std::cout<<"loop id:" << lt.loop_id << std::endl;
-      std::cout<<"Parallel id:" << lt.parallel_id << std::endl;
-      std::cout<<"split factor:" << lt.split_factor << std::endl;
-      std::cout<<"seq id:" << lt.seq_split << std::endl;
-    }
+    // for(const auto& loop_val: secure_loops_2){
+    //   loop_details_pass lt = loop_val.second;
+    //   temp_loop_profile.push_back(lt);
+    //   std::cout<<"loop id:" << lt.loop_id << std::endl;
+    //   std::cout<<"Parallel id:" << lt.parallel_id << std::endl;
+    //   std::cout<<"split factor:" << lt.split_factor << std::endl;
+    //   std::cout<<"seq id:" << lt.seq_split << std::endl;
+    // }
 
     std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log.txt",std::ios::binary);
 
@@ -990,21 +967,6 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
         outFile.close();
     } else { 
         std::cout<< "Error opening the file for writing.\n";
-    }
-
-    for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
-      Function &F = *func_iter;
-
-      if (!F.isDeclaration()) {
-        errs()<<"Function name is:"<<F.getName()<<"\n";
-        if(F.getName().contains("ompt_start_tool")){
-          errs()<<"Function name is:"<<F.getName()<<"\n";
-          BasicBlock* B;
-          B = &*(F.begin());
-          setLookUpTable_2(M,F,B,CTX);
-          break;
-        }
-      }
     }
 
     return PreservedAnalyses::all();
