@@ -41,6 +41,7 @@
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
+#include "llvm/Transforms/Scalar/TtexUpdate_2.h"
 #include "llvm/Transforms/Scalar/InstSimplifyPass.h"
 #include "llvm/Transforms/Scalar/LICM.h"
 #include "llvm/Transforms/Scalar/LoopUnrollPass.h"

@@ -853,13 +853,13 @@ PreservedAnalyses LoopSimplifyPass::run(Function &F,
   LIB.analyze(*DT);
 
 
-  errs()<<"--------------------- executing loop simplify pass for function: "<<F.getName()<<"\n";
+  //errs()<<"--------------------- executing loop simplify pass for function: "<<F.getName()<<"\n";
 
   // Note that we don't preserve LCSSA in the new PM, if you need it run LCSSA
   // after simplifying the loops. MemorySSA is preserved if it exists.
   for (auto *L : *LI) {
   //for (Loop *L : LIB) {  
-    errs()<<"--------- loop found with head block :"<< L->getHeader()->getName() <<"--------------\n";
+    //errs()<<"--------- loop found with head block :"<< L->getHeader()->getName() <<"--------------\n";
     Changed |=
         simplifyLoop(L, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
     Changed |= formLCSSARecursively(*L, *DT, LI, SE); // adding lcssa form for ttex

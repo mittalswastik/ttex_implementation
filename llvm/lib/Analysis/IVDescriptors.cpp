@@ -1324,7 +1324,7 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
   // Now we handle also FP induction but not trying to make a
   // recurrent expression from the PHI node in-place.
 
-  errs() << "inside is induction phi\n";
+  //errs() << "inside is induction phi\n";
 
   if (!PhiTy->isIntegerTy() && !PhiTy->isPointerTy() && !PhiTy->isFloatTy() &&
       !PhiTy->isDoubleTy() && !PhiTy->isHalfTy()) {
@@ -1332,12 +1332,12 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
         return false;
       }
 
-  errs() <<"check for fpi induction next\n";
+  //errs() <<"check for fpi induction next\n";
 
   if (PhiTy->isFloatingPointTy())
     return isFPInductionPHI(Phi, TheLoop, PSE.getSE(), D);
 
-  errs() <<"no error fpi\n";
+ // errs() <<"no error fpi\n";
 
   const SCEV *PhiScev = PSE.getSCEV(Phi);
   const auto *AR = dyn_cast<SCEVAddRecExpr>(PhiScev);
@@ -1360,7 +1360,7 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
   // guarantee the correctness of the AddRecurrence respresentation of the
   // induction.
 
-  errs()<<"symbolic phi check next\n";
+  //errs()<<"symbolic phi check next\n";
 
   if (PhiScev != AR && SymbolicPhi) {
     SmallVector<Instruction *, 2> Casts;
@@ -1368,7 +1368,7 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
       return isInductionPHI(Phi, TheLoop, PSE.getSE(), D, AR, &Casts);
   }
 
-  errs() << "last check\n";
+ // errs() << "last check\n";
 
   return isInductionPHI(Phi, TheLoop, PSE.getSE(), D, AR);
 }
