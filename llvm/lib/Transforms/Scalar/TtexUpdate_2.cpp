@@ -79,9 +79,13 @@ using namespace llvm;
 //   void initializeTtexPassPass (PassRegistry&);
 // } // end namespace llvm
 
-static cl::opt<bool> Myfile("check_file",
+static cl::opt<bool> input_file("check_file",
   cl::desc("read update from file"),
-  cl::init(false)); 
+  cl::init(false));
+
+static cl::opt<bool> input_ttex("set_ttex",
+  cl::desc("enable ttex security"),
+  cl::init(false));
 
 bool check = false;
 
@@ -185,7 +189,6 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
   AttributeSet attr_set = AttributeSet::get(CTX, attr_list);
   fn_test_2->addFnAttr(Attribute::NoInline);
   fn_test_2->addFnAttr(Attribute::NoUnwind);
-
 }
 
 bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_id){
@@ -357,41 +360,63 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_
   return true;
 }
 
+std::vector<int> temp_unique_fns;
+
 int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_id, int sub_id, int loop_id, int split_id, int count){
   errs()<<"Function name inside returnInstCount is ----"<<F->getName()<<"\n";
 
   if(secure_functions_2.find(secure_functions[F]) != secure_functions_2.end()){
+    
+    errs()<<"secure function found\n";
+    
     std::vector<int> test = secure_functions_2[secure_functions[F]];
     if(test[0] != parallel_region_id){
       return count;
     }
 
-    else if(sub_id == -1 && (test[1] == loop_id || test[2] == loop_id)){ // this function might be processed by other region or loop not sure
+    else if(sub_id == -1 && test[2] != loop_id){ // this function might be processed by other region or loop not sure
       return count;
     }
 
-    else if(loop_id == -1 && (test[1] == sub_id || test[2] == sub_id)){
+    //else if(loop_id == -1 && (test[1] == sub_id || test[2] == sub_id)){
+    else if(loop_id == -1 && test[1] != sub_id){  
       return count;
     }
   }
 
   else {
+    errs()<<"new function found\n";
     std::vector<int> test = {parallel_region_id, sub_id,loop_id};
     secure_functions_2[secure_functions[F]] = test;
+    errs()<<"Found the secure function id\n";
     if(sub_id == -1){
-      loop_details_profiler[parallel_region_id][loop_id].unique_function_ids.push_back(secure_functions[F]);
-    }
+      errs()<<"loop details profiler search\n";
+      if(loop_details_profiler[parallel_region_id].size() > loop_id){
+        errs()<<"found the loop details profiler\n";
+        loop_details_profiler[parallel_region_id][loop_id].unique_function_ids.push_back(secure_functions[F]); // this will give seg fault as loop_details_profiler is not initialized yet
+      }
+
+      else {
+        errs()<<"profiler not found\n";
+        temp_unique_fns.push_back(secure_functions[F]);
+      }
+     }
 
     else {
+      errs()<<"region details profiler\n";
       region_details_profiler[parallel_region_id][sub_id].unique_function_ids.push_back(secure_functions[F]);
     }
   }
+
+  errs()<<"evaluating loop info next\n";
 
   llvm::Module *M = F->getParent();
   llvm::LLVMContext &CTX = M->getContext();
   auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(*M).getManager();
   //FM.invalidate(*F,PreservedAnalyses::none());
   LoopInfo *LI = &FM.getResult<LoopAnalysis>(*F);
+
+  errs()<<"evaluated loop info\n";
 
     for (BasicBlock &BB : *F) {
 
@@ -439,7 +464,9 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
 
         count += 1;
       }
-    }  
+    }
+
+    errs()<<"returning count done with evalauting count for: "<<F->getName()<<"\n"; 
 
   return count;
 }
@@ -691,7 +718,7 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
     bool split_check = false;
 
     auto &Options = cl::getRegisteredOptions();
-    if (!(Options.count("check_file") && Myfile)){
+    if (!(Options.count("check_file") && input_file)){
       if(secure_loops.find(ltemp) != secure_loops.end()){
         // repeated loops are checked here
         // secure_loops_2[loop_unique_id] = ltemp; // still need to add the details to other parallel region
@@ -715,6 +742,9 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
           lt.split_factor = 2;
           lt.unique_loop_id = loop_unique_id;
           lt.wcet_ns = -1;
+          lt.total_threads = 1;
+          lt.unique_function_ids = temp_unique_fns;
+          temp_unique_fns.clear();
           secure_loops[ltemp] = loop_unique_id; // loop has been secured - this map helps me check during sequential split (since no simplify two loops can share header having bulk code)
           //std::pair<int,int> test = std::make_pair(parallel_region_id,loop_counter_2);
           secure_loops_2[loop_unique_id] = lt;
@@ -769,8 +799,11 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
           if(secure_loops_2[loop_unique_id].split_factor != 2){
             secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 and then keep running multiple phases
           }
+
           LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2);
-          int val = secure_wcet_ns/secure_loops_2[loop_unique_id].wcet_ns;
+          int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
+          errs() << "Instruction count is" << secure_loops_2[loop_unique_id].total_inst <<"---------------\n";
+          errs() << "evaluated val is" << val << "----------- \n";
           int split_val = secure_loops_2[loop_unique_id].total_inst/val;
           if(secure_loops_2[loop_unique_id].seq_split == split_val){
             split_val = split_val/2; // can be -1 or /2 just a proof of concept
@@ -795,14 +828,14 @@ std::string dumptest_2;
 raw_string_ostream dumpdata_2(dumptest_2);
 
 void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisManager &MA){
-  int ctr = 1, p_id;
+  int ctr = 0, p_id;
   MDNode* parallel_id = F.getMetadata("parallel_id");
   Value* parallel_id_temp = dyn_cast<ValueAsMetadata>(parallel_id->getOperand(0))->getValue();
   auto* ci = dyn_cast<ConstantInt>(parallel_id_temp);
   p_id = ci->getZExtValue()-1;
 
   auto &Options = cl::getRegisteredOptions();
-  if (!(Options.count("check_file") && Myfile)){
+  if (!(Options.count("check_file") && input_file)){
     MDNode* ttex_array = F.getMetadata("ttex_array");
     MDNode* ttex_sub_array = F.getMetadata("ttex_sub_array");
 
@@ -827,6 +860,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           temp_pd.id = 0;
           temp_pd.wcet_ns = -1;
           temp_pd.seq_split = -1;
+          temp_pd.total_threads = 1;
           pd_temp.push_back(temp_pd);
 
           for(int i = 0 ; i < n ; i++){
@@ -837,10 +871,13 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
             pd.id = init_sub->getElementAsInteger(i);
             pd.wcet_ns = -1;
             pd.seq_split = -1;
+            pd.total_threads = 1;
             pd_temp.push_back(pd);
           }
 
+          errs()<<"region details profiler search\n";
           region_details_profiler[p_id] = pd_temp;
+          errs()<<"region details profiler found\n";
         }
       }
     }
@@ -887,7 +924,9 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           if(fn->getName() == "__kmpc_for_static_init_4"){
               llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
               call_inst->setOperand(9,itr_ci);
+              errs()<<"set region details profiler with counter in for\n";
               region_details_profiler[p_id][ctr].total_inst = count;
+              errs()<<"for region details profiler is set\n";
               count = 0;
               ctr++;
           }
@@ -895,7 +934,9 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           else if(fn->getName() == "__kmpc_single"){
               llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
               call_inst->setOperand(2,itr_ci);
+              errs()<<"set region details profiler with counter in single\n";
               region_details_profiler[p_id][ctr].total_inst = count;
+              errs()<<"singles region detail profiler is set\n";
               count = 0;
               ctr++;
           }
@@ -907,7 +948,8 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
                   secure_functions[fn] = function_unique_id;
                   function_unique_id+=1;
                   count = returnInstCount(fn, MA, p_id, ctr, -1, region_details_profiler[p_id][ctr].seq_split, count);
-
+                  // region_details_profiler[p_id][ctr].total_inst = count;
+                  // count = 0;
                 }
               }
             }  
@@ -948,8 +990,16 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     int p_counter = 0;
 
     auto &Options = cl::getRegisteredOptions();
-    if (Options.count("check_file") && Myfile){
+    errs()<<"Options value is: "<<Options.count("set_ttex")<<" \n";
+    if ((Options.count("set_ttex") && input_ttex)){
+      return PreservedAnalyses::all();
+    }
+
+    // auto &Options = cl::getRegisteredOptions();
+    if (Options.count("check_file") && input_file){
       std::ifstream inFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt",std::ios::binary);
+
+      errs()<<" Reading from a file llvm\n";
 
       if (inFile) {
           // Read the data from the file
@@ -965,8 +1015,23 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
               }
           }
 
+          errs()<<"done reading loops\n";
+
+          for (const auto& item : loop_details_profiler) {
+            for(const loop_details_pass& item_2: item) {
+              errs()<<"loop id:" << item_2.loop_id <<"\n";
+              errs()<<"Parallel id:" << item_2.parallel_id <<"\n";
+              errs()<<"split factor:" << item_2.split_factor << "\n";
+              errs()<<"seq id:" << item_2.seq_split <<"\n";
+              errs()<<"total instructions:" <<item_2.total_inst<<"\n";
+            }
+          }
+
+          errs()<<"Now reading region details...\n";
+
           // remember to handler parallel begin as the first region
           size_t vector2SizeRow;
+          inFile.read(reinterpret_cast<char*>(&vector2SizeRow), sizeof(vector2SizeRow));
           region_details_profiler.resize(vector2SizeRow);
           for (auto& row : region_details_profiler) {
               size_t vector2SizeColumn;
@@ -978,6 +1043,8 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
           }
           //inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
           inFile.close();
+
+          errs()<<"Reading parallel regions done\n";
 
           // Common loops in two parallel regions are handled below - one with higher wcet is preferred if less take other one
           for (const auto& item : loop_details_profiler) {
@@ -1021,7 +1088,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                 else {
                   std::vector<int> test2 = {item_2.parallel_id, -1, item_2.loop_id};
                   secure_functions_2[item_2.unique_function_ids[k]] = test2;
-                  secure_functions_2[item_2.unique_function_ids[k]] = test2;
+                  //secure_functions_2[item_2.unique_function_ids[k]] = test2;
                 }  
               }  
             }
@@ -1054,7 +1121,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                 else {
                   std::vector<int> test2 = {item_2.parallel_id, item_2.id, -1};
                   secure_functions_2[item_2.unique_function_ids[k]] = test2;
-                  secure_functions_2[item_2.unique_function_ids[k]] = test2;
+                  //secure_functions_2[item_2.unique_function_ids[k]] = test2;
                 }  
               }
             }
@@ -1076,7 +1143,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
       }
     }
 
-    if (!(Options.count("check_file") && Myfile)){
+    if (!(Options.count("check_file") && input_file)){
       loop_details_profiler = std::vector < std::vector<loop_details_pass> > (p_counter, std::vector<loop_details_pass>());
       region_details_profiler = std::vector < std::vector<para_details> > (p_counter, std::vector<para_details>());
       errs()<<"---------------------------- file option not set----------------------\n";

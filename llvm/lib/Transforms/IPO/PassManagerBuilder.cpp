@@ -47,6 +47,7 @@
 #include "llvm/Transforms/Scalar/LoopUnrollPass.h"
 #include "llvm/Transforms/Scalar/SCCP.h"
 #include "llvm/Transforms/Scalar/SimpleLoopUnswitch.h"
+#include "llvm/Transforms/Scalar/TtexUpdate_2.h"
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Vectorize.h"
 #include "llvm/Transforms/Vectorize/LoopVectorize.h"
@@ -1220,6 +1221,8 @@ void PassManagerBuilder::populateLTOPassManager(legacy::PassManagerBase &PM) {
     PM.add(createVerifierPass());
 
   addExtensionsToPM(EP_FullLinkTimeOptimizationEarly, PM);
+
+  errs() <<"populate LTO PassManager Builder----------------------------------------------------------------\n";
 
   if (OptLevel != 0)
     addLTOOptimizationPasses(PM);

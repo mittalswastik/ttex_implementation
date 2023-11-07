@@ -43,6 +43,7 @@
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
+#include "llvm/Transforms/Scalar/TtexUpdate_2.h"
 #include "llvm/Transforms/Utils/FunctionImportUtils.h"
 #include "llvm/Transforms/Utils/SplitModule.h"
 
@@ -72,6 +73,10 @@ static cl::opt<bool> ThinLTOAssumeMerged(
     "thinlto-assume-merged", cl::init(false),
     cl::desc("Assume the input has already undergone ThinLTO function "
              "importing and the other pre-optimization pipeline changes."));
+
+ static cl::opt<bool> MyTtex3("ttex_update_3",
+  cl::desc("Description of my custom option for ttex_update"),
+  cl::init(false)); 
 
 namespace llvm {
 extern cl::opt<bool> NoPGOWarnMismatch;
@@ -305,6 +310,16 @@ static void runNewPMPasses(const Config &Conf, Module &Mod, TargetMachine *TM,
 
   if (!Conf.DisableVerify)
     MPM.addPass(VerifierPass());
+
+  errs() << "------------------------ Inside LTO new pass manager backend ----------------------\n";
+
+  auto &Options = cl::getRegisteredOptions();
+
+  MPM.addPass(TtexUpdatePassV2());
+
+  if (Options.count("ttex_update_3") && MyTtex3) {
+    errs() << "---------------- ttex update 3 option recognized --------------------\n";
+  }
 
   MPM.run(Mod, MAM);
 }

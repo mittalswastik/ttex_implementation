@@ -38,6 +38,9 @@ using namespace std;
 
 uint64_t global_id = 0;
 
+// int *testing_integer;
+// int **testing_integer_2;
+
 int thread_priority = 10;
 unsigned long int time_val_sec = 20;
 unsigned long int time_val_nsec = 1000*1000*1000;
@@ -79,22 +82,24 @@ typedef struct timeout_node {
 
 typedef struct details{ 
   int ref; // -2 means omp for and >0 means omp section and -1 means single
-  int splits_in_iter;
-  int sub_region_id; // there can be multiple regions of same type
-  int sub_region_timer; // timer calls within the sequential code
-  vector<timeout_node> expected_execution; // vector for sections and second vector for sub_timer_id
+  // int splits_in_iter;
+  // int sub_region_id; // there can be multiple regions of same type
+  //vector<timeout_node> expected_execution; // vector for sections and second vector for sub_timer_id
+  timeout_node* expected_execution;
 } details;
 
 details **parallel_region;
+//std::vector< std::vector<details> > parallel_region;
 
 typedef struct loop_details {
   // int splits; // number of calls (max count / split factor in the pass) // no need as every split call would have the same wcet (same priority thread executing same code)
-  int loop_id;
-  int splits_in_iter;
-  int sub_loop_id;
+  // int loop_id;
+  // int splits_in_iter;
+  // int sub_loop_id;
   timeout_node expected_execution; // vector based on sub timer id 
 } loop_details;
 
+//std::vector< std::vector<loop_details> > loop_execution;
 loop_details **loop_execution;
 
 typedef struct thread_info {
@@ -129,9 +134,14 @@ typedef struct para_details {
   std::vector<int> unique_function_ids;
 } para_details;
 
-std::vector< std::vector<loop_details_pass> > l_data;
-std::vector< std::vector<para_details> > p_data;
+int parallel_size;
 
+loop_details_pass** l_data;
+int *l_data_size;
+// std::vector< std::vector<loop_details_pass> > l_data;
+// std::vector< std::vector<para_details> > p_data;
+para_details** p_data;
+int *p_data_size;
 // predefine timeout nodes for parallel_begin, end, thread_begin, end --- these region should execute in similar time irrespective of anything
 
 timeout_node parallel_begin;
@@ -141,14 +151,108 @@ timeout_node work_begin; // only for threads which do not get any task assigned 
 timeout_node work_end;
 timeout_node sync_region;
 
-//vector<uint64_t> ast_size;
-int parallel_size;
-int *parallel_arr_size;
-int *loop_arr_size; // for one parallel region there is another 2D array defining number of loops and then how many calls within each iteration
-
 unordered_map<int, vector<timeout_node> > log_data; // assuming max 100 threads
 
 bool logdata = true; // first execution requires logging and subsequent execution do not -- this will basically be false for measuring execution time
+
+void readFileData(){
+
+  printf("Loading 0\n");
+
+  // l_data.clear();
+  // p_data.clear();
+
+  printf("Loading\n");
+
+  std::vector< std::vector<loop_details_pass> > l_data_temp;
+  std::vector< std::vector<para_details> > p_data_temp;  
+
+  std::ifstream inFile("data_log.txt", std::ios::binary);
+
+    if (inFile) {
+        // Read the data from the file
+        size_t vectorSizeRow;
+        inFile.read(reinterpret_cast<char*>(&vectorSizeRow), sizeof(vectorSizeRow));
+        l_data_temp.resize(vectorSizeRow);
+        for (auto& row : l_data_temp) {
+            size_t vectorSizeColumn;
+            inFile.read(reinterpret_cast<char*>(&vectorSizeColumn), sizeof(vectorSizeColumn));
+            row.resize(vectorSizeColumn);
+            for (auto& cell : row) {
+                inFile.read(reinterpret_cast<char*>(&cell), sizeof(loop_details_pass));
+            }
+        }
+
+        size_t vectorSize2Row;
+        inFile.read(reinterpret_cast<char*>(&vectorSize2Row), sizeof(vectorSize2Row));
+        p_data_temp.resize(vectorSize2Row);
+        for (auto& row : p_data_temp) {
+            size_t vectorSize2Column;
+            inFile.read(reinterpret_cast<char*>(&vectorSize2Column), sizeof(vectorSize2Column));
+            row.resize(vectorSize2Column);
+            for (auto& cell : row) {
+                inFile.read(reinterpret_cast<char*>(&cell), sizeof(para_details));
+            }
+        }
+
+        inFile.close();
+        
+
+       parallel_size = l_data_temp.size();
+       l_data_size = (int*) malloc(l_data_temp.size() * sizeof(int));
+       p_data_size = (int*) malloc(p_data_temp.size() * sizeof(int));
+
+        l_data = (loop_details_pass**) malloc(l_data_temp.size() * sizeof(loop_details_pass*));
+        for(int i = 0 ; i < l_data_temp.size() ; i++) {
+          printf("size of l_data_temp is %d\n", l_data_temp[i].size());
+          l_data[i] = (loop_details_pass*) malloc(l_data_temp[i].size() * sizeof(loop_details_pass));
+          l_data_size[i] = l_data_temp[i].size();
+          for(int j = 0 ; j < l_data_temp[i].size() ; j++){
+            l_data[i][j] = l_data_temp[i][j];
+          }
+        }
+
+        p_data = (para_details**) malloc(p_data_temp.size() * sizeof(para_details*));
+        for(int i = 0 ; i < p_data_temp.size() ; i++) {
+          p_data[i] = (para_details*) malloc(p_data_temp[i].size() * sizeof(para_details));
+          p_data_size[i] = p_data_temp[i].size();
+          for(int j = 0 ; j < p_data_temp[i].size() ; j++){
+            p_data[i][j] = p_data_temp[i][j];
+          }
+        }
+
+        printf("size of all the things: %d, %d, %d, %d, %d, %d, %d\n", sizeof(l_data), sizeof(*l_data), sizeof(l_data[0]), sizeof(*(l_data[0])), sizeof(loop_details_pass**), sizeof(loop_details_pass*), sizeof(loop_details_pass));
+        printf("size of loop details after reading file: parallel size: %d  first parallel size: %d\n", sizeof(*l_data)/sizeof(loop_details_pass**),sizeof(*(l_data[0]))/sizeof(loop_details_pass));
+        
+        //inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
+
+        // // // Print the read data
+        for (const auto& item : l_data_temp) {
+          for(const loop_details_pass& item_2: item) {
+            std::cout<<"loop id:" << item_2.loop_id << std::endl;
+            std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
+            std::cout<<"split factor:" << item_2.split_factor << std::endl;
+            std::cout<<"seq id:" << item_2.seq_split << std::endl;
+          }
+
+          std::cout<<std::endl;
+        }
+
+        for (const auto& item : p_data_temp) {
+          for(const para_details& item_2: item) {
+            std::cout<<"ref:" << item_2.ref << std::endl;
+            std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
+            std::cout<<"id:" << item_2.id << std::endl;
+            std::cout<<"seq id:" << item_2.seq_split << std::endl;
+          }
+
+          std::cout<<std::endl;
+        }
+
+    } else {
+        std::cerr << "Error opening the file for reading." << std::endl;
+    }
+}
 
 void resetTimer(timespec t, int fd){ 
   //timer_settime(temp->thread_timer_id,0,&temp->thread_timer, NULL);
@@ -311,14 +415,12 @@ ompt_test(int parallel_region_id, int sub_id, int loop_id)
 
   ompt_data_t *current_thread = ompt_get_thread_data();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
-
-  if(temp_thread_data->data != NULL){
-    //std::cout <<"----- OMPT TEST PARALLEL ID FOUND IS: "<<temp_thread_data->data->value<<std::endl;
-    if(parallel_region_id != temp_thread_data->data->value) 
-    if(sub_id == -1){ ;
+  //std::cout <<"----- OMPT TEST PARALLEL ID FOUND IS: "<<temp_thread_data->data->value<<std::endl;
+  if(parallel_region_id != temp_thread_data->pid){
+    if(sub_id == -1){ 
       int loop_unique_id = l_data[parallel_region_id][loop_id].unique_loop_id;
-      for(int i = 0 ; i < l_data[temp_thread_data->data->value].size(); i++){
-        if(l_data[temp_thread_data->data->value][i].unique_loop_id == loop_unique_id){
+      for(int i = 0 ; i < l_data_size[parallel_region_id]; i++){
+        if(l_data[temp_thread_data->pid][i].unique_loop_id == loop_unique_id){
           loop_id = i;
           break;
         }
@@ -331,7 +433,7 @@ ompt_test(int parallel_region_id, int sub_id, int loop_id)
                                         // so need to evalaute which loop can it be
       }
     }
-    parallel_region_id = temp_thread_data->data->value;
+    parallel_region_id = temp_thread_data->pid;
   }
 
   else {
@@ -491,8 +593,9 @@ on_ompt_callback_parallel_begin(
   // uint64_t tid = ompt_get_thread_data()->value;
   ompt_data_t *current_thread = ompt_get_thread_data();
   parallel_data->value = id-1;//ompt_get_parallel_info();
+  printf("Error checking 1\n");
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
-  temp_thread_data->pid = parallel_data->value;
+  temp_thread_data->pid = (int) parallel_data->value;
   printf("Parallel region id is parallel region: %d\n", parallel_data->value);
   //para_id_map[parallel_data->value] = id-1; // id I send from clang starts from 1
   //printf("thread data value: %d\n", ((thread_info*) current_thread)->current->parallel_region_id);
@@ -510,6 +613,8 @@ on_ompt_callback_parallel_begin(
     /**TODO*/
   // can change to below once considering parallel begin as sub region 0  
   //temp_thread_data->thread_current_timeout.push_back(parallel_region[id-1][0].expected_execution[0]);
+  //temp_thread_data->thread_current_timeout.push_back(parallel_begin);
+  printf("ref value is: %d\n",parallel_region[0][0].ref);
   temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][0].expected_execution[0]);
   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = 0;
@@ -631,6 +736,7 @@ on_ompt_callback_work(
     
     temp_thread_data->thread_current_timeout.push_back(work_end);
     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
+    //printf("----------------------------------------- sub region id detected is -----------%d\n",temp_thread_data->sid);
     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = temp_thread_data->sid;
   }
 
@@ -728,10 +834,18 @@ on_ompt_callback_thread_end(
     log_data[temp_thread_data->id] = temp_thread_data->thread_current_timeout;
   }
 
-   printf("+++++++++++++++++++++++log data size %d\n", log_data[temp_thread_data->id].size());
+   printf("+++++++++++++++++++++++log data size %d %d\n", log_data[temp_thread_data->id].size(), temp_thread_data->id);
 
   // thread_info* temp = thread_timeout_map[thread_data->value];
   // thread_timeout_map.erase(thread_data->value);
+
+  // if(temp_thread_data->id == 0){
+  //   for(int i = 0 ; i < parallel_region.size(); i++){
+  //     for(int j = 0 ; j < parallel_region[i].size() ; j++){
+  //       printf("reference info: %d\n", parallel_region[i][j].ref);
+  //     }
+  //   }
+  // }
 }
 
 #define register_callback_t(name, type)                       \
@@ -746,67 +860,18 @@ do {                                                           \
 
 extern "C" void initializeTimeoutData(){
 
-  std::ifstream inFile("data_log.txt", std::ios::binary);
+    // testing_integer = (int*) malloc(sizeof(int));
+    // testing_integer_2 = (int**) malloc(3*sizeof(int*));
+    // testing_integer_2[0] = (int*) malloc(2*sizeof(int));
 
-    if (inFile) {
-        // Read the data from the file
-        size_t vectorSizeRow;
-        inFile.read(reinterpret_cast<char*>(&vectorSizeRow), sizeof(vectorSizeRow));
-        l_data.resize(vectorSizeRow);
-        for (auto& row : l_data) {
-            size_t vectorSizeColumn;
-            inFile.read(reinterpret_cast<char*>(&vectorSizeColumn), sizeof(vectorSizeColumn));
-            row.resize(vectorSizeColumn);
-            for (auto& cell : row) {
-                inFile.read(reinterpret_cast<char*>(&cell), sizeof(loop_details_pass));
-            }
-        }
+    // testing_integer[0] = 2;
+    // testing_integer_2[0][1] = 3;
 
-        size_t vectorSize2Row;
-        inFile.read(reinterpret_cast<char*>(&vectorSize2Row), sizeof(vectorSize2Row));
-        p_data.resize(vectorSize2Row);
-        for (auto& row : p_data) {
-            size_t vectorSize2Column;
-            inFile.read(reinterpret_cast<char*>(&vectorSize2Column), sizeof(vectorSize2Column));
-            row.resize(vectorSize2Column);
-            for (auto& cell : row) {
-                inFile.read(reinterpret_cast<char*>(&cell), sizeof(para_details));
-            }
-        }
-        //inFile.read(reinterpret_cast<char*>(l_data.data()), vectorSize * sizeof(loop_details_pass));
-        inFile.close();
-
-        // Print the read data
-        for (const auto& item : l_data) {
-          for(const loop_details_pass& item_2: item) {
-            std::cout<<"loop id:" << item_2.loop_id << std::endl;
-            std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
-            std::cout<<"split factor:" << item_2.split_factor << std::endl;
-            std::cout<<"seq id:" << item_2.seq_split << std::endl;
-          }
-
-          std::cout<<std::endl;
-        }
-
-        for (const auto& item : p_data) {
-          for(const para_details& item_2: item) {
-            std::cout<<"ref:" << item_2.ref << std::endl;
-            std::cout<<"Parallel id:" << item_2.parallel_id << std::endl;
-            std::cout<<"id:" << item_2.id << std::endl;
-            std::cout<<"seq id:" << item_2.seq_split << std::endl;
-          }
-
-          std::cout<<std::endl;
-        }
-    } else {
-        std::cerr << "Error opening the file for reading." << std::endl;
-    }
+  readFileData();
 
   timespec exec_time;
   exec_time.tv_sec = 2;
   exec_time.tv_nsec = 0; // 1 sec wcet to everything for now
-
-  
 
   max_timeout.tv_sec = time_val_sec;
   max_timeout.tv_nsec = time_val_nsec;
@@ -851,19 +916,24 @@ extern "C" void initializeTimeoutData(){
   work_end.timer_set_flag = false;
   sync_region.timer_set_flag = false;
 
-  printf("Printing details %d\n", l_data.size());
+  printf("Printing details: no. of parallel regions %d\n", parallel_size);
 
-  loop_execution = (loop_details**) malloc(l_data.size()*sizeof(loop_details*));
-  parallel_region = (details**) malloc(l_data.size()*sizeof(details*));
+  loop_execution = (loop_details**) malloc(parallel_size*sizeof(loop_details*));
+  parallel_region = (details**) malloc(parallel_size*sizeof(details*)); 
 
-  for(int i = 0 ; i < l_data.size(); i++){
 
-    printf("Parallel regions are %d\n", l_data.size());
-    printf("Loops in parallel regions are %d\n", l_data[i].size());
+  //loop_execution = std::vector < std::vector<loop_details> > (l_data.size(), std::vector<loop_details>());
 
-    loop_execution[i] = (loop_details*) malloc(l_data[i].size()*sizeof(loop_details));
+  for(int i = 0 ; i < parallel_size; i++){
 
-    for (int j = 0 ; j < l_data[i].size() ; j++) {
+    //loop_execution[i] = std::vector<loop_details> (l_data[i].size());
+
+    printf("Loops in parallel regions are %d\n", l_data_size[i]);
+
+    loop_execution[i] = (loop_details*) malloc(l_data_size[i]*sizeof(loop_details));
+
+    for (int j = 0 ; j < l_data_size[i]  ; j++) {
+      
         timeout_node temp;
         if(l_data[i][j].wcet_ns == -1) { 
           temp.wcet = max_timeout;
@@ -894,18 +964,73 @@ extern "C" void initializeTimeoutData(){
     Talk about all this in paper
     */
 
+  //parallel_region = std::vector < std::vector<details> > (p_data.size(), std::vector<details>());
 
-    for(int j = 0 ; j < p_data[i].size() ; j++){ // j = 0 is parallel begin
+    parallel_region[i] = (details*) malloc(p_data_size[i]*sizeof(details)); 
+    //parallel_region[i] = std::vector<details> (p_data[i].size());
 
-        parallel_region[i] = (details*) malloc(p_data[i].size() * sizeof(details));
-        timeout_node temp;
+    for(int j = 0 ; j < p_data_size[i] ; j++){ // j = 0 is parallel begin
 
-        if(j == 0){ // parallel begin
-          temp.sub_region_id = j;
-          temp.parallel_region_id = i;
-          temp.sections_id = default_id;
-          temp.loop_id = default_id;
-          temp.timer_set_flag = false;
+      timeout_node temp;
+
+      printf("ref region id: %d\n", p_data[i][j].ref);
+      parallel_region[i][j].ref = p_data[i][j].ref;
+
+      if(p_data[i][j].ref == -1000){ // parallel begin
+        printf("Printing details for parallel begin\n");
+        if(p_data[i][j].wcet_ns == -1) { 
+          temp.wcet = max_timeout;
+        }
+
+        else {
+          timespec testing_time;
+          testing_time.tv_sec = 0;
+          testing_time.tv_nsec = p_data[i][j].wcet_ns;
+          temp.wcet = testing_time;
+        }
+       
+        temp.sub_region_id = j;
+        temp.parallel_region_id = i;
+        temp.sections_id = default_id;
+        temp.loop_id = default_id;
+        temp.timer_set_flag = false;
+        printf("Printing details for parallel begin\n");
+        parallel_region[i][j].expected_execution = (timeout_node*) malloc(sizeof(timeout_node));
+        parallel_region[i][j].expected_execution[0] = temp;
+        printf("Testing reference number %d\n", parallel_region[i][j].ref);
+        printf("Testing code verification %ld\n", parallel_region[i][j].expected_execution[0].wcet.tv_sec);
+        // continue;
+      }
+  
+      else if(p_data[i][j].ref > omp_sections_ref){ //sections
+
+          printf("Sections detected\n");
+          parallel_region[i][j].expected_execution = (timeout_node*) malloc(p_data[i][j].ref*sizeof(timeout_node));
+          for(int k = 0 ; k < p_data[i][j].ref ; k++){
+              // here will be another loop here for max vul ... then temp_v will have more noes per section
+              if(p_data[i][j].wcet_ns == -1) { 
+                temp.wcet = max_timeout;
+              }
+
+              else {
+                timespec testing_time;
+                testing_time.tv_sec = 0;
+                testing_time.tv_nsec = p_data[i][j].wcet_ns;
+                temp.wcet = testing_time;
+              }
+
+              temp.sub_region_id = j;
+              temp.parallel_region_id = i;
+              temp.sections_id = k;
+              temp.loop_id = default_id;
+              temp.timer_set_flag = false;
+              //parallel_region[i][j].expected_execution.push_back(temp);
+              parallel_region[i][j].expected_execution[k] = temp;
+          }
+          // printf("checking parallel region impl ............... %d\n", parallel_region[i][j].expected_execution[1]->sections_id);
+      }
+    
+      else if(p_data[i][j].ref == omp_single_ref) { // single
           if(p_data[i][j].wcet_ns == -1) { 
             temp.wcet = max_timeout;
           }
@@ -914,76 +1039,50 @@ extern "C" void initializeTimeoutData(){
             timespec testing_time;
             testing_time.tv_sec = 0;
             testing_time.tv_nsec = p_data[i][j].wcet_ns;
+            temp.wcet = testing_time;
           }
-          parallel_region[i][j].expected_execution.push_back(temp);
-          continue;
-        }
+          temp.sub_region_id = j;
+          temp.parallel_region_id = i;
+          temp.sections_id = default_id;
+          temp.loop_id = default_id;
+          temp.timer_set_flag = false;
+          //parallel_region[i][j].expected_execution.push_back(temp);
+          parallel_region[i][j].expected_execution = (timeout_node*) malloc(sizeof(timeout_node));
+          parallel_region[i][j].expected_execution[0] = temp;
+      }
 
-        printf("sub parallel region id: %d\n", p_data[i][j].ref);
-     
-        if(p_data[i][j].ref > omp_sections_ref){ //sections
-
-            printf("Sections detected\n");
-            for(int k = 0 ; k < p_data[i][j].ref ; k++){
-                // here will be another loop here for max vul ... then temp_v will have more noes per section
-                if(p_data[i][j].wcet_ns == -1) { 
-                  temp.wcet = max_timeout;
-                }
-
-                else {
-                  timespec testing_time;
-                  testing_time.tv_sec = 0;
-                  testing_time.tv_nsec = p_data[i][j].wcet_ns;
-                }
-
-                temp.sub_region_id = j;
-                temp.parallel_region_id = i;
-                temp.sections_id = k;
-                temp.loop_id = default_id;
-                temp.timer_set_flag = false;
-                parallel_region[i][j].expected_execution.push_back(temp);
-            }
-            // printf("checking parallel region impl ............... %d\n", parallel_region[i][j].expected_execution[1]->sections_id);
-        }
+      else if(p_data[i][j].ref == omp_for_ref) { // omp for // *loop_split factor in the other case
       
-        else if(p_data[i][j].ref == omp_single_ref) { // single
-            if(p_data[i][j].wcet_ns == -1) { 
-              temp.wcet = max_timeout;
-            }
+          if(p_data[i][j].wcet_ns == -1) { 
+            temp.wcet = max_timeout;
+          }
 
-            else {
-              timespec testing_time;
-              testing_time.tv_sec = 0;
-              testing_time.tv_nsec = p_data[i][j].wcet_ns;
-            }
-            temp.sub_region_id = j;
-            temp.parallel_region_id = i;
-            temp.sections_id = default_id;
-            temp.loop_id = default_id;
-            temp.timer_set_flag = false;
-            parallel_region[i][j].expected_execution.push_back(temp);
-        }
-
-        else if(p_data[i][j].ref == omp_for_ref) { // omp for // *loop_split factor in the other case
-        
-            if(p_data[i][j].wcet_ns == -1) { 
-              temp.wcet = max_timeout;
-            }
-
-            else {
-              timespec testing_time;
-              testing_time.tv_sec = 0;
-              testing_time.tv_nsec = p_data[i][j].wcet_ns;
-            }
-            temp.sub_region_id = j;
-            temp.parallel_region_id = i;
-            temp.sections_id = default_id;
-            temp.loop_id = default_id;
-            temp.timer_set_flag = false;
-            parallel_region[i][j].expected_execution.push_back(temp);
-        }
+          else {
+            timespec testing_time;
+            testing_time.tv_sec = 0;
+            testing_time.tv_nsec = p_data[i][j].wcet_ns;
+            temp.wcet = testing_time;
+          }
+          temp.sub_region_id = j;
+          temp.parallel_region_id = i;
+          temp.sections_id = default_id;
+          temp.loop_id = default_id;
+          temp.timer_set_flag = false;
+          //parallel_region[i][j].expected_execution.push_back(temp);
+          parallel_region[i][j].expected_execution = (timeout_node*) malloc(sizeof(timeout_node));
+          parallel_region[i][j].expected_execution[0] = temp;
+      }
     }
   }
+
+  printf("printing details of parallel regions\n");
+
+  // for(int i = 0 ; i < parallel_region.size(); i++){
+  //   for(int j = 0 ; j < parallel_region[i].size() ; j++){
+  //     printf("reference info: %d\n", parallel_region[i][j].ref);
+  //   }
+  // }
+
 }
 
 extern "C" int ompt_initialize(
@@ -991,8 +1090,6 @@ extern "C" int ompt_initialize(
   int initial_device_num,
   ompt_data_t *tool_data)
 {
-  initializeTimeoutData();
-
   // printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ %d\n", parallel_region[2][0].parallel_id);
 
   ompt_set_callback_t ompt_set_callback = (ompt_set_callback_t) lookup("ompt_set_callback");
@@ -1021,42 +1118,52 @@ extern "C" int ompt_initialize(
 
 void logDataToFile(){
 
-  for(int i = 0 ; i < l_data.size() ; i++){
-    for (int j = 0 ; j < l_data[i].size() ; j++) { 
-        //loop_details_pass temp;
-        std::cout<< "loop details value:" << i << " " << j <<" "<<l_data[i].size()<<std::endl;
-        // l_data[i][j].parallel_id = i;
-        // l_data[i][j].loop_id = j;
-        l_data[i][j].wcet_ns = 1;//(loop_execution[i][j].expected_execution.wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution.wcet.tv_nsec;
-        std::cout<<"checking loophole "<<std::endl;
-        //temp_loop_profile.push_back(temp);
-    }    
-  }
+  printf("Working logDataToFile\n");
 
-  std::cout<<"loop evaluated correctly"<<std::endl;
+  //readFileData(); // not sure why we have to reevaluate again
 
-  for(int i = 0 ; i < p_data.size() ; i++){
-    for(int j = 0 ; j < p_data[i].size() ; j++){
-      for(int k = 0 ; k < parallel_region[i][j].expected_execution.size() ; k++){
-        //para_details temp;
-        // p_data[i][j].parallel_id = i;
-        // p_data[i][j].ref = parallel_region[i][j].ref;
-        // p_data[i][j].id = parallel_region[i][j].sub_region_id;
-        p_data[i][j].wcet_ns = (parallel_region[i][j].expected_execution[k].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k].wcet.tv_nsec;
-        //temp_para_profile.push_back(temp);
-      } 
+  std::vector< std::vector<loop_details_pass> > l_data_temp;
+  std::vector< std::vector<para_details> > p_data_temp;
+
+  for(int i = 0 ; i < parallel_size ; i++){
+    std::vector<loop_details_pass> temp;
+    for (int j = 0 ; j < l_data_size[i] ; j++) { 
+      l_data[i][j].wcet_ns = (loop_execution[i][j].expected_execution.wcet.tv_sec*1000000000)+loop_execution[i][j].expected_execution.wcet.tv_nsec;
+      temp.push_back(l_data[i][j]);
     }
+    l_data_temp.push_back(temp);
+  
+    std::vector<para_details> temp_2;
+    for(int j = 0 ; j < p_data_size[i] ; j++){
+      std::cout<<p_data[i][j].ref<<std::endl;
+      if(p_data[i][j].ref > 0){
+        for(int k = 0 ; k < p_data[i][j].ref ; k++){
+          long int wcet_temp = (parallel_region[i][j].expected_execution[k].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[k].wcet.tv_nsec;
+          if(p_data[i][j].wcet_ns < wcet_temp){
+            p_data[i][j].wcet_ns = wcet_temp;
+          }
+        }
+      }
+
+      else {
+        p_data[i][j].wcet_ns = (parallel_region[i][j].expected_execution[0].wcet.tv_sec*1000000000)+parallel_region[i][j].expected_execution[0].wcet.tv_nsec;;
+      }
+
+      temp_2.push_back(p_data[i][j]);
+    }
+
+    p_data_temp.push_back(temp_2);
   }
 
    std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt",std::ios::binary);
 
     if (outFile) {
 
-        size_t num2Rows = l_data.size();
+        size_t num2Rows = l_data_temp.size();
         outFile.write(reinterpret_cast<const char*>(&num2Rows), sizeof(num2Rows));
 
         // Write each row's size and data
-        for (const auto& row : l_data) {
+        for (const auto& row : l_data_temp) {
             size_t rowSize = row.size();
             outFile.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
             for (const loop_details_pass& cell : row) {
@@ -1065,11 +1172,11 @@ void logDataToFile(){
         }
 
         // Write the number of rows
-        size_t numRows = p_data.size();
+        size_t numRows = p_data_temp.size();
         outFile.write(reinterpret_cast<const char*>(&numRows), sizeof(numRows));
 
         // Write each row's size and data
-        for (const auto& row : p_data) {
+        for (const auto& row : p_data_temp) {
             size_t rowSize = row.size();
             outFile.write(reinterpret_cast<const char*>(&rowSize), sizeof(rowSize));
             for (const para_details& cell : row) {
@@ -1094,7 +1201,7 @@ void processLogData(){
 
     // generate wcet for thread begin and parallel begin in general and store everything in a file
 
-    printf("checking before log loop\n");
+    printf("checking before log loop \n");
 
     for (const auto & [ key, value ] : log_data) {
         for(int j = 0 ; j < value.size() ; j++){
@@ -1116,8 +1223,11 @@ void processLogData(){
             // consider single for and sections here
             if(value[j].sub_region_id != default_id && value[j].parallel_region_id != default_id){
                 int temp_id = value[j].sub_region_id;
-                if(temp_id == parallel_begin_id || temp_id == parallel_end_id || temp_id == thread_begin_id || temp_id == work_end_id || temp_id == work_begin_id )
+                if(temp_id == parallel_end_id || temp_id == thread_begin_id || temp_id == work_end_id || temp_id == work_begin_id )
                     continue;
+
+                printf("Value of sub-region id: %d and parallel id: %d\n", value[j].sub_region_id, value[j].parallel_region_id);
+                //printf("ref: %d\n", parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref);
 
                 //printf("parallel id is: %d and sub region id is: %d\n",value[j].parallel_region_id,value[j].sub_region_id);   
 
@@ -1140,6 +1250,13 @@ void processLogData(){
                       parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = value[j].et;
                   }
                   parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet, value[j].et);
+                }
+
+                else if(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].ref == -1000){
+                  if(timespec_compare(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet,max_timeout)){
+                      parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = value[j].et;
+                  }
+                  parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet = timespec_higher(parallel_region[value[j].parallel_region_id][value[j].sub_region_id].expected_execution[0].wcet, value[j].et);  
                 }
             }
         }
@@ -1179,6 +1296,7 @@ extern "C" ompt_start_tool_result_t* ompt_start_tool(
   unsigned int omp_version,
   const char *runtime_version)
 {
+  initializeTimeoutData();
   static ompt_start_tool_result_t ompt_start_tool_result = {&ompt_initialize,&ompt_finalize,{.ptr=NULL}};
   return &ompt_start_tool_result;
 }

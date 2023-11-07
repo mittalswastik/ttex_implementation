@@ -1347,7 +1347,7 @@ bool InductionDescriptor::isInductionPHI(PHINode *Phi, const Loop *TheLoop,
     AR = PSE.getAsAddRec(Phi);
 
   if (!AR) {
-    errs() << "is AR\n";
+    //errs() << "is AR\n";
     LLVM_DEBUG(dbgs() << "LV: PHI is not a poly recurrence.\n");
     return false;
   }

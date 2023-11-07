@@ -130,6 +130,8 @@ LTOCodeGenerator::LTOCodeGenerator(LLVMContext &Context)
   Config.PreCodeGenPassesHook = [](legacy::PassManager &PM) {
     PM.add(createObjCARCContractPass());
   };
+
+  errs() << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& Code generation phase of the Linker &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n";
 }
 
 LTOCodeGenerator::~LTOCodeGenerator() {}
