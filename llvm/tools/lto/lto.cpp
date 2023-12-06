@@ -462,6 +462,7 @@ const void *lto_codegen_compile_optimized(lto_code_gen_t cg, size_t *length) {
 
 bool lto_codegen_compile_to_file(lto_code_gen_t cg, const char **name) {
   maybeParseOptions(cg);
+  errs()<<"swastik: compile to file function called\n";
   return !unwrap(cg)->compile_to_file(name);
 }
 

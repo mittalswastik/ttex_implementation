@@ -488,6 +488,8 @@ int main(int argc, char **argv) {
   ArrayRef<const char *> ArgsArr = makeArrayRef(argv + 1, argc - 1);
   opt::InputArgList Args = T.ParseArgs(ArgsArr, MAI, MAC);
 
+  errs() << "dsymutil.cpp\n";
+
   void *P = (void *)(intptr_t)getOutputFileName;
   std::string SDKPath = sys::fs::getMainExecutable(argv[0], P);
   SDKPath = std::string(sys::path::parent_path(SDKPath));

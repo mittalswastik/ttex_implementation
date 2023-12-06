@@ -321,6 +321,7 @@ TEST(ToolChainTest, CommandOutput) {
   const auto &CmdCompile = Jobs.getJobs().front();
   const auto &InFile = CmdCompile->getInputInfos().front().getFilename();
   EXPECT_STREQ(InFile, "foo.cpp");
+  llvm::errs() <<"Tool chain test cpp calling file write\n";
   auto ObjFile = CmdCompile->getOutputFilenames().front();
   EXPECT_TRUE(StringRef(ObjFile).endswith(".o"));
 

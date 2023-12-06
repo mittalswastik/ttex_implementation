@@ -4195,6 +4195,7 @@ void Driver::BuildJobs(Compilation &C) const {
       J.InProcess = false;
 
   if (CCPrintProcessStats) {
+    llvm::errs()<<"-------- get output file name in Driver.cpp---\n";
     C.setPostCallback([=](const Command &Cmd, int Res) {
       Optional<llvm::sys::ProcessStatistics> ProcStat =
           Cmd.getProcessStatistics();

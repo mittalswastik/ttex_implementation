@@ -249,6 +249,8 @@ bool LTOCodeGenerator::compileOptimizedToFile(const char **Name) {
   auto AddStream = [&](size_t Task) -> std::unique_ptr<CachedFileStream> {
     StringRef Extension(Config.CGFileType == CGFT_AssemblyFile ? "s" : "o");
 
+    errs()<< "Creating temporary file for code generation here\n";
+
     int FD;
     std::error_code EC =
         sys::fs::createTemporaryFile("lto-llvm", Extension, FD, Filename);
@@ -547,6 +549,7 @@ bool LTOCodeGenerator::optimize() {
 
   ModuleSummaryIndex CombinedIndex(false);
   TargetMach = createTargetMachine();
+  errs()<<"optimization for opt LTOCodeGenerator optimization\n";
   if (!opt(Config, TargetMach.get(), 0, *MergedModule, /*IsThinLTO=*/false,
            /*ExportSummary=*/&CombinedIndex, /*ImportSummary=*/nullptr,
            /*CmdArgs*/ std::vector<uint8_t>())) {

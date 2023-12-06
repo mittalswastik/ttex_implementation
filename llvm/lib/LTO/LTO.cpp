@@ -635,6 +635,7 @@ Error LTO::add(std::unique_ptr<InputFile> Input,
 Error LTO::addModule(InputFile &Input, unsigned ModI,
                      const SymbolResolution *&ResI,
                      const SymbolResolution *ResE) {
+  errs()<<"--------------- add Module -------------------\n";
   Expected<BitcodeLTOInfo> LTOInfo = Input.Mods[ModI].getLTOInfo();
   if (!LTOInfo)
     return LTOInfo.takeError();
@@ -671,6 +672,7 @@ Error LTO::addModule(InputFile &Input, unsigned ModI,
   if (Error Err = BM.readSummary(ThinLTO.CombinedIndex, "", -1ull))
     return Err;
   RegularLTO.ModsWithSummaries.push_back(std::move(*ModOrErr));
+  errs()<< "--------------- end add module--------------\n";
   return Error::success();
 }
 
@@ -711,6 +713,7 @@ Expected<LTO::RegularLTOState::AddedModule>
 LTO::addRegularLTO(BitcodeModule BM, ArrayRef<InputFile::Symbol> Syms,
                    const SymbolResolution *&ResI,
                    const SymbolResolution *ResE) {
+  errs() << "++++++++++++++++++++++ addRegularLTO ++++++++++++++++++\n";
   RegularLTOState::AddedModule Mod;
   Expected<std::unique_ptr<Module>> MOrErr =
       BM.getLazyModule(RegularLTO.Ctx, /*ShouldLazyLoadMetadata*/ true,
@@ -848,6 +851,7 @@ LTO::addRegularLTO(BitcodeModule BM, ArrayRef<InputFile::Symbol> Syms,
   }
 
   assert(MsymI == MsymE);
+  errs() <<"+++++++++++++++++++ end of add regular lto ++++++++++ \n";
   return std::move(Mod);
 }
 
@@ -1036,11 +1040,16 @@ Error LTO::run(AddStreamFn AddStream, FileCache Cache) {
   std::unique_ptr<ToolOutputFile> StatsFile = std::move(StatsFileOrErr.get());
 
   Error Result = runRegularLTO(AddStream);
+
+  errs()<<"swastik: regular LTO executed\n";
+
   if (!Result)
     Result = runThinLTO(AddStream, Cache, GUIDPreservedSymbols);
 
   if (StatsFile)
     PrintStatisticsJSON(StatsFile->os());
+
+  errs()<<"stat result\n";
 
   return Result;
 }
@@ -1138,9 +1147,13 @@ Error LTO::runRegularLTO(AddStreamFn AddStream) {
   if (!RegularLTO.EmptyCombinedModule || Conf.AlwaysEmitRegularLTOObj) {
     if (Error Err =
             backend(Conf, AddStream, RegularLTO.ParallelCodeGenParallelismLevel,
-                    *RegularLTO.CombinedModule, ThinLTO.CombinedIndex))
-      return Err;
+                    *RegularLTO.CombinedModule, ThinLTO.CombinedIndex)){
+                      errs()<<"error returning backend\n";
+                      return Err;
+                    }
   }
+
+  errs()<< "swastik: backend execution completed successfully\n";
 
   return finalizeOptimizationRemarks(std::move(DiagnosticOutputFile));
 }

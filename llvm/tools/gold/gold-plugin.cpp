@@ -137,6 +137,7 @@ namespace options {
     OT_SAVE_TEMPS
   };
   static OutputType TheOutputType = OT_NORMAL;
+  //static OutputType TheOutputType = OT_SAVE_TEMPS;
   static unsigned OptLevel = 2;
   // Currently only affects ThinLTO, where the default is the max cores in the
   // system. See llvm::get_threadpool_strategy() for acceptable values.
@@ -321,6 +322,9 @@ namespace options {
 
       extra.push_back(opt_);
     }
+
+    TheOutputType = OT_SAVE_TEMPS;
+
   }
 }
 
@@ -817,6 +821,7 @@ static void recordFile(const std::string &Filename, bool TempOutFile) {
 static int getOutputFileName(StringRef InFilename, bool TempOutFile,
                              SmallString<128> &NewFilename, int TaskID) {
   int FD = -1;
+  errs() << "swastik: gold plugin cpp create temporary file\n";
   if (TempOutFile) {
     std::error_code EC =
         sys::fs::createTemporaryFile("lto-llvm", "o", FD, NewFilename);
@@ -825,14 +830,17 @@ static int getOutputFileName(StringRef InFilename, bool TempOutFile,
               EC.message().c_str());
   } else {
     NewFilename = InFilename;
-    if (TaskID > 0)
+    if (TaskID > 0){
       NewFilename += utostr(TaskID);
+      errs() << "printing new file name: " <<NewFilename;
+    }
     std::error_code EC =
         sys::fs::openFileForWrite(NewFilename, FD, sys::fs::CD_CreateAlways);
     if (EC)
       message(LDPL_FATAL, "Could not open file %s: %s", NewFilename.c_str(),
               EC.message().c_str());
   }
+
   return FD;
 }
 
@@ -867,6 +875,10 @@ static void getThinLTOOldAndNewPrefix(std::string &OldPrefix,
 /// the final ThinLTO linking. Can be nullptr.
 static std::unique_ptr<LTO> createLTO(IndexWriteCallback OnIndexWrite,
                                       raw_fd_ostream *LinkedObjectsFile) {
+
+  
+  errs()<<"swastik: ---------------------------------- create lto-------------------------------\n";                                      
+
   Config Conf;
   ThinBackend Backend;
 
@@ -909,6 +921,8 @@ static std::unique_ptr<LTO> createLTO(IndexWriteCallback OnIndexWrite,
 
   Conf.DiagHandler = diagnosticHandler;
 
+  errs() <<"swastik: before switch in create LTO:"<< options::TheOutputType <<"\n";
+
   switch (options::TheOutputType) {
   case options::OT_NORMAL:
     break;
@@ -921,6 +935,7 @@ static std::unique_ptr<LTO> createLTO(IndexWriteCallback OnIndexWrite,
     Conf.PostInternalizeModuleHook = [](size_t Task, const Module &M) {
       std::error_code EC;
       SmallString<128> TaskFilename;
+      errs() << "swastik: call made to getOutputFileName function\n";
       getOutputFileName(output_name, /* TempOutFile */ false, TaskFilename,
                         Task);
       raw_fd_ostream OS(TaskFilename, EC, sys::fs::OpenFlags::OF_None);
@@ -939,6 +954,8 @@ static std::unique_ptr<LTO> createLTO(IndexWriteCallback OnIndexWrite,
     Conf.CGFileType = CGFT_AssemblyFile;
     break;
   }
+
+  errs() <<"create LTO switch statement complete\n";
 
   if (!options::sample_profile.empty())
     Conf.SampleProfile = options::sample_profile;
@@ -964,6 +981,9 @@ static std::unique_ptr<LTO> createLTO(IndexWriteCallback OnIndexWrite,
   Conf.HasWholeProgramVisibility = options::whole_program_visibility;
 
   Conf.StatsFile = options::stats_file;
+
+  errs()<<"swastik: completed the execution of the create LTO function\n";
+
   return std::make_unique<LTO>(std::move(Conf), Backend,
                                 options::ParallelCodeGenParallelismLevel);
 }
@@ -1029,6 +1049,9 @@ static std::vector<std::pair<SmallString<128>, bool>> runLTO() {
   // unlike regular LTO, where addModule will result in the opened file
   // being merged into a new combined module, we need to keep these files open
   // through Lto->run().
+
+  errs()<<"************************ swastik: run lto code - calls create lto function *************************\n";
+
   DenseMap<void *, std::unique_ptr<PluginInputFile>> HandleToInputFile;
 
   // Owns string objects and tells if index file was already created.
@@ -1041,6 +1064,8 @@ static std::vector<std::pair<SmallString<128>, bool>> runLTO() {
       },
       LinkedObjects.get());
 
+  errs() << "swastik: ---- create LTO call execution complete-----\n";
+
   std::string OldPrefix, NewPrefix;
   if (options::thinlto_index_only)
     getThinLTOOldAndNewPrefix(OldPrefix, NewPrefix);
@@ -1048,7 +1073,7 @@ static std::vector<std::pair<SmallString<128>, bool>> runLTO() {
   std::string OldSuffix, NewSuffix;
   getThinLTOOldAndNewSuffix(OldSuffix, NewSuffix);
 
-  for (claimed_file &F : Modules) {
+  for (claimed_file &F : Modules) { // swastik: creating a global module here
     if (options::thinlto && !HandleToInputFile.count(F.leader_handle))
       HandleToInputFile.insert(std::make_pair(
           F.leader_handle, std::make_unique<PluginInputFile>(F.handle)));
@@ -1078,16 +1103,39 @@ static std::vector<std::pair<SmallString<128>, bool>> runLTO() {
     Filename = output_name;
   bool SaveTemps = !Filename.empty();
 
+  if(SaveTemps) {
+    errs() << "save temps is enabled\n";
+  }
+
   size_t MaxTasks = Lto->getMaxTasks();
   std::vector<std::pair<SmallString<128>, bool>> Files(MaxTasks);
 
   auto AddStream = [&](size_t Task) -> std::unique_ptr<CachedFileStream> {
     Files[Task].second = !SaveTemps;
+    errs()<<"get output file name called here in run lto print"<< Filename.c_str() << "\n";
     int FD = getOutputFileName(Filename, /* TempOutFile */ !SaveTemps,
                                Files[Task].first, Task);
+    
+    /**adding code below to read the file descriptor and the content*/
+    
+    // if (FD != -1) {
+    //   // Open the file for reading
+    //   //FileRemover Cleanup(NewFilename);
+    //   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> BufferOrErr =
+    //       llvm::MemoryBuffer::getFile(Filename);
+    //   if (auto EC = BufferOrErr.getError()) {
+    //     message(LDPL_FATAL, "Could not read file %s: %s",
+    //             Filename.c_str(), EC.message().c_str());
+    //   } else {
+    //     std::string FileContent = BufferOrErr.get()->getBuffer().str();
+    //     errs() << "File Content: " << FileContent << "\n";
+    //   }
+    // }
     return std::make_unique<CachedFileStream>(
         std::make_unique<llvm::raw_fd_ostream>(FD, true));
   };
+
+  /**reading the contents of the file*/
 
   auto AddBuffer = [&](size_t Task, std::unique_ptr<MemoryBuffer> MB) {
     *AddStream(Task)->OS << MB->getBuffer();
@@ -1097,8 +1145,8 @@ static std::vector<std::pair<SmallString<128>, bool>> runLTO() {
   if (!options::cache_dir.empty())
     Cache = check(localCache("ThinLTO", "Thin", options::cache_dir, AddBuffer));
 
-  check(Lto->run(AddStream, Cache));
-
+  check(Lto->run(AddStream, Cache)); // swastik: this function runs the pass: run in lto.cpp and then runLTO
+  //Lto->run(AddStream, Cache);
   // Write empty output files that may be expected by the distributed build
   // system.
   if (options::thinlto_index_only)
@@ -1107,6 +1155,8 @@ static std::vector<std::pair<SmallString<128>, bool>> runLTO() {
         writeEmptyDistributedBuildOutputs(std::string(Identifier.getKey()),
                                           OldPrefix, NewPrefix,
                                           /* SkipModule */ false);
+
+  errs()<<"swastik: run lto function completed\n";
 
   return Files;
 }

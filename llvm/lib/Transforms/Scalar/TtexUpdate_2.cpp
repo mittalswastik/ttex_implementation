@@ -73,6 +73,7 @@
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm-c/lto.h"
 using namespace llvm;
 
 // namespace llvm {
@@ -146,13 +147,13 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
       /*IsVarArgs=*/false);
 
   FunctionCallee hookTest = M->getOrInsertFunction("ompt_test", testing);
-  if (Value *calleeFunction = hookTest.getCallee()) {
-    if(Function* Fn = dyn_cast<Function>(calleeFunction)) {
-      Fn->addFnAttr(Attribute::NoInline);
-    }
-  }
+  // if (Value *calleeFunction = hookTest.getCallee()) {
+  //   if(Function* Fn = dyn_cast<Function>(calleeFunction)) {
+  //     Fn->addFnAttr(Attribute::NoInline);
+  //   }
+  // }
 
-  Function *add_timer_calls = M->getFunction("ompt_test");
+  //Function *add_timer_calls = M->getFunction("ompt_test");
   // hookTest.addFnAttr(Attribute::NoInline);
   //Function *hook = dyn_cast<Function>(hookTest.getCallee());
   std::vector<Value*> args;
@@ -167,11 +168,11 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
   //Instruction *calltemp = security_2.CreateCall(add_timer_calls,args);
   // DILocation *DebugLoc = calltemp->getDebugLoc();
   // security_2.SetCurrentDebugLocation(DebugLoc);
-  Value *my_function = hookTest.getCallee();
+  // Value *my_function = hookTest.getCallee();
 
-  if(Function* fn_test = dyn_cast<Function>(my_function)){
-    errs() <<"----- a function returned ----\n";
-  }
+  // if(Function* fn_test = dyn_cast<Function>(my_function)){
+  //   errs() <<"----- a function returned ----\n";
+  // }
 
   //my_function->addAttribute(AttributeList::FunctionIndex, Attribute::NoInline);
   /* commenting 6 lines below for now*/
@@ -184,11 +185,11 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
     callinst = llvm::CallInst::Create(hookTest,args,"",block);
   }
   
-  Function *fn_test_2 = callinst->getCalledFunction();
-  std::vector<Attribute> attr_list;
-  AttributeSet attr_set = AttributeSet::get(CTX, attr_list);
-  fn_test_2->addFnAttr(Attribute::NoInline);
-  fn_test_2->addFnAttr(Attribute::NoUnwind);
+  // Function *fn_test_2 = callinst->getCalledFunction();
+  // std::vector<Attribute> attr_list;
+  // AttributeSet attr_set = AttributeSet::get(CTX, attr_list);
+  // fn_test_2->addFnAttr(Attribute::NoInline);
+  // fn_test_2->addFnAttr(Attribute::NoUnwind);
 }
 
 bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_id){
@@ -375,6 +376,9 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
     }
 
     else if(sub_id == -1 && test[2] != loop_id){ // this function might be processed by other region or loop not sure
+      //loop_details_profiler[parallel_region_id][loop_id].unique_function_ids.push_back(secure_functions[F]); // this will give seg fault as loop_details_profiler is not initialized yet
+      
+      // above should be called even if not processing the function as to know this function is in another region
       return count;
     }
 
@@ -1118,7 +1122,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                   }
                 }
 
-                else {
+                else { // make sure the unique functions id is inserted to other regions else unique functions id will always be different
                   std::vector<int> test2 = {item_2.parallel_id, item_2.id, -1};
                   secure_functions_2[item_2.unique_function_ids[k]] = test2;
                   //secure_functions_2[item_2.unique_function_ids[k]] = test2;
@@ -1215,6 +1219,8 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     } else { 
         std::cout<< "Error opening the file for writing.\n";
     }
+
+    std::cout<<"--------=========== end of pass ==================----------------"<<std::endl;
 
     return PreservedAnalyses::all();
   }

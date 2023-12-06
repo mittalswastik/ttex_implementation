@@ -90,6 +90,7 @@ extern cl::opt<bool> NoPGOWarnMismatch;
 
 Error Config::addSaveTemps(std::string OutputFileName,
                            bool UseInputModulePath) {
+  errs() <<"++++++++++++++++++++++++++ calling add save temps +++++++++++++++++++\n";
   ShouldDiscardValueNames = false;
 
   std::error_code EC;
@@ -361,6 +362,57 @@ bool lto::opt(const Config &Conf, TargetMachine *TM, unsigned Task, Module &Mod,
               bool IsThinLTO, ModuleSummaryIndex *ExportSummary,
               const ModuleSummaryIndex *ImportSummary,
               const std::vector<uint8_t> &CmdArgs) {
+
+  errs()<<"Export Summary details below\n";  
+
+  for (Module::iterator func_iter = Mod.begin(), func_iter_end = Mod.end(); func_iter != func_iter_end; ++func_iter) {
+      Function &F = *func_iter; 
+      errs()<<F.getName()<<"\n";
+  }   
+
+  // if(ExportSummary != NULL) {
+  //   for(auto it = ExportSummary->begin(); it != ExportSummary->end(); it++){
+  //     auto gv = *it;
+  //     //GlobalValueSummaryInfo gs = gv.second;
+  //     // GlobalValueSummaryList l = gs.SummaryList;
+  //     // std::vector< std::unique_ptr<GlobalValueSummary> > temp_list;
+  //     // for(int i = 0 ; i < l.size() ;i++){
+  //     //   temp_list.push_back(l[i]);
+  //     //   //GlobalValueSummary *g = l[0].get();
+  //     //   //ArrayRef<ValueInfo> v = l[0].get()->refs();
+  //     //   //ArrayRef<ValueInfo> v = ptr->refs();
+  //     //   //ArrayRef<ValueInfo> v = g->refs();
+  //     //   // for(int j = 0 ; j < v.size() ;j++){
+  //     //   //   ValueInfo temp = v[j];
+  //     //   //   errs() <<temp.name().str()<<"\n";
+  //     //   // }
+  //     // }
+  //   }
+  // }
+
+  errs()<<"\n\nImport Summary details below\n"; 
+
+  // if(ImportSummary != NULL){
+  //   errs()<<"non null\n";
+  //   for(const_gvsummary_iterator it = ImportSummary->begin(); it != ImportSummary->end(); it++){
+  //     GlobalValueSummaryInfo gs = (*it).second;
+  //     GlobalValueSummaryList l = gs.SummaryList;
+  //     for(int i = 0 ; i < l.size() ;i++){
+  //       std::unique_ptr<GlobalValueSummary> ptr = move(l[i]);
+  //       //GlobalValueSummary *g = l[i].get();
+  //       ArrayRef<ValueInfo> v = ptr->refs();
+  //       //ArrayRef<ValueInfo> v = g->refs();
+  //       for(int j = 0 ; j < v.size() ;j++){
+  //         ValueInfo temp = v[i];
+  //         errs() <<temp.name().str()<<"\n";
+  //       }
+  //     }
+  //   }
+  // }
+
+  errs()<<"\n\n";
+
+
   if (EmbedBitcode == LTOBitcodeEmbedding::EmbedPostMergePreOptimized) {
     // FIXME: the motivation for capturing post-merge bitcode and command line
     // is replicating the compilation environment from bitcode, without needing
@@ -385,12 +437,16 @@ bool lto::opt(const Config &Conf, TargetMachine *TM, unsigned Task, Module &Mod,
   } else {
     runOldPMPasses(Conf, Mod, TM, IsThinLTO, ExportSummary, ImportSummary);
   }
+
+  errs() <<"executed new pass\n";
+
   return !Conf.PostOptModuleHook || Conf.PostOptModuleHook(Task, Mod);
 }
 
 static void codegen(const Config &Conf, TargetMachine *TM,
                     AddStreamFn AddStream, unsigned Task, Module &Mod,
                     const ModuleSummaryIndex &CombinedIndex) {
+  errs() << "swastik: code generation function begin (LTOBackend.cpp)\n";
   if (Conf.PreCodeGenModuleHook && !Conf.PreCodeGenModuleHook(Task, Mod))
     return;
 
@@ -422,11 +478,15 @@ static void codegen(const Config &Conf, TargetMachine *TM,
                          EC.message());
   }
 
+  errs()<< "code gen function check 1\n";
+
   Expected<std::unique_ptr<CachedFileStream>> StreamOrErr = AddStream(Task);
   if (Error Err = StreamOrErr.takeError())
     report_fatal_error(std::move(Err));
   std::unique_ptr<CachedFileStream> &Stream = *StreamOrErr;
   TM->Options.ObjectFilenameForDebug = Stream->ObjectPathName;
+
+  errs()<< "code gen function check 2\n";
 
   legacy::PassManager CodeGenPasses;
   TargetLibraryInfoImpl TLII(Triple(Mod.getTargetTriple()));
@@ -441,14 +501,19 @@ static void codegen(const Config &Conf, TargetMachine *TM,
     report_fatal_error("Failed to setup codegen");
   CodeGenPasses.run(Mod);
 
+  errs()<< "code gen function check 3\n";
+
   if (DwoOut)
     DwoOut->keep();
+
+  errs() <<"Code generation function complete\n";
 }
 
 static void splitCodeGen(const Config &C, TargetMachine *TM,
                          AddStreamFn AddStream,
                          unsigned ParallelCodeGenParallelismLevel, Module &Mod,
                          const ModuleSummaryIndex &CombinedIndex) {
+  errs() << "split code generation begin\n";
   ThreadPool CodegenThreadPool(
       heavyweight_hardware_concurrency(ParallelCodeGenParallelismLevel));
   unsigned ThreadCount = 0;
@@ -494,6 +559,7 @@ static void splitCodeGen(const Config &C, TargetMachine *TM,
   // variables, we need to wait for the worker threads to terminate before we
   // can leave the function scope.
   CodegenThreadPool.wait();
+  errs()<<"split code genertation complete\n";
 }
 
 static Expected<const Target *> initAndLookupTarget(const Config &C,
@@ -531,18 +597,33 @@ Error lto::backend(const Config &C, AddStreamFn AddStream,
   std::unique_ptr<TargetMachine> TM = createTargetMachine(C, *TOrErr, Mod);
 
   if (!C.CodeGenOnly) {
+    errs()<<"swastik: optimization called in backend\n";
     if (!opt(C, TM.get(), 0, Mod, /*IsThinLTO=*/false,
              /*ExportSummary=*/&CombinedIndex, /*ImportSummary=*/nullptr,
-             /*CmdArgs*/ std::vector<uint8_t>()))
+             /*CmdArgs*/ std::vector<uint8_t>())){
+      
+      errs()<<"optimization call in backend completed error return\n";
       return Error::success();
+    }
+
+    errs()<<"optimization call in backend completed\n";
   }
 
+  errs() <<"lto post optimization\n";
+
   if (ParallelCodeGenParallelismLevel == 1) {
+    errs() <<"Code generation begin\n";
     codegen(C, TM.get(), AddStream, 0, Mod, CombinedIndex);
+    errs() <<"Code generation ends\n";
   } else {
+    errs() << "split code generation begin\n";
     splitCodeGen(C, TM.get(), AddStream, ParallelCodeGenParallelismLevel, Mod,
                  CombinedIndex);
+    errs() << "split code generation ends\n";
   }
+
+  errs()<<"swastik: End of code generation phase\n";
+  errs()<<"\n";
   return Error::success();
 }
 
