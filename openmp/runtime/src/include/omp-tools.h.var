@@ -168,7 +168,8 @@
     macro (ompt_callback_target_data_op_emi,ompt_callback_target_data_op_emi_t,34) /* target data op                  */ \
     macro (ompt_callback_target_submit_emi, ompt_callback_target_submit_emi_t, 35) /* target submit                   */ \
     macro (ompt_callback_target_map_emi,    ompt_callback_target_map_emi_t,    36) /* target map                      */ \
-    macro (ompt_callback_error,             ompt_callback_error_t,             37) /* error                           */
+    macro (ompt_callback_error,             ompt_callback_error_t,             37) /* error                           */\
+    macro (ompt_callback_ompt_test, ompt_callback_ompt_test_t, 38) /* test customer */ 
 
 /*****************************************************************************
  * implementation specific types
@@ -222,7 +223,8 @@ typedef enum ompt_callbacks_t {
   ompt_callback_target_data_op_emi       = 34,
   ompt_callback_target_submit_emi        = 35,
   ompt_callback_target_map_emi           = 36,
-  ompt_callback_error                    = 37
+  ompt_callback_error                    = 37,
+  ompt_callback_ompt_test                = 38
 } ompt_callbacks_t;
 
 typedef enum ompt_record_t {
@@ -703,6 +705,12 @@ typedef ompt_record_abstract_t *
 typedef void (*ompt_callback_thread_begin_t) (
   ompt_thread_t thread_type,
   ompt_data_t *thread_data
+);
+
+typedef void (*ompt_callback_ompt_test_t) (
+  int parallel_region_id,
+  int sub_id,
+  int loop_id
 );
 
 typedef struct ompt_record_thread_begin_t {

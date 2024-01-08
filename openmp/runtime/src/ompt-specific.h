@@ -13,6 +13,8 @@
 #ifndef OMPT_SPECIFIC_H
 #define OMPT_SPECIFIC_H
 
+#define OMPT_SUPPORT 1
+
 #include "kmp.h"
 
 #if OMPT_SUPPORT

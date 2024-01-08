@@ -494,6 +494,7 @@ void ompt_post_init() {
       ompt_callbacks.ompt_callback(ompt_callback_thread_begin)(
           ompt_thread_initial, __ompt_get_thread_data_internal());
     }
+
     ompt_data_t *task_data;
     ompt_data_t *parallel_data;
     __ompt_get_task_info_internal(0, NULL, &task_data, NULL, &parallel_data,

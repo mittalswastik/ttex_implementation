@@ -55,6 +55,10 @@ static cl::opt<bool> DisableVerify(
     "disable-llvm-verifier", cl::init(!VerifyByDefault),
     cl::desc("Don't run the LLVM verifier during the optimization pipeline"));
 
+static cl::opt<bool> MyTtex3("ttex_update_3",
+  cl::desc("Description of my custom option for ttex_update"),
+  cl::init(false)); 
+
 // Holds most recent error string.
 // *** Not thread safe ***
 static std::string sLastErrorString;

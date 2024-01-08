@@ -316,10 +316,9 @@ static void runNewPMPasses(const Config &Conf, Module &Mod, TargetMachine *TM,
 
   auto &Options = cl::getRegisteredOptions();
 
-  MPM.addPass(TtexUpdatePassV2());
-
   if (Options.count("ttex_update_3") && MyTtex3) {
     errs() << "---------------- ttex update 3 option recognized --------------------\n";
+    MPM.addPass(TtexUpdatePassV2());
   }
 
   MPM.run(Mod, MAM);
@@ -478,7 +477,7 @@ static void codegen(const Config &Conf, TargetMachine *TM,
                          EC.message());
   }
 
-  errs()<< "code gen function check 1\n";
+  errs()<<"code gen function check 1\n";
 
   Expected<std::unique_ptr<CachedFileStream>> StreamOrErr = AddStream(Task);
   if (Error Err = StreamOrErr.takeError())
@@ -486,7 +485,7 @@ static void codegen(const Config &Conf, TargetMachine *TM,
   std::unique_ptr<CachedFileStream> &Stream = *StreamOrErr;
   TM->Options.ObjectFilenameForDebug = Stream->ObjectPathName;
 
-  errs()<< "code gen function check 2\n";
+  errs()<<"code gen function check 2\n";
 
   legacy::PassManager CodeGenPasses;
   TargetLibraryInfoImpl TLII(Triple(Mod.getTargetTriple()));

@@ -82,6 +82,10 @@ static cl::opt<bool> DisableVerify(
     cl::desc("Do not run the verifier during the optimization pipeline"),
     cl::cat(LTOCategory));
 
+static cl::opt<bool> MyTtex3("ttex_update_3",
+  cl::desc("Description of my custom option for ttex_update"),
+  cl::init(false)); 
+
 static cl::opt<bool> EnableFreestanding(
     "lto-freestanding", cl::init(false),
     cl::desc("Enable Freestanding (disable builtins / TLI) during LTO"),

@@ -27,6 +27,9 @@ int main()
                 testpoint(c);
             }
         }
+
+        //kmpc_static_init()
+        //kmpc_fini()
     } 
 
     area=2.0*2.5*1.125*(double)(NPOINTS*NPOINTS-numoutside)/(double)(NPOINTS*NPOINTS);
