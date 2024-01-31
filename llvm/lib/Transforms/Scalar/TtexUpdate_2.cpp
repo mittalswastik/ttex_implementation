@@ -88,9 +88,17 @@ static cl::opt<bool> input_ttex("set_ttex",
   cl::desc("enable ttex security"),
   cl::init(false));
 
+static cl::opt<int> nthreads("nthreads",
+  cl::desc("number of threads for security"),
+  cl::init(1));
+
+static cl::opt<int> secure_wcet("threshold",
+  cl::desc("threshold for security"),
+  cl::init(5000));  
+
 bool check = false;
 
-long int secure_wcet_ns = 9000000000;
+unsigned long int  secure_wcet_ns = secure_wcet; // earlier value was quite high (9000000)
 int loop_unique_id = 0;
 int function_unique_id = 0;
 
@@ -100,8 +108,8 @@ typedef struct loop_details_pass {
   int split_factor;
   int unique_loop_id;
   int seq_split;
-  int total_inst;
-  long int wcet_ns;
+  long int total_inst;
+  unsigned long int wcet_ns;
   int total_threads;
   int fns;
   int unique_function_ids[500];
@@ -112,8 +120,8 @@ typedef struct para_details {
   int id;
   int ref;
   int seq_split;
-  int total_inst;
-  long int wcet_ns;
+  long int total_inst;
+  unsigned long int wcet_ns;
   int total_threads;
   int fns;
   int unique_function_ids[500];
@@ -155,15 +163,7 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
   }
 
   FunctionCallee hookTest = M->getOrInsertFunction("on_ompt_callback_ompt_test", testing);
-  // if (Value *calleeFunction = hookTest.getCallee()) {
-  //   if(Function* Fn = dyn_cast<Function>(calleeFunction)) {
-  //     Fn->addFnAttr(Attribute::NoInline);
-  //   }
-  // }
-
-  //Function *add_timer_calls = M->getFunction("ompt_test");
-  // hookTest.addFnAttr(Attribute::NoInline);
-  //Function *hook = dyn_cast<Function>(hookTest.getCallee());
+  
   std::vector<Value*> args;
   ConstantInt *arg1 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),parallel_id, false);
   ConstantInt *arg2 = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),sub_id, false);
@@ -171,16 +171,6 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
   args.push_back(arg1);
   args.push_back(arg2);
   args.push_back(arg3);
-  //hookTest->addAttribute(hook
-  //add_timer_calls->addFnAttr(Attribute::NoInline);
-  //Instruction *calltemp = security_2.CreateCall(add_timer_calls,args);
-  // DILocation *DebugLoc = calltemp->getDebugLoc();
-  // security_2.SetCurrentDebugLocation(DebugLoc);
-  // Value *my_function = hookTest.getCallee();
-
-  // if(Function* fn_test = dyn_cast<Function>(my_function)){
-  //   errs() <<"----- a function returned ----\n";
-  // }
 
   //my_function->addAttribute(AttributeList::FunctionIndex, Attribute::NoInline);
   /* commenting 6 lines below for now*/
@@ -192,12 +182,6 @@ void AddFunction(llvm::Module* M, int parallel_id, int sub_id, int loop_id, Basi
   else {
     callinst = llvm::CallInst::Create(hookTest,args,"",block);
   }
-  
-  // Function *fn_test_2 = callinst->getCalledFunction();
-  // std::vector<Attribute> attr_list;
-  // AttributeSet attr_set = AttributeSet::get(CTX, attr_list);
-  // fn_test_2->addFnAttr(Attribute::NoInline);
-  // fn_test_2->addFnAttr(Attribute::NoUnwind);
 }
 
 bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_id){
@@ -371,7 +355,7 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_
 
 std::vector<int> temp_unique_fns;
 
-int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_id, int sub_id, int loop_id, int split_id, int count){
+int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_id, int sub_id, int loop_id, int split_id, int count, bool temp_count){
   errs()<<"Function name inside returnInstCount is ----"<<F->getName()<<"\n";
 
   if(secure_functions_2.find(secure_functions[F]) != secure_functions_2.end()){
@@ -414,7 +398,7 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
         errs()<<"profiler not found\n";
         temp_unique_fns.push_back(secure_functions[F]);
       }
-     }
+    }
 
     else {
       errs()<<"region details profiler\n";
@@ -444,9 +428,31 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
 
       for (Instruction &I : BB) {
 
-        if(count == split_id) {
-          AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,&I); // sub id in add function is -1 to actual id
+        if(temp_count){
+          if(PHINode *Pi = dyn_cast<PHINode>(&I)){
+
+          }
+
+          else {
+            AddFunction(M,parallel_region_id,-1,loop_id,nullptr,&I);
+            temp_count = false; 
+          }
         }
+
+        if(count == split_id) {
+
+          if(PHINode *Pi = dyn_cast<PHINode>(&I)){
+            std::cout<<"######################## Instruction is a phi node #######################"<<std::endl;
+            // will need to put it right after the phi node for correct results
+            temp_count = true;
+          }
+
+          else {
+            AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,&I); // sub id in add function is -1 to actual id
+            split_id = count+split_id;
+            temp_count = false;
+          }
+        } // check this out
 
         if (CallInst *CI = dyn_cast<CallInst>(&I)) {
           Function *CalledFunc = CI->getCalledFunction();
@@ -456,7 +462,7 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
                 secure_functions[CalledFunc] = function_unique_id;
                 function_unique_id+=1;
                 if(CalledFunc->getName() != F->getName()){
-                  count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+                  count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count, temp_count);
                 }
               }
             }
@@ -471,7 +477,7 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
                 secure_functions[CalledFunc] = function_unique_id;
                 function_unique_id+=1;
                 if(CalledFunc->getName() != F->getName()){
-                  count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+                  count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count, temp_count);
                 }
               }
             }
@@ -487,7 +493,7 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
   return count;
 }
 
-int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, int loop_id, int split_id, ModuleAnalysisManager &MA){
+int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, int loop_id, int split_id, ModuleAnalysisManager &MA, bool temp_count){
   int count = 0;
   std::vector<BasicBlock *> OriginalLoopBlocks = L->getBlocks();
 
@@ -507,9 +513,33 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
 
     for(llvm::BasicBlock::iterator I = LoopBlock->begin(), Iend = LoopBlock->end(); I != Iend ; ++I){
       Instruction *Inst = &*I;
+      //Instruction *Inst_temp = &*(--Iend);
       
-      if(count == split_id) {
+      if(temp_count){
+        if(PHINode *Pi = dyn_cast<PHINode>(Inst)){
+
+        }
+
+        else {
           AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst);
+          temp_count = false; 
+        }
+      }
+
+      if(count == split_id) {
+          if(PHINode *Pi = dyn_cast<PHINode>(Inst)){
+            std::cout<<"######################## Instruction is a phi node #######################"<<std::endl;
+            temp_count = true;
+          }
+
+          else {
+            if(Inst == &LoopBlock->back()){
+              std::cout<<"######################## just checking for last instruction ######################"<<std::endl;
+            }
+            AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst);
+            split_id = count + split_id; // or could have done count%split_id == 0
+            temp_count = false;
+          }
       }
       
       if (CallInst *CI = dyn_cast<CallInst>(Inst)) {
@@ -521,7 +551,7 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
               secure_functions[CalledFunc] = function_unique_id;
               function_unique_id+=1;
               if(CalledFunc->getName() != F.getName()){ // eliminate recursive calls
-                count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+                count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count, temp_count);
               }
             }
           }
@@ -537,7 +567,7 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
               secure_functions[CalledFunc] = function_unique_id;
               function_unique_id+=1;
               if(CalledFunc->getName() != F.getName()){ // eliminate recursive calls - not needed now
-                count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count);
+                count = returnInstCount(CalledFunc, MA, parallel_region_id, sub_id, loop_id, split_id, count, temp_count);
               }
             }
           }
@@ -650,31 +680,8 @@ std::vector<Loop*> retrieveLoopsFunc(Function &F, ModuleAnalysisManager &MA){
     }
   }
 
-  //testing
-  //Loop *ltemp = *loop_iter;
-
-  // for(int i = 0 ; i < allLoops_2.size(); i++) {
-  //   Loop* ltemp = allLoops_2[i];
-  //   //simplifyLoop(ltemp, DT, LI, SE, AC, MSSAU.get(), /*PreserveLCSSA*/ false);
-  //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
-  //   // formLCSSARecursively(*ltemp, *DT, LI, SE);
-  // }
-
   return allLoops_2; // return
 }
-
-// void splittingLoopsPhase2(Function &F, int parallel_region_id){
-//   for(int i = 0 ; i < loop_details_profiler[parallel_region_id].size(); i++) {
-//     std::pair<int,int> test = std::make_pair(parallel_region_id, loop_details_profiler[parallel_region_id][i].loop_id);
-//     Loop* ltemp = secure_loops_2[test];
-//     if(ltemp->isInvalid()){
-//       continue;
-//     }
-
-
-
-//   }  
-// }
 
 void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &MA){
   
@@ -761,12 +768,12 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
           loop_details_pass lt;
           lt.parallel_id = parallel_region_id;
           lt.loop_id = loop_counter_2;
-          lt.total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,-1,MA); // now add
+          lt.total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,-1,MA,false); // now add
           lt.seq_split = -1;
-          lt.split_factor = 2;
+          lt.split_factor = 4; // setting default split factor to 10
           lt.unique_loop_id = loop_unique_id;
-          lt.wcet_ns = -1;
-          lt.total_threads = 1;
+          lt.wcet_ns = 0;
+          lt.total_threads = nthreads;
           lt.fns = temp_unique_fns.size();
           for(int k = 0 ; k < temp_unique_fns.size() ; k++){
             lt.unique_function_ids[k] = temp_unique_fns[k];
@@ -784,7 +791,17 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
     loop_details_profiler[parallel_region_id] = loop_data;
     }
 
-    else {  // this will change on the basis of new split analysis given wcet
+    else {  
+      
+      for(int z = 0 ; z < loop_details_profiler[parallel_region_id].size() ; z++){
+        std::cout<<"sub id id: " << loop_details_profiler[parallel_region_id][z].loop_id <<std::endl;
+        std::cout<<"Parallel id: " << loop_details_profiler[parallel_region_id][z].parallel_id <<std::endl;
+        std::cout<<"split factor: " << loop_details_profiler[parallel_region_id][z].split_factor << std::endl;
+        std::cout<<"total instructions: " <<loop_details_profiler[parallel_region_id][z].total_inst<<std::endl;
+        std::cout<<"seq split: "<<loop_details_profiler[parallel_region_id][z].seq_split<<std::endl;
+      }
+
+      // this will change on the basis of new split analysis given wcet
       if(secure_loops.find(ltemp) != secure_loops.end()){
         // repeated loops are checked here
         // secure_loops_2[loop_unique_id] = ltemp; // still need to add the details to other parallel region
@@ -793,7 +810,7 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
         loop_details_profiler[parallel_region_id][loop_counter_2] = lt;
         loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
         loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2; //
-        split_check = true;
+        split_check = true; 
         loop_counter_2++;
         // check here for the wcet
       }
@@ -803,17 +820,17 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
           continue;
         }
 
-        if(secure_loops_2[loop_unique_id].wcet_ns < secure_wcet_ns){
-          if(secure_loops_2[loop_unique_id].seq_split != -1){
-            secure_loops_2[loop_unique_id].seq_split += 1;
-          }
+        if(secure_loops_2[loop_unique_id].wcet_ns < secure_wcet_ns){ // secure wcet is the threshold and not average
+          // if(secure_loops_2[loop_unique_id].seq_split != -1){
+          //   secure_loops_2[loop_unique_id].seq_split += 1;
+          // }
 
-          else {
-            secure_loops_2[loop_unique_id].split_factor += 1;
-          }
+          // else {
+          //   secure_loops_2[loop_unique_id].split_factor += 1;
+          // }
 
           LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2);
-          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA);
+          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
           secure_loops[ltemp] = loop_unique_id;
           loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
           loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
@@ -823,21 +840,45 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
         }
 
         else {
-          if(secure_loops_2[loop_unique_id].split_factor != 2){
-            secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 and then keep running multiple phases
+          if(secure_loops_2[loop_unique_id].split_factor/2 != 0){
+            secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 (=-1) and then keep running multiple phases
+          }
+
+          if(secure_loops_2[loop_unique_id].split_factor == 0){
+            if(secure_loops_2[loop_unique_id].seq_split == 1){
+              std::cout<<"Threshold value too low for security"<<std::endl;
+              exit(0);
+            }
+
+            else if(secure_loops_2[loop_unique_id].seq_split == -1){
+              // long int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
+              // errs() << "Instruction count is" << secure_loops_2[loop_unique_id].total_inst <<"---------------\n";
+              // errs() << "WCET is "<<secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns<<" \n";
+              // errs() << "evaluated val is" << val << "----------- parallel id values is: "<< parallel_region_id <<"\n";
+              // int split_val = secure_loops_2[loop_unique_id].total_inst/val;
+              // if(secure_loops_2[loop_unique_id].seq_split == split_val){
+              //   split_val = split_val/2; // can be -1 or /2 just a proof of concept
+              // }
+
+              // secure_loops_2[loop_unique_id].seq_split = split_val;
+
+              //Updating the above logic a bit
+              secure_loops_2[loop_unique_id].seq_split = secure_loops_2[loop_unique_id].total_inst/2;
+            }
+
+            else {
+              secure_loops_2[loop_unique_id].seq_split -= 1;
+            }
+
+            secure_loops_2[loop_unique_id].split_factor = 1; // split_factor cannot be 0
+          }
+
+          else {
+            secure_loops_2[loop_unique_id].seq_split = -1; // first work with reducing the split factor then the split of an iteration
           }
 
           LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2);
-          int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
-          errs() << "Instruction count is" << secure_loops_2[loop_unique_id].total_inst <<"---------------\n";
-          errs() << "evaluated val is" << val << "----------- \n";
-          int split_val = secure_loops_2[loop_unique_id].total_inst/val;
-          if(secure_loops_2[loop_unique_id].seq_split == split_val){
-            split_val = split_val/2; // can be -1 or /2 just a proof of concept
-          }
-
-          secure_loops_2[loop_unique_id].seq_split = split_val;
-          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA);
+          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
           secure_loops[ltemp] = loop_unique_id;
           loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
           loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
@@ -860,6 +901,8 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
   Value* parallel_id_temp = dyn_cast<ValueAsMetadata>(parallel_id->getOperand(0))->getValue();
   auto* ci = dyn_cast<ConstantInt>(parallel_id_temp);
   p_id = ci->getZExtValue()-1;
+
+  std::cout<<"----------------- update work id--------------------"<<std::endl;
 
   auto &Options = cl::getRegisteredOptions();
   if (!(Options.count("check_file") && input_file)){
@@ -886,9 +929,10 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           temp_pd.parallel_id = p_id;
           temp_pd.ref = -1000;
           temp_pd.id = 0;
-          temp_pd.wcet_ns = -1;
+          temp_pd.wcet_ns = 0;
           temp_pd.seq_split = -1;
-          temp_pd.total_threads = 1;
+          temp_pd.total_threads = nthreads;
+          temp_pd.total_inst = 0;
           pd_temp.push_back(temp_pd);
 
           for(int i = 0 ; i < n ; i++){
@@ -897,9 +941,10 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
             pd.parallel_id = p_id;
             pd.ref = init->getElementAsInteger(i);
             pd.id = init_sub->getElementAsInteger(i);
-            pd.wcet_ns = -1;
+            pd.wcet_ns = 0;
             pd.seq_split = -1;
-            pd.total_threads = 1;
+            pd.total_threads = nthreads;
+            pd.total_inst = 0;
             pd_temp.push_back(pd);
           }
 
@@ -915,17 +960,41 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
 
     // file was read so lets evaluate seq split factor
     for (int i = 0 ; i < region_details_profiler[p_id].size() ; i++) {
+
+      // std::cout<<"sub id:" << region_details_profiler[p_id][i].id <<"\n";
+      // std::cout<<"Parallel id:" << region_details_profiler[p_id][i].parallel_id <<"\n";
+      // std::cout<<"split factor:" << region_details_profiler[p_id][i].seq_split << "\n";
+      // std::cout<<"total instructions:" <<region_details_profiler[p_id][i].total_inst<<"\n";
+      // std::cout<<"region id is:" <<region_details_profiler[p_id][i].ref<<"\n";
+      // std::cout<<"wcet time value is: " << region_details_profiler[p_id][i].wcet_ns;
+      // std::cout<<std::endl;
+
       if(region_details_profiler[p_id][i].wcet_ns > secure_wcet_ns){
-          int val = secure_wcet_ns/region_details_profiler[p_id][i].wcet_ns;
+
+        if(region_details_profiler[p_id][i].seq_split == 1){
+          std::cout<<"Threshold value too low for security"<<std::endl;
+          exit(0);
+        }
+
+        else if(region_details_profiler[p_id][i].seq_split != -1){
+          region_details_profiler[p_id][i].seq_split -= 1;
+        }
+
+        else {
+          int val = (region_details_profiler[p_id][i].wcet_ns/secure_wcet_ns)+1;
           int split_val = region_details_profiler[p_id][i].total_inst/val;
           if(region_details_profiler[p_id][i].seq_split == split_val){
             split_val = split_val/2; // can be -1 or /2 just a proof of concept
           }
 
-          region_details_profiler[p_id][i].seq_split = split_val;
+          //region_details_profiler[p_id][i].seq_split = split_val;
+          region_details_profiler[p_id][i].seq_split = region_details_profiler[p_id][i].total_inst/2;
+        }
       }
     }
   }
+
+  std::cout<<"------------------------end of region details evaluation for parallel id "<< p_id <<"--------------------------------"<<std::endl;
 
   auto &FM = MA.getResult<FunctionAnalysisManagerModuleProxy>(M).getManager();
   //FM.invalidate(F,PreservedAnalyses::none());
@@ -936,73 +1005,85 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
   for (Function::iterator block_iter = F.begin(), block_iter_end = F.end(); block_iter != block_iter_end; ++block_iter) {
     BasicBlock &B = *block_iter;
 
-    for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
-      Instruction &I = *instr_iter;
-      Loop *temp_loop = LI->getLoopFor(&B);
-      if(temp_loop == nullptr) {
-        count++;
-      }
+    // if(p_id == 5){
+    //   errs()<<"^^^^^^^^^^^^^ instruction count till now is : "<<count<<"\n";
+    // }
 
-      if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
-        Function* fn = call_inst->getCalledFunction();
-        //errs()<<fn->dump()<<"\n";
-        call_inst->print(dumpdata_2,false);
-        //errs()<<"call instruction is "<<dumptest_2<<"\n";
-        if(fn){
-          if(fn->getName() == "__kmpc_for_static_init_4"){
-              llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
-              call_inst->setOperand(9,itr_ci);
-              region_details_profiler[p_id][ctr-1].total_inst = count;
-              errs()<<"total instruction for parallel region "<<p_id<<" and sub region "<<ctr-1<<"\n";
-              errs()<<"set region details profiler with counter in for with instruction count till now is "<<region_details_profiler[p_id][ctr-1].total_inst<<" "<<count<<"\n";
-              errs()<<"for region details profiler is set\n";
-              count = 0;
-              ctr++;
-          }
+    Loop *temp_loop = LI->getLoopFor(&B);
+    if(temp_loop == nullptr && p_id != 5) {
+      //std::cout<<"basic block is part of the loop for parallel id "<<B.getName().str()<<" "<<p_id<<std::endl;
+      //continue; // if instruction belongs to a basic block which is the part of a loop then don't process it
+    
+      for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
+        Instruction &I = *instr_iter;
 
-          else if(fn->getName() == "__kmpc_single"){
-              llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
-              call_inst->setOperand(2,itr_ci);
-              errs()<<"set region details profiler with counter in single\n";
-              region_details_profiler[p_id][ctr-1].total_inst = count;
-              errs()<<"singles region detail profiler is set\n";
-              count = 0;
-              ctr++;
-          }
+        if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
+          Function* fn = call_inst->getCalledFunction();
+          //errs()<<fn->dump()<<"\n";
+          call_inst->print(dumpdata_2,false);
+          //errs()<<"call instruction is "<<dumptest_2<<"\n";
+          if(fn){
+            if(fn->getName() == "__kmpc_for_static_init_4"){
+                llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
+                call_inst->setOperand(9,itr_ci);
+                region_details_profiler[p_id][ctr-1].total_inst = count;
+                // errs()<<"total instruction for parallel region "<<p_id<<" and sub region "<<ctr-1<<"\n";
+                // errs()<<"set region details profiler with counter in for with instruction count till now is "<<region_details_profiler[p_id][ctr-1].total_inst<<" "<<count<<"\n";
+                // errs()<<"for region details profiler is set\n";
+                count = 0; // let's directly operate on total inst 
+                ctr++;
+            }
 
-          else {
-            if (!fn->isDeclaration()) {
-              if(!fn->getName().contains(".omp_outlined.")){
-                if(secure_functions.find(fn) == secure_functions.end()){
-                  secure_functions[fn] = function_unique_id;
-                  function_unique_id+=1;
-                  count += returnInstCount(fn, MA, p_id, ctr-1, -1, region_details_profiler[p_id][ctr-1].seq_split, count);
-                  errs()<<"Instruction count recorded till now is "<<count<<"\n";
-                  // region_details_profiler[p_id][ctr].total_inst = count;
-                  // count = 0;
+            else if(fn->getName() == "__kmpc_single"){
+                llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
+                call_inst->setOperand(2,itr_ci);
+                errs()<<"set region details profiler with counter in single\n";
+                region_details_profiler[p_id][ctr-1].total_inst = count;
+                errs()<<"singles region detail profiler is set\n";
+                count = 0;
+                ctr++;
+            }
+
+            else {
+              if (!fn->isDeclaration()) {
+                if(!fn->getName().contains(".omp_outlined.")){
+                  if(secure_functions.find(fn) == secure_functions.end()){
+                    secure_functions[fn] = function_unique_id;
+                    function_unique_id+=1;
+                    count = returnInstCount(fn, MA, p_id, ctr-1, -1, region_details_profiler[p_id][ctr-1].seq_split, count, false);
+                    //errs()<<"Instruction count recorded till now is "<<count<<"\n";
+                    // region_details_profiler[p_id][ctr].total_inst = count;
+                    // count = 0;
+                  }
                 }
-              }
-            }  
-          }
-        }
-      }
-
-      else if (InvokeInst *CI= dyn_cast<InvokeInst>(&I)){
-        Function *fn = CI->getCalledFunction();
-        if (fn && !fn->isDeclaration()) {
-          if(!fn->getName().contains(".omp_outlined.")){
-            if(secure_functions.find(fn) == secure_functions.end()){
-              secure_functions[fn] = function_unique_id;
-              function_unique_id+=1;
-              count += returnInstCount(fn, MA, p_id, ctr-1, -1, region_details_profiler[p_id][ctr-1].seq_split, count);
+              }  
             }
           }
+        }
+
+        else if (InvokeInst *CI= dyn_cast<InvokeInst>(&I)){
+          Function *fn = CI->getCalledFunction();
+          if (fn && !fn->isDeclaration()) {
+            if(!fn->getName().contains(".omp_outlined.")){
+              if(secure_functions.find(fn) == secure_functions.end()){
+                secure_functions[fn] = function_unique_id;
+                function_unique_id+=1;
+                count = returnInstCount(fn, MA, p_id, ctr-1, -1, region_details_profiler[p_id][ctr-1].seq_split, count, false);
+              }
+            }
+          }
+        }
+
+        else {
+          count++; // if neither a call on invoke instruction instruction is to be added
         }
       }
     }
   }
 
-  region_details_profiler[p_id][ctr-1].total_inst = count; // this is needed as the last part total instruction (last sub id) is not being set (everything before kmpc static is considered as id 0)
+  if(count != 0) {
+    region_details_profiler[p_id][ctr-1].total_inst = count; // this is needed as the last part total instruction (last sub id) is not being set (everything before kmpc static is considered as id 0)
+  }
 
   /*
     Sequential codes protected first as Functions are only protected once and if a loop calls it again it will not be protected
@@ -1011,41 +1092,69 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
     also sequential code will have highest wcet so better to handle sequential code handling it
     even if loop executing is sequential it executes with same WCET
     */
-  errs()<<"-----------------------------------------------------------------------------------------------\n\n\n"; 
-  errs()<<"-----------------------------------------------------------------------------------------------\n\n\n";
-  splittingLoops(F,p_id,MA);
-  errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n"; 
-  errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n";
+  
+  std::cout<<"-----------------------------------------------------------------------------------------------"<<std::endl; 
+  splittingLoops(F,p_id,MA); // some issue in the loop - debug this 
+  std::cout<<"-----------------------------------------------------------------------------------------------"<<std::endl;
+  // errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n"; 
+  // errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n";
 
-  for(int k = 0 ; k < region_details_profiler.size() ; k++) {
-    for(int h = 0 ; h < region_details_profiler[k].size(); h++) {
-      std::cout<<"sub id:" << region_details_profiler[k][h].id <<"\n";
-      std::cout<<"Parallel id:" << region_details_profiler[k][h].parallel_id <<"\n";
-      std::cout<<"split factor:" << region_details_profiler[k][h].seq_split << "\n";
-      std::cout<<"total instructions:" <<region_details_profiler[k][h].total_inst<<"\n";
-      std::cout<<"region id is:" <<region_details_profiler[k][h].ref<<"\n";
-    }
-    std::cout<<std::endl;
-    std::cout<<std::endl;
-  }
+  // for(int k = 0 ; k < region_details_profiler.size() ; k++) {
+  //   for(int h = 0 ; h < region_details_profiler[k].size(); h++) {
+  //     std::cout<<"sub id:" << region_details_profiler[k][h].id <<"\n";
+  //     std::cout<<"Parallel id:" << region_details_profiler[k][h].parallel_id <<"\n";
+  //     std::cout<<"split factor:" << region_details_profiler[k][h].seq_split << "\n";
+  //     std::cout<<"total instructions:" <<region_details_profiler[k][h].total_inst<<"\n";
+  //     std::cout<<"region id is:" <<region_details_profiler[k][h].ref<<"\n";
+  //   }
+  //   std::cout<<std::endl;
+  //   std::cout<<std::endl;
+  // }
 
-   errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n";
+  //  errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n";
 
-  for (const auto& item : region_details_profiler) {
-    for(const para_details& item_2: item) {
-      std::cout<<"sub id:" << item_2.id <<"\n";
-      std::cout<<"Parallel id:" << item_2.parallel_id <<"\n";
-      std::cout<<"split factor:" << item_2.seq_split << "\n";
-      std::cout<<"total instructions:" <<item_2.total_inst<<"\n";
-      std::cout<<"region id is:" <<item_2.ref<<"\n";
-    }
+  // std::cout<<std::endl;
+  // std::cout<<std::endl;
 
-    std::cout<<std::endl;
-    std::cout<<std::endl;
-  }
+  // std::cout<<"------------------- loop details ------------------------------"<<std::endl;
+  // std::cout<<std::endl;
 
-  errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n"; 
-  errs()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n\n";
+  // for (const auto& item : loop_details_profiler) {
+  //   for(const loop_details_pass& item_2: item) {
+  //     std::cout<<"sub id id:" << item_2.loop_id <<std::endl;
+  //     std::cout<<"Parallel id:" << item_2.parallel_id <<std::endl;
+  //     std::cout<<"split factor:" << item_2.seq_split << std::endl;
+  //     std::cout<<"total instructions:" <<item_2.total_inst<<std::endl;
+  //   }
+
+  //   std::cout<<std::endl;
+  // }
+
+  // std::cout<<std::endl;
+  // std::cout<<std::endl;
+
+
+  // std::cout<<"------------------- region details ----------------------------"<<std::endl;
+  // std::cout<<std::endl;
+
+  // for (const auto& item : region_details_profiler) {
+  //   for(const para_details& item_2: item) {
+  //     std::cout<<"sub id id:" << item_2.id <<std::endl;
+  //     std::cout<<"Parallel id:" << item_2.parallel_id <<std::endl;
+  //     std::cout<<"split factor:" << item_2.seq_split << std::endl;
+  //     std::cout<<"total instructions:" <<item_2.total_inst<<std::endl;
+  //     std::cout<<"region id is:" <<item_2.ref<<std::endl;
+  //   }
+
+  //   std::cout<<std::endl;
+  // }
+
+  std::cout<<std::endl;
+  std::cout<<std::endl;
+
+  std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+  std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+  std::cout<<std::endl;
   /*end of loop split code*/
 }
 
@@ -1054,6 +1163,9 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     LLVMContext &CTX = M.getContext();
 
     int p_counter = 0;
+
+    std::cout<<"+++++++++++++++++++++++++++++++++++++++ secure time is: ++++++++"<<secure_wcet<<std::endl;
+    secure_wcet_ns = secure_wcet;
 
     auto &Options = cl::getRegisteredOptions();
     errs()<<"Options value is: "<<Options.count("set_ttex")<<" \n";
@@ -1089,8 +1201,11 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
               errs()<<"Parallel id:" << item_2.parallel_id <<"\n";
               errs()<<"split factor:" << item_2.split_factor << "\n";
               errs()<<"seq id:" << item_2.seq_split <<"\n";
+              errs()<<"wcet is:" << item_2.wcet_ns << "\n";
               errs()<<"total instructions:" <<item_2.total_inst<<"\n";
             }
+
+            std::cout<<std::endl;
           }
 
           errs()<<"Now reading region details...\n";
@@ -1250,29 +1365,29 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     // }
 
 
-    std::cout<<"============================================= printing file details ================================="<<std::endl;
+    // std::cout<<"============================================= printing file details ================================="<<std::endl;
 
-    for (const auto& item : region_details_profiler) {
-      for(const para_details& item_2: item) {
-        std::cout<<"sub id:" << item_2.id <<"\n";
-        std::cout<<"Parallel id:" << item_2.parallel_id <<"\n";
-        std::cout<<"split factor:" << item_2.seq_split << "\n";
-        std::cout<<"total instructions:" <<item_2.total_inst<<"\n";
-        std::cout<<"region id is:" <<item_2.ref<<"\n";
-      }
-    }
+    // for (const auto& item : region_details_profiler) {
+    //   for(const para_details& item_2: item) {
+    //     std::cout<<"sub id:" << item_2.id <<"\n";
+    //     std::cout<<"Parallel id:" << item_2.parallel_id <<"\n";
+    //     std::cout<<"split factor:" << item_2.seq_split << "\n";
+    //     std::cout<<"total instructions:" <<item_2.total_inst<<"\n";
+    //     std::cout<<"region id is:" <<item_2.ref<<"\n";
+    //   }
+    // }
 
-    std::cout<< "=========================details printed====================" <<std::endl;
+    // std::cout<< "=========================details printed====================" <<std::endl;
 
-    for(int k = 0 ; k < region_details_profiler.size() ; k++) {
-    for(int h = 0 ; h < region_details_profiler[k].size(); h++) {
-      std::cout<<"sub id:" << region_details_profiler[k][h].id <<"\n";
-      std::cout<<"Parallel id:" << region_details_profiler[k][h].parallel_id <<"\n";
-      std::cout<<"split factor:" << region_details_profiler[k][h].seq_split << "\n";
-      std::cout<<"total instructions:" <<region_details_profiler[k][h].total_inst<<"\n";
-      std::cout<<"region id is:" <<region_details_profiler[k][h].ref<<"\n";
-    }  
-  }
+    // for(int k = 0 ; k < region_details_profiler.size() ; k++) {
+    //   for(int h = 0 ; h < region_details_profiler[k].size(); h++) {
+    //     std::cout<<"sub id:" << region_details_profiler[k][h].id <<"\n";
+    //     std::cout<<"Parallel id:" << region_details_profiler[k][h].parallel_id <<"\n";
+    //     std::cout<<"split factor:" << region_details_profiler[k][h].seq_split << "\n";
+    //     std::cout<<"total instructions:" <<region_details_profiler[k][h].total_inst<<"\n";
+    //     std::cout<<"region id is:" <<region_details_profiler[k][h].ref<<"\n";
+    //   }  
+    // }
 
     std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log.txt",std::ios::binary);
 
