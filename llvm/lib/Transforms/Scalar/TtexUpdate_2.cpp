@@ -92,13 +92,18 @@ static cl::opt<int> nthreads("nthreads",
   cl::desc("number of threads for security"),
   cl::init(1));
 
-static cl::opt<int> secure_wcet("threshold",
+static cl::opt<unsigned long int> secure_wcet("threshold",
   cl::desc("threshold for security"),
-  cl::init(5000));  
+  cl::init(500000)); // 500us = 500000ns
+
+static cl::opt<int> splitval("splitval",
+  cl::desc("loopsplit val"),
+  cl::init(10000000)); // 500us = 500000ns 
 
 bool check = false;
 
 unsigned long int  secure_wcet_ns = secure_wcet; // earlier value was quite high (9000000)
+//double secure_wcet_ns = secure_wcet;
 int loop_unique_id = 0;
 int function_unique_id = 0;
 
@@ -110,6 +115,7 @@ typedef struct loop_details_pass {
   int seq_split;
   long int total_inst;
   unsigned long int wcet_ns;
+  //double wcet_us;
   int total_threads;
   int fns;
   int unique_function_ids[500];
@@ -122,6 +128,7 @@ typedef struct para_details {
   int seq_split;
   long int total_inst;
   unsigned long int wcet_ns;
+  //double wcet_us;
   int total_threads;
   int fns;
   int unique_function_ids[500];
@@ -435,7 +442,8 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
 
           else {
             AddFunction(M,parallel_region_id,-1,loop_id,nullptr,&I);
-            temp_count = false; 
+            temp_count = false;
+            split_id = count+split_id;
           }
         }
 
@@ -522,7 +530,8 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
 
         else {
           AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst);
-          temp_count = false; 
+          temp_count = false;
+          split_id = count + split_id;
         }
       }
 
@@ -763,16 +772,17 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
       }
 
       else {
-        split_check = LoopSplit_2(ltemp, 2, parallel_region_id, -1, loop_counter_2);
+        split_check = LoopSplit_2(ltemp, splitval, parallel_region_id, -1, loop_counter_2);
         if(split_check){
           loop_details_pass lt;
           lt.parallel_id = parallel_region_id;
           lt.loop_id = loop_counter_2;
           lt.total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,-1,MA,false); // now add
           lt.seq_split = -1;
-          lt.split_factor = 4; // setting default split factor to 10
+          lt.split_factor = splitval; // setting default split factor to 10
           lt.unique_loop_id = loop_unique_id;
           lt.wcet_ns = 0;
+          //lt.wcet_us = 0;
           lt.total_threads = nthreads;
           lt.fns = temp_unique_fns.size();
           for(int k = 0 ; k < temp_unique_fns.size() ; k++){
@@ -821,6 +831,7 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
         }
 
         if(secure_loops_2[loop_unique_id].wcet_ns < secure_wcet_ns){ // secure wcet is the threshold and not average
+        //if(secure_loops_2[loop_unique_id].wcet_us < secure_wcet_ns){  
           // if(secure_loops_2[loop_unique_id].seq_split != -1){
           //   secure_loops_2[loop_unique_id].seq_split += 1;
           // }
@@ -840,26 +851,23 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
         }
 
         else {
-          if(secure_loops_2[loop_unique_id].split_factor/2 != 0){
-            secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 (=-1) and then keep running multiple phases
-          }
+          //secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 (=-1) and then keep running multiple phases
 
-          if(secure_loops_2[loop_unique_id].split_factor == 0){
+          if(secure_loops_2[loop_unique_id].split_factor / 2 == 0){
             if(secure_loops_2[loop_unique_id].seq_split == 1){
               std::cout<<"Threshold value too low for security"<<std::endl;
-              exit(0);
+              //exit(0);
             }
 
             else if(secure_loops_2[loop_unique_id].seq_split == -1){
-              // long int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
+              long int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
               // errs() << "Instruction count is" << secure_loops_2[loop_unique_id].total_inst <<"---------------\n";
               // errs() << "WCET is "<<secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns<<" \n";
               // errs() << "evaluated val is" << val << "----------- parallel id values is: "<< parallel_region_id <<"\n";
-              // int split_val = secure_loops_2[loop_unique_id].total_inst/val;
-              // if(secure_loops_2[loop_unique_id].seq_split == split_val){
-              //   split_val = split_val/2; // can be -1 or /2 just a proof of concept
-              // }
-
+              int split_val = secure_loops_2[loop_unique_id].total_inst/val;
+              if(secure_loops_2[loop_unique_id].seq_split == split_val){
+                split_val = split_val/2; // can be -1 or /2 just a proof of concept
+              }
               // secure_loops_2[loop_unique_id].seq_split = split_val;
 
               //Updating the above logic a bit
@@ -867,14 +875,20 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
             }
 
             else {
-              secure_loops_2[loop_unique_id].seq_split -= 1;
+              secure_loops_2[loop_unique_id].seq_split /= 2;
+              if(secure_loops_2[loop_unique_id].seq_split == 0){
+                secure_loops_2[loop_unique_id].seq_split = 1;
+              }
             }
 
             secure_loops_2[loop_unique_id].split_factor = 1; // split_factor cannot be 0
           }
 
           else {
-            secure_loops_2[loop_unique_id].seq_split = -1; // first work with reducing the split factor then the split of an iteration
+            secure_loops_2[loop_unique_id].split_factor /= 2; // first work with reducing the split factor then the split of an iteration
+            // if(secure_loops_2[loop_unique_id].seq_split == 0){
+            //   secure_loops_2[loop_unique_id].seq_split = 1;
+            // }
           }
 
           LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2);
@@ -930,6 +944,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           temp_pd.ref = -1000;
           temp_pd.id = 0;
           temp_pd.wcet_ns = 0;
+          //temp_pd.wcet_us = 0;
           temp_pd.seq_split = -1;
           temp_pd.total_threads = nthreads;
           temp_pd.total_inst = 0;
@@ -942,6 +957,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
             pd.ref = init->getElementAsInteger(i);
             pd.id = init_sub->getElementAsInteger(i);
             pd.wcet_ns = 0;
+            //pd.wcet_us = 0;
             pd.seq_split = -1;
             pd.total_threads = nthreads;
             pd.total_inst = 0;
@@ -970,14 +986,18 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
       // std::cout<<std::endl;
 
       if(region_details_profiler[p_id][i].wcet_ns > secure_wcet_ns){
+      //if(region_details_profiler[p_id][i].wcet_us > secure_wcet_ns){
 
         if(region_details_profiler[p_id][i].seq_split == 1){
           std::cout<<"Threshold value too low for security"<<std::endl;
-          exit(0);
+          //exit(0);
         }
 
         else if(region_details_profiler[p_id][i].seq_split != -1){
-          region_details_profiler[p_id][i].seq_split -= 1;
+          region_details_profiler[p_id][i].seq_split /= 2;
+          if(region_details_profiler[p_id][i].seq_split == 0){
+            region_details_profiler[p_id][i].seq_split == 1;
+          }
         }
 
         else {
@@ -989,6 +1009,9 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
 
           //region_details_profiler[p_id][i].seq_split = split_val;
           region_details_profiler[p_id][i].seq_split = region_details_profiler[p_id][i].total_inst/2;
+          if(region_details_profiler[p_id][i].seq_split == 0){
+            region_details_profiler[p_id][i].seq_split == 1;
+          }
         }
       }
     }
