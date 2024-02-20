@@ -710,7 +710,8 @@ typedef void (*ompt_callback_thread_begin_t) (
 typedef void (*ompt_callback_ompt_test_t) (
   int parallel_region_id,
   int sub_id,
-  int loop_id
+  int loop_id,
+  int val
 );
 
 typedef struct ompt_record_thread_begin_t {
