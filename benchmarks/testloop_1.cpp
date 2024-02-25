@@ -6,20 +6,35 @@
 #include "ttex_pass_update.h"
 
 int main() {
+    printf("-------------------------- main function ---------------------------\n");
     int sum = 0;
     int j = 20;
     int upper_bound = 10;
     int cap = 20;
 
-    #pragma omp parallel num_threads(10)
+    #pragma omp parallel num_threads(2)
     {
-
-         std::cout<<"----------------------------- test called-----------------"<<std::endl;
-
         #pragma omp for
         { 
-            for(int i = 0 ; i < 5 ; i++) {
-                sleep(10);
+            for(int i = 0 ; i < 4 ; i++) {
+                sleep(5);
+                for(int j = 0 ; j < cap ; j++) {
+                    if(j == upper_bound){
+                        break;
+                    }
+                }
+            }
+        }   
+    }
+
+    printf("------------------------------------- another parallel region ----------------------\n");
+
+    #pragma omp parallel num_threads(2)
+    {
+        #pragma omp for
+        { 
+            for(int i = 0 ; i < 4 ; i++) {
+                sleep(5);
                 for(int j = 0 ; j < cap ; j++) {
                     if(j == upper_bound){
                         break;

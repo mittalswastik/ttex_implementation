@@ -123,23 +123,7 @@ unordered_map<int, vector<timeout_node> > log_data; // assuming max 100 threads
 
 bool logdata = true; // first execution requires logging and subsequent execution do not -- this will basically be false for measuring execution time
 
-void resetTimer(timespec t, int fd){ 
-  //timer_settime(temp->thread_timer_id,0,&temp->thread_timer, NULL);
-  int32_t id = syscall(__NR_gettid);
-  printf("scheduling cpu is %d for id %d\n: ", sched_getcpu(),id);
-  //printf("modification thread id: %d\n", temp_thread_data->id);
-  updated_timer test;
-  test.id = id;
-  test.time_val = t.tv_nsec/100000;
-  ioctl(fd, MOD_TIMER_NEW, &test);
-  printf("modification call made\n");
-}
 
-receive_timer receiveTime(int fd){
-  receive_timer rtime;
-  ioctl(fd, GET_TIMER, &rtime);
-  return rtime;
-}
 
 extern "C" int my_core_id() // to assign unique id's to thread (openmp might assign an id of finished thread to another)
 {
@@ -237,42 +221,6 @@ timespec timespec_sub(timespec ts1, timespec ts2)
   return timespec_normalise(ts1);
 }
 
-extern "C" void __attribute__((noinline))
-ompt_test(int parallel_region_id, int sub_id, int loop_id, int split_id)
-{
-  if(parallel_region_id == -1 && sub_id == -1 && loop_id == -1 && split_id == -1){
-    return;
-  }
-
-  printf("Testing OMPT Test\n");
-
-  printf("OMPT TEST CALLED %d %d %d\n",parallel_region_id,sub_id,loop_id);
-
-  ompt_data_t *current_thread = ompt_get_thread_data();
-  thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
-
-  if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-    timespec temp;
-    //clock_gettime(CLOCK_MONOTONIC, &temp);
-    receive_timer t = receiveTime(temp_thread_data->fd);
-    temp.tv_sec = 0;
-    temp.tv_nsec = t.time_val;
-    timespec temp_2  = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;
-    temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
-  }
-  // do not need to check previous timer set or not in this case
-  temp_thread_data->thread_current_timeout.push_back(loop_execution[parallel_region_id][sub_id].expected_execution);
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = temp_thread_data->counter-1;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].loop_id = loop_id;
-  //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-  receive_timer t = receiveTime(temp_thread_data->fd);
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_sec = 0;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_nsec = t.time_val;
-  resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
-  // get parallel id here
-}
-
 ////////////////////////////////////////////////////////////////////////
 
 // static void countCounter (thread_data *ptr)
@@ -291,23 +239,12 @@ on_ompt_callback_thread_begin(
   
   printf("----------------------- thread begin ---------------------\n");
 
-  printf("thread begin data is : %d\n", thread_begin.parallel_region_id);
-
   // thread_data->value = my_next_id();
   thread_info* temp_thread_data = (thread_info*) calloc(1, sizeof(thread_info));
   temp_thread_data->id = my_next_id();
   temp_thread_data->counter = 0;
-  printf("----------------------- thread begin 1_2---------------------\n");
-  temp_thread_data->thread_current_timeout = std::vector<timeout_node>();
-  printf("----------------------- thread begin 2---------------------\n");
-  if(temp_thread_data->thread_current_timeout.size() == 0){
-    printf("----------------------- size empty ---------------------\n");
-  }
-  temp_thread_data->thread_current_timeout.push_back(thread_begin);
-  //createTimer(temp_thread_data);
   
   int core_id;
-  printf("----------------------- thread begin ---------------------\n");
   core_id = my_core_id()%6;
 
   printf("core used is : %d\n",core_id);
@@ -347,38 +284,11 @@ on_ompt_callback_thread_begin(
 
   pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
 
-  //thread_info* temp_thread_data = (thread_info*) malloc(sizeof(thread_info));
-
-  // printf("----------------------- thread begin ---------------------\n");
-  int fd = open("/dev/etx_device", O_RDWR);
-  temp_thread_data->fd = fd;
-  //temp_thread_data->id = syscall(__NR_gettid);
-  if(temp_thread_data->fd < 0) {
-      printf("Cannot open device file...\n");
-      return;
-  }
 
   thread_data->ptr = temp_thread_data;  // storing the thread data such that accessible to all events
 
   int32_t id = syscall(__NR_gettid);
   printf("Thread id and core is %d & %d:\n", id, core_id);
-
-  // thread_data->value = my_next_id();
-  ioctl(temp_thread_data->fd, START_TIMER, &id);
-
-  printf("thread data value: %ld\n",temp_thread_data->id);
-
-  thread_data->ptr = temp_thread_data;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-  receive_timer t = receiveTime(temp_thread_data->fd);
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_sec = 0;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_nsec = t.time_val;
-  resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
-  // if(temp_thread_data->id == 0)
-  //sleep(8);
-
-  // printf("-------------------------- thread begin ends ------------------------\n");
 }
 
 
@@ -392,33 +302,14 @@ on_ompt_callback_parallel_begin(
   const void *codeptr_ra,
   unsigned int id)
 {
+  printf("=================================== parallel begin ==================================\n");
   printf("parallel id sent is: %d\n", id);
   // uint64_t tid = ompt_get_thread_data()->value;
   ompt_data_t *current_thread = ompt_get_thread_data();
   parallel_data->value = id-1;//ompt_get_parallel_info();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
   printf("Parallel region id is parallel region: %d\n", parallel_data->value);
-  //para_id_map[parallel_data->value] = id-1; // id I send from clang starts from 1
-  //printf("thread data value: %d\n", ((thread_info*) current_thread)->current->parallel_region_id);
-
-  // if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-  //   timespec temp;
-  //   //clock_gettime(CLOCK_MONOTONIC, &temp);
-  //   receive_timer t = receiveTime(temp_thread_data->fd);
-  //   temp.tv_sec = 0;
-  //   temp.tv_nsec = t.time_val;
-  //   timespec temp_2  = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;
-  //   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
-  // }
-
-  // temp_thread_data->thread_current_timeout.push_back(parallel_begin);
-  // temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  // //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-  // receive_timer t = receiveTime(temp_thread_data->fd);
-  // temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_sec = 0;
-  // temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_nsec = t.time_val;
-  // resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd); 
-  // printf("-------- end of parallel begin -----------\n");
+  printf("thead id is %d\n", temp_thread_data->id);
 }
 
 extern "C"  void
@@ -434,112 +325,17 @@ on_ompt_callback_work(
 
   ompt_data_t *current_thread = ompt_get_thread_data();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
+
+  if(endpoint == 1){
+    printf("=============================== work begin ================================%d\n", endpoint);
+    printf("call back work begin %d\n", temp_thread_data->id);
+  }
   
-  temp_thread_data->counter = sub_parallel_id;
-
-  printf("Thread id is **************** %d\n", temp_thread_data->id);
-    printf("Sub region is *************** %d\n", sub_parallel_id);
-    printf("Scope is: %d and work type is: %d & thread id is %d\n", endpoint, wstype, temp_thread_data->id);
-
-  std::cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
-
-  // if(sub_parallel_id != 0){ // start of work
-
-  //   //printf("start of work, parallel id, sub_parallel_id%d %d\n", parallel_data->value, sub_parallel_id-1);
-  //   printf("Thread id is **************** %d\n", temp_thread_data->id);
-  //   printf("Sub region is *************** %d\n", sub_parallel_id);
-  //   printf("Scope is: %d\n", endpoint);
-
-  //   if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-  //     timespec temp;
-  //     receive_timer t = receiveTime(temp_thread_data->fd);
-  //     temp.tv_sec = 0;
-  //     temp.tv_nsec = t.time_val;
-  //     timespec temp_2 = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
-  //    // printf("timer is been set for callback work\n");
-  //   }
-
-  //   vector<timeout_node> temp_node;
-
-  //   if(parallel_region[parallel_data->value][sub_parallel_id-1].ref > omp_sections_ref && count != -1){ // -1 count means thread enters but not takes any section will go to work end
-  //     printf("count value is: %d\n", count);
-  //     temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id-1].expected_execution[count-1]);
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id;
-  //     resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
-  //   }
-
-  //   else if (parallel_region[parallel_data->value][sub_parallel_id-1].ref == omp_for_ref){
-  //     printf("value is----------\n");
-  //     temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id-1].expected_execution[0]); // only one vector in other case
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id;
-  //     resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
-  //   }
-
-  //   else if (parallel_region[parallel_data->value][sub_parallel_id-1].ref == omp_single_ref){
-  //     printf("--------------ompt single is detected---------%d %d\n", parallel_data->value, sub_parallel_id-1);
-  //     temp_thread_data->thread_current_timeout.push_back(parallel_region[parallel_data->value][sub_parallel_id-1].expected_execution[0]); // only one vector in other case
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
-  //     resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
-  //   }
-
-  //   else {
-  //     // thread not assigned any work
-  //     temp_thread_data->thread_current_timeout.push_back(work_begin);
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  //     temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id;
-  //     //temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].sub_region_id = sub_parallel_id-1;
-  //     resetTimer(max_timeout, temp_thread_data->fd); // thread will directly enter callback work end or sleep
-  //     /* have to add implcit barrier callback waitime here and in implcit barrier reset to maxtimeout*/
-  //   }
-
-  //   //sleep(5);
-
-  //   printf("checking for error\n");
-
-  //   // for(int l = 0 ; l < temp_node.size() ; l++){
-  //   //     temp_thread_data->thread_current_timeout.push_back(temp_node[l]);
-  //   // }
-
-  //  // maxvuln will pick the last id -- for nested parallelism
-  // }
-
-  // else {
-  //   printf("--------------callback end---------%d %d\n", parallel_data->value, sub_parallel_id);
-  //   // work end - set the et of the current execution
-  //   //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-
-  //   // if(temp_thread_data->id == 4){
-  //   //   sleep(3);
-  //   // }
-  //   printf("Thread id is **************** %d\n", temp_thread_data->id);
-
-  //   if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-  //     timespec temp;
-  //     receive_timer t = receiveTime(temp_thread_data->fd);
-  //     temp.tv_sec = 0;
-  //     temp.tv_nsec = t.time_val;
-  //     timespec temp_2  = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
-  //     printf("timer is been set for callback work\n");
-  //   }
-    
-  //   temp_thread_data->thread_current_timeout.push_back(work_end);
-  //   temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].parallel_region_id = parallel_data->value;
-  // }
-
-  // temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  // //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-  // receive_timer t = receiveTime(temp_thread_data->fd);
-  // temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_sec = 0;
-  // temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_nsec = t.time_val;
-  // resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
+  else {
+    printf("=============================== work end ================================%d\n", endpoint);
+    printf("call back work end %d\n", temp_thread_data->id);
+  }
+  
 }
 
 extern "C" void
@@ -550,24 +346,33 @@ on_ompt_callback_sync_region(
   ompt_data_t *task_data,
   const void *codeptr_ra)
 {
+  printf("==============================sync region =============================\n");
+  ompt_data_t *current_thread = ompt_get_thread_data();
+  thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
+  printf("sync region is: %d\n", temp_thread_data->id); 
+}
+
+extern "C" void
+on_ompt_callback_implicit_task(
+  ompt_scope_endpoint_t endpoint,
+  ompt_data_t *parallel_data,
+  ompt_data_t *task_data,
+  unsigned int actual_parallelism,
+  unsigned int index,
+  int flags
+){
   ompt_data_t *current_thread = ompt_get_thread_data();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
 
-  // Can use kind to identify the type of wait .... but do not need it
-
-  if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-    temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = false;
-    timespec temp;
-    receive_timer t = receiveTime(temp_thread_data->fd);
-    temp.tv_sec = 0;
-    temp.tv_nsec = t.time_val;
-    timespec temp_2  = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;
-    temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
+  if(endpoint == 1){
+    printf("=============================== task begin ================================%d\n", endpoint);
+    printf("call back task begin %d\n", temp_thread_data->id);
   }
-
-  resetTimer(sync_region.wcet,temp_thread_data->fd);
-  printf("Sync region called --- Thread id is **************** %d\n", temp_thread_data->id);
-
+  
+  else {
+    printf("=============================== task end ================================%d\n", endpoint);
+    printf("call back task end %d\n", temp_thread_data->id);
+  }
 }
 
 
@@ -578,57 +383,19 @@ on_ompt_callback_parallel_end(
   int flags,
   const void *codeptr_ra)
 {
+  printf("============================ parallel end =============================\n");
   ompt_data_t *current_thread = ompt_get_thread_data();
   thread_info* temp_thread_data = (thread_info*) current_thread->ptr;
-  
-  if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-    timespec temp;
-    receive_timer t = receiveTime(temp_thread_data->fd);
-    temp.tv_sec = 0;
-    temp.tv_nsec = t.time_val;
-    timespec temp_2  = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;
-    temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
-  }
-
-  temp_thread_data->thread_current_timeout.push_back(parallel_end);
-  // clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-  //pthread_mutex_unlock(&lock_t);
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag = true;
-  //clock_gettime(CLOCK_MONOTONIC, &temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et);
-  receive_timer t = receiveTime(temp_thread_data->fd);
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_sec = 0;
-  temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et.tv_nsec = t.time_val;
-  resetTimer(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].wcet,temp_thread_data->fd);
-  // if(temp_current_thread->id == 0)
-   //sleep(10);
+  printf("Parallel end call back thread id is: %d\n", temp_thread_data->id); 
 }
 
 extern "C"  void
 on_ompt_callback_thread_end(
   ompt_data_t *thread_data)
 {
+  printf("=============================== thread end ==============================\n");
   thread_info* temp_thread_data = (thread_info*) thread_data->ptr;
-  // if(temp_current_thread->id == 2)
-  //  sleep(5);
-
-  if(temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].timer_set_flag){
-    timespec temp;
-    receive_timer t = receiveTime(temp_thread_data->fd);
-    temp.tv_sec = 0;
-    temp.tv_nsec = t.time_val;
-    timespec temp_2  = temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et;
-    temp_thread_data->thread_current_timeout[temp_thread_data->thread_current_timeout.size()-1].et = getRegionElapsedTime(temp_2,temp);
-  }
-
-  if(logdata){
-    printf("thread id: %d\n", temp_thread_data->id); // removing this line gives seg fault ... why? was that the main problem thread_end in async callback
-    log_data[temp_thread_data->id] = temp_thread_data->thread_current_timeout;
-  }
-
-   printf("+++++++++++++++++++++++log data size %d\n", log_data[temp_thread_data->id].size());
-
-  // thread_info* temp = thread_timeout_map[thread_data->value];
-  // thread_timeout_map.erase(thread_data->value);
+  printf("Thread end callback thread id: %d\n", temp_thread_data->id); 
 }
 
 #define register_callback_t(name, type)                       \
@@ -641,139 +408,12 @@ do {                                                           \
 
 #define register_callback(name) register_callback_t(name, name##_t)
 
-extern "C" void initializeTimeoutData(){
-
-  timespec exec_time;
-  exec_time.tv_sec = 2;
-  exec_time.tv_nsec = 0; // 1 sec wcet to everything for now
-
-  timespec testing_time;
-  testing_time.tv_sec = 0;
-  testing_time.tv_nsec = 1000; // 1 sec wcet to everything for now
-
-  max_timeout.tv_sec = 20;
-  max_timeout.tv_nsec = 1000*1000*1000;
-
-  parallel_begin.wcet = exec_time;
-  thread_begin.wcet = exec_time;
-  parallel_end.wcet = exec_time;
-  work_begin.wcet = exec_time;
-  work_end.wcet = exec_time;
-  sync_region.wcet = max_timeout;
-
-  parallel_begin.parallel_region_id = parallel_begin_id;
-  thread_begin.parallel_region_id = -100;
-  parallel_end.parallel_region_id = parallel_end_id;
-  work_begin.parallel_region_id = -100;
-  work_end.parallel_region_id = -100;
-  sync_region.parallel_region_id = -100;
-
-  parallel_begin.sub_region_id = -100;
-  thread_begin.sub_region_id = thread_begin_id;
-  parallel_end.sub_region_id = -100;
-  work_begin.sub_region_id = work_begin_id;
-  work_end.sub_region_id = work_end_id;
-  sync_region.sub_region_id = -10;
-
-  parallel_begin.sections_id = -10;
-  thread_begin.sections_id = -10;
-  parallel_end.sections_id = -10;
-  work_begin.sections_id = -10;
-  work_end.sections_id = -10;
-
-  parallel_begin.loop_id = -10;
-  thread_begin.loop_id = -10;
-  parallel_end.loop_id = -10;
-  work_begin.loop_id = -10;
-  work_end.loop_id = -10;
-
-  parallel_begin.timer_set_flag = false;
-  thread_begin.timer_set_flag = false;
-  parallel_end.timer_set_flag = false;
-  work_begin.timer_set_flag = false;
-  work_end.timer_set_flag = false;
-  sync_region.timer_set_flag = false;
-
-  printf("Printing details %d\n", parallel_size);
-
-  for(int i = 0 ; i < parallel_size; i++){
-
-    printf("Parallel region 1 %d\n", sizeof(parallel_arr_size)/sizeof(int));
-  
-
-    for (int j = 0 ; j < loop_arr_size[i] ; j++) {
-      timeout_node temp;
-      temp.wcet = exec_time;
-      temp.sub_region_id = -10; // this will be updated by previous timeout sub_region_id , counter for now
-      temp.parallel_region_id = i;
-      temp.loop_id = j;
-      temp.sections_id = -10;
-      temp.timer_set_flag = false;
-      loop_execution[i][j].expected_execution = temp;
-    }
-
-    /* 
-    added callback is an extensible idea ... if openmp supports different priority for sub regions this can be extended to have 
-    different callback time for different subregions like work_callback
-
-    Also thats the reason why we stick to openmp sub region specific timed analysis than basic block
-
-    We support OpenMP extension of have real-time task in implicit task models
-
-    Talk about all this in paper
-    */
-
-    for(int j = 0 ; j < parallel_arr_size[i] ; j++){
-
-      printf("sub parallel region id: %d\n", parallel_region[i][j].ref);
-      timeout_node temp;
-     
-      if(parallel_region[i][j].ref > omp_sections_ref){ //sections
-
-        for(int k = 0 ; k < parallel_region[i][j].ref ; k++){
-          // here will be another loop here for max vul ... then temp_v will have more noes per section
-          temp.wcet = exec_time;
-          temp.sub_region_id = j;
-          temp.parallel_region_id = i;
-          temp.sections_id = k;
-          temp.loop_id = -10;
-          temp.timer_set_flag = false;
-          parallel_region[i][j].expected_execution.push_back(temp); // that loops last line
-        }
-        // printf("checking parallel region impl ............... %d\n", parallel_region[i][j].expected_execution[1]->sections_id);
-      }
-      
-      else if(parallel_region[i][j].ref == omp_single_ref) { // single
-          
-          temp.wcet = exec_time;
-          temp.sub_region_id = j;
-          temp.parallel_region_id = i;
-          temp.sections_id = -10;
-          temp.loop_id = -10;
-          temp.timer_set_flag = false;
-          parallel_region[i][j].expected_execution.push_back(temp);
-      }
-
-      else if(parallel_region[i][j].ref == omp_for_ref) { // omp for // *loop_split factor in the other case
-        
-          temp.wcet = exec_time;
-          temp.sub_region_id = j;
-          temp.parallel_region_id = i;
-          temp.sections_id = -10;
-          temp.loop_id = -10;
-          temp.timer_set_flag = false;
-          parallel_region[i][j].expected_execution.push_back(temp);
-      }
-    }
-  }
-}
 
 extern "C" int ompt_initialize(
   ompt_function_lookup_t lookup,
   int initial_device_num,
   ompt_data_t *tool_data)
 {
-  initializeTimeoutData();
 
   // printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ %d\n", parallel_region[2][0].parallel_id);
 
@@ -783,19 +423,12 @@ extern "C" int ompt_initialize(
   ompt_enumerate_states = (ompt_enumerate_states_t) lookup("ompt_enumerate_states");
 
   register_callback(ompt_callback_parallel_begin);
-  //register_callback(ompt_callback_parallel_end);
+  register_callback(ompt_callback_parallel_end);
   register_callback(ompt_callback_thread_begin);
-  //register_callback(ompt_callback_thread_end);
+  register_callback(ompt_callback_thread_end);
   register_callback(ompt_callback_work);
-  //register_callback(ompt_callback_sync_region);
-  //register_callback(ompt_callback_implicit_barrier);
-
-  //bool flag = true;
-
-  ompt_test(-1,-1,-1,-1);
-
-  // pthread_mutex_init(&lock_t,NULL);
-  clock_gettime(CLOCK_MONOTONIC, &start_time);
+  register_callback(ompt_callback_sync_region);
+  register_callback(ompt_callback_implicit_task);
 
   printf("Checking initial\n");
   return 1; //success
@@ -803,24 +436,7 @@ extern "C" int ompt_initialize(
 
 extern "C" void ompt_finalize(ompt_data_t* data)
 {
-  clock_gettime(CLOCK_MONOTONIC, &end_time);
-  printf("Logging\n\n\n\n\n\n\n");
-  printf("%d\n", log_data.size());
-  for (const auto & [ key, value ] : log_data) {
-    printf("------------------------------------------------------------\n");
-    printf("Thread id %d\n\n", key);
-    for(int j = 0 ; j < value.size() ; j++){
-      printf("Parallel region: %d\n", value[j].parallel_region_id);
-      printf("Sub region: %d\n", value[j].sub_region_id);
-      printf("sections region: %d\n", value[j].sections_id);
-      printf("Loop Id: %d\n", value[j].loop_id);
-      //timespec temp_time = getRegionElapsedTime(start_time,value[j].et);
-      printf("%d seconds and %ld nanoseconds have elapsed!", value[j].et.tv_sec, value[j].et.tv_nsec);
-      printf("\n");
-    }
-    printf("\n\n\n");
-  }
-  printf("Checking final\n");
+  printf("Finalizing code\n");
 }
 
 extern "C" ompt_start_tool_result_t* ompt_start_tool(
