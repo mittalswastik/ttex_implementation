@@ -295,10 +295,29 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_
   //attr_set.addAttribute(CTX, AttributeSet::FunctionIndex, Attribute::NoInline);
   //fn_test_2->addAttributes(0, AttributeSet::get(c, AttributeSet::FunctionIndex, attr));
   //security_2.CreateBr(Header);
-  Value* ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
-  Value* temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
-  compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
-  Value* compare = security.CreateICmpEQ(temp,compare_to_zero);
+  Value* ctr_val;
+  Value* temp;
+  Value* compare;
+
+  auto &Options = cl::getRegisteredOptions();
+  if (!(Options.count("check_file") && input_file)){
+    ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
+    temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
+    compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
+    compare = security.CreateICmpEQ(temp,compare_to_zero);
+  }
+
+  else{ // once wcet of loop is evaluated we can revert back to not injecting loop entry on first call
+    ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
+    temp = security.CreateSRem(ctr_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
+    compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
+    compare = security.CreateICmpEQ(temp,compare_to_zero);
+  }
+
+  // ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
+  // temp = security.CreateSRem(ctr_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
+  // compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
+  // compare = security.CreateICmpEQ(temp,compare_to_zero);
 
   PHINode* p_val = PHINode::Create(llvm::Type::getInt32Ty(CTX), 1, "phi",Secure_2);
   AddFunction(M,parallel_id, sub_id,loop_id,Secure_2,nullptr,p_val);
@@ -491,6 +510,8 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
         continue; // not handling other loops (Will be handled on their call)
       }
 
+      bool test_check = false; // for T-SYS
+
       for (Instruction &I : BB) {
 
         if(temp_count){
@@ -499,11 +520,16 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
           }
 
           else {
-            AddFunction(M,parallel_region_id,-1,loop_id,nullptr,&I,nullptr);
+            ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
+            AddFunction(M,parallel_region_id,-1,loop_id,nullptr,&I,ConstantValue);
+            //AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,BB.getTerminator(),nullptr); // T-SYS
             temp_count = false;
             split_id = count+split_factor+1;
+            test_check = true;
+            // break; //T-SYS
           }
         }
+
 
         if(count == split_id) {
 
@@ -514,11 +540,19 @@ int returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_
           }
 
           else {
-            AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,&I,nullptr); // sub id in add function is -1 to actual id
+            ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
+            AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,&I,ConstantValue); // sub id in add function is -1 to actual id (send some value in end that is why I get -1)
+            //AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,BB.getTerminator(),nullptr);  // T-SYS
             split_id = count+split_factor+1;
             temp_count = false;
+            test_check =true;
+            break; // not with original
           }
         } // check this out
+
+        if(test_check){
+          break;
+        }
 
         if (CallInst *CI = dyn_cast<CallInst>(&I)) {
           Function *CalledFunc = CI->getCalledFunction();
@@ -588,7 +622,8 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
         }
 
         else {
-          AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst,nullptr);
+          ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
+          AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst,ConstantValue);
           temp_count = false;
           split_id = count + split_factor + 1;
         }
@@ -604,7 +639,8 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
             if(Inst == &LoopBlock->back()){
               std::cout<<"######################## just checking for last instruction ######################"<<std::endl;
             }
-            AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst,nullptr);
+            ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
+            AddFunction(M,parallel_region_id,-1,loop_id,nullptr,Inst,ConstantValue);
             split_id = count + split_factor + 1; // or could have done count%split_id == 0
             temp_count = false;
           }
@@ -886,68 +922,7 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
           continue;
         }
 
-        if(secure_loops_2[loop_unique_id].wcet_ns < secure_wcet_ns){ // secure wcet is the threshold and not average
-        //if(secure_loops_2[loop_unique_id].wcet_us < secure_wcet_ns){  
-          // if(secure_loops_2[loop_unique_id].seq_split != -1){
-          //   secure_loops_2[loop_unique_id].seq_split += 1;
-          // }
-
-          // else {
-          //   secure_loops_2[loop_unique_id].split_factor += 1;
-          // }
-
-          LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA);
-          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
-          secure_loops[ltemp] = loop_unique_id;
-          loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
-          loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
-          loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
-          loop_counter_2++;
-          loop_unique_id++;
-        }
-
-        else {
-          //secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 (=-1) and then keep running multiple phases
-
-          if(secure_loops_2[loop_unique_id].split_factor / 2 == 0){
-            if(secure_loops_2[loop_unique_id].seq_split == 1){
-              std::cout<<"Threshold value too low for security"<<std::endl;
-              //exit(0);
-            }
-
-            else if(secure_loops_2[loop_unique_id].seq_split == -1){
-              long int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
-              // errs() << "Instruction count is" << secure_loops_2[loop_unique_id].total_inst <<"---------------\n";
-              // errs() << "WCET is "<<secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns<<" \n";
-              // errs() << "evaluated val is" << val << "----------- parallel id values is: "<< parallel_region_id <<"\n";
-              int split_val = secure_loops_2[loop_unique_id].total_inst/val;
-              if(secure_loops_2[loop_unique_id].seq_split == split_val){
-                split_val = split_val/2; // can be -1 or /2 just a proof of concept
-              }
-              // secure_loops_2[loop_unique_id].seq_split = split_val;
-
-              //Updating the above logic a bit
-              secure_loops_2[loop_unique_id].seq_split = secure_loops_2[loop_unique_id].total_inst/2;
-            }
-
-            else {
-              secure_loops_2[loop_unique_id].seq_split /= 2;
-              if(secure_loops_2[loop_unique_id].seq_split == 0){
-                secure_loops_2[loop_unique_id].seq_split = 1;
-              }
-            }
-
-            secure_loops_2[loop_unique_id].split_factor = 1; // split_factor cannot be 0
-          }
-
-          else {
-            secure_loops_2[loop_unique_id].split_factor /= 2; // first work with reducing the split factor then the split of an iteration
-            // if(secure_loops_2[loop_unique_id].seq_split == 0){
-            //   secure_loops_2[loop_unique_id].seq_split = 1;
-            // }
-          }
-
-          LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA);
+        LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA);
           secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
           secure_loops[ltemp] = loop_unique_id;
           loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
@@ -956,7 +931,77 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
           loop_counter_2++;
           loop_unique_id++;
 
-        }
+        // if(secure_loops_2[loop_unique_id].wcet_ns < secure_wcet_ns){ // secure wcet is the threshold and not average
+        // //if(secure_loops_2[loop_unique_id].wcet_us < secure_wcet_ns){  
+        //   // if(secure_loops_2[loop_unique_id].seq_split != -1){
+        //   //   secure_loops_2[loop_unique_id].seq_split += 1;
+        //   // }
+
+        //   // else {
+        //   //   secure_loops_2[loop_unique_id].split_factor += 1;
+        //   // }
+
+        //   LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA);
+        //   secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
+        //   secure_loops[ltemp] = loop_unique_id;
+        //   loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
+        //   loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
+        //   loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
+        //   loop_counter_2++;
+        //   loop_unique_id++;
+        // }
+
+        // else {
+        //   //secure_loops_2[loop_unique_id].split_factor /= 2; // can also reduce by 1 (=-1) and then keep running multiple phases
+
+        //   if(secure_loops_2[loop_unique_id].split_factor / 2 == 0){
+        //     if(secure_loops_2[loop_unique_id].seq_split == 1){
+        //       std::cout<<"Threshold value too low for security"<<std::endl;
+        //       //exit(0);
+        //     }
+
+        //     else if(secure_loops_2[loop_unique_id].seq_split == -1){
+        //       long int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
+        //       // errs() << "Instruction count is" << secure_loops_2[loop_unique_id].total_inst <<"---------------\n";
+        //       // errs() << "WCET is "<<secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns<<" \n";
+        //       // errs() << "evaluated val is" << val << "----------- parallel id values is: "<< parallel_region_id <<"\n";
+        //       int split_val = secure_loops_2[loop_unique_id].total_inst/val;
+        //       if(secure_loops_2[loop_unique_id].seq_split == split_val){
+        //         split_val = split_val/2; // can be -1 or /2 just a proof of concept
+        //       }
+        //       // secure_loops_2[loop_unique_id].seq_split = split_val;
+
+        //       //Updating the above logic a bit
+        //       secure_loops_2[loop_unique_id].seq_split = secure_loops_2[loop_unique_id].total_inst/2;
+        //     }
+
+        //     else {
+        //       secure_loops_2[loop_unique_id].seq_split /= 2;
+        //       if(secure_loops_2[loop_unique_id].seq_split == 0){
+        //         secure_loops_2[loop_unique_id].seq_split = 1;
+        //       }
+        //     }
+
+        //     secure_loops_2[loop_unique_id].split_factor = 1; // split_factor cannot be 0
+        //   }
+
+        //   else {
+        //     secure_loops_2[loop_unique_id].split_factor /= 2; // first work with reducing the split factor then the split of an iteration
+        //     // if(secure_loops_2[loop_unique_id].seq_split == 0){
+        //     //   secure_loops_2[loop_unique_id].seq_split = 1;
+        //     // }
+        //   }
+
+        //   LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA);
+        //   secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
+        //   secure_loops[ltemp] = loop_unique_id;
+        //   loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
+        //   loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
+        //   loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
+        //   loop_counter_2++;
+        //   loop_unique_id++;
+
+        // }
       }
     }
   }
@@ -1031,8 +1076,10 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
 
   else {
 
+    /***Commented code in else for attack testing***/
+
     // file was read so lets evaluate seq split factor
-    for (int i = 0 ; i < region_details_profiler[p_id].size() ; i++) {
+    //for (int i = 0 ; i < region_details_profiler[p_id].size() ; i++) {
 
       // std::cout<<"sub id:" << region_details_profiler[p_id][i].id <<"\n";
       // std::cout<<"Parallel id:" << region_details_profiler[p_id][i].parallel_id <<"\n";
@@ -1042,36 +1089,36 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
       // std::cout<<"wcet time value is: " << region_details_profiler[p_id][i].wcet_ns;
       // std::cout<<std::endl;
 
-      if(region_details_profiler[p_id][i].wcet_ns > secure_wcet_ns){
-      //if(region_details_profiler[p_id][i].wcet_us > secure_wcet_ns){
+      // if(region_details_profiler[p_id][i].wcet_ns > secure_wcet_ns){
+      // //if(region_details_profiler[p_id][i].wcet_us > secure_wcet_ns){
 
-        if(region_details_profiler[p_id][i].seq_split == 1){
-          std::cout<<"Threshold value too low for security"<<std::endl;
-          //exit(0);
-        }
+      //   if(region_details_profiler[p_id][i].seq_split == 1){
+      //     std::cout<<"Threshold value too low for security"<<std::endl;
+      //     //exit(0);
+      //   }
 
-        else if(region_details_profiler[p_id][i].seq_split != -1){
-          region_details_profiler[p_id][i].seq_split /= 2;
-          if(region_details_profiler[p_id][i].seq_split == 0){
-            region_details_profiler[p_id][i].seq_split == 1;
-          }
-        }
+      //   else if(region_details_profiler[p_id][i].seq_split != -1){
+      //     region_details_profiler[p_id][i].seq_split /= 2;
+      //     if(region_details_profiler[p_id][i].seq_split == 0){
+      //       region_details_profiler[p_id][i].seq_split == 1;
+      //     }
+      //   }
 
-        else {
-          int val = (region_details_profiler[p_id][i].wcet_ns/secure_wcet_ns)+1;
-          int split_val = region_details_profiler[p_id][i].total_inst/val;
-          if(region_details_profiler[p_id][i].seq_split == split_val){
-            split_val = split_val/2; // can be -1 or /2 just a proof of concept
-          }
+      //   else {
+      //     int val = (region_details_profiler[p_id][i].wcet_ns/secure_wcet_ns)+1;
+      //     int split_val = region_details_profiler[p_id][i].total_inst/val;
+      //     if(region_details_profiler[p_id][i].seq_split == split_val){
+      //       split_val = split_val/2; // can be -1 or /2 just a proof of concept
+      //     }
 
-          //region_details_profiler[p_id][i].seq_split = split_val;
-          region_details_profiler[p_id][i].seq_split = region_details_profiler[p_id][i].total_inst/2;
-          if(region_details_profiler[p_id][i].seq_split == 0){
-            region_details_profiler[p_id][i].seq_split == 1;
-          }
-        }
-      }
-    }
+      //     //region_details_profiler[p_id][i].seq_split = split_val;
+      //     region_details_profiler[p_id][i].seq_split = region_details_profiler[p_id][i].total_inst/2;
+      //     if(region_details_profiler[p_id][i].seq_split == 0){
+      //       region_details_profiler[p_id][i].seq_split == 1;
+      //     }
+      //   }
+      // }
+    //}
   }
 
   std::cout<<"------------------------end of region details evaluation for parallel id "<< p_id <<"--------------------------------"<<std::endl;
@@ -1095,7 +1142,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
     if(temp_loop == nullptr) {
       //std::cout<<"basic block is part of the loop for parallel id "<<B.getName().str()<<" "<<p_id<<std::endl;
       //continue; // if instruction belongs to a basic block which is the part of a loop then don't process it
-    
+        bool test_check =false; //T-SYS
       for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
         Instruction &I = *instr_iter;
 
@@ -1107,8 +1154,11 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           else {
             ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
             AddFunction(&M,p_id,ctr-1,-1,nullptr,&I,ConstantValue);
+            //AddFunction(&M,p_id,ctr-1,-1,nullptr,B.getTerminator(),ConstantValue); //T-SYS
             temp_count = false;
             split_id = count+region_details_profiler[p_id][ctr-1].seq_split+1;
+            test_check = true;
+            //break; // remove for normal code (this is T-SYS)
           }
         }
 
@@ -1123,10 +1173,17 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           else {
             ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
             AddFunction(&M,p_id,ctr-1,-1,nullptr,&I,ConstantValue); // sub id in add function is -1 to actual id
+           // AddFunction(&M,p_id,ctr-1,-1,nullptr,B.getTerminator(),ConstantValue); // T-SYS level
             split_id = count+region_details_profiler[p_id][ctr-1].seq_split+1;
             temp_count = false;
+            test_check = true;
+            //break; // remove if not T-SYS
           }
         } // check this out
+
+        if(test_check){
+          break;
+        }
 
         if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
           Function* fn = call_inst->getCalledFunction();
@@ -1470,24 +1527,28 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
       para_seq_profiler.wcet_ns = 0;
     }
 
-    else {
-      if(para_seq_profiler.wcet_ns > secure_wcet_ns){
-        if(para_seq_profiler.seq_code_split == -1){
-          para_seq_profiler.seq_code_split = para_seq_profiler.total_inst/2;
-          if(para_seq_profiler.seq_code_split == 0){
-            para_seq_profiler.seq_code_split = 1;
-          }
+    /**Comment else below for attack testing*/
 
-          else if(para_seq_profiler.seq_code_split > 1){
-            para_seq_profiler.seq_code_split -= 1;
-          }
+    // else {
+    //   if(para_seq_profiler.wcet_ns > secure_wcet_ns){
+    //     if(para_seq_profiler.seq_code_split == -1){
+    //       para_seq_profiler.seq_code_split = para_seq_profiler.total_inst/2;
+    //       if(para_seq_profiler.seq_code_split == 0){
+    //         para_seq_profiler.seq_code_split = 1;
+    //       }
 
-          else {
-            para_seq_profiler.seq_code_split = 1;
-          }
-        }
-      }
-    }
+    //       else if(para_seq_profiler.seq_code_split > 1){
+    //         para_seq_profiler.seq_code_split -= 1;
+    //       }
+
+    //       else {
+    //         para_seq_profiler.seq_code_split = 1;
+    //       }
+    //     }
+    //   }
+    // }
+
+    /**End of comment*/
 
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
     
@@ -1649,31 +1710,31 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
               if(secure_loops.find(ltemp) == secure_loops.end()) {
                 loop_seq_details temp = loop_seq_profiler;
 
-                if(temp.wcet_ns > secure_wcet_ns){
-                  if(temp.loop_split == 1){
-                    if(temp.seq_code_split != -1){
-                      temp.seq_code_split = temp.total_inst/2;
-                      if(temp.seq_code_split == 0) {
-                        temp.seq_code_split = 1;
-                      }
-                    }
+                // if(temp.wcet_ns > secure_wcet_ns){
+                //   if(temp.loop_split == 1){
+                //     if(temp.seq_code_split != -1){
+                //       temp.seq_code_split = temp.total_inst/2;
+                //       if(temp.seq_code_split == 0) {
+                //         temp.seq_code_split = 1;
+                //       }
+                //     }
 
-                    else {
-                      if(temp.seq_code_split != 1){
-                        temp.seq_code_split -= 1;
-                      }
+                //     else {
+                //       if(temp.seq_code_split != 1){
+                //         temp.seq_code_split -= 1;
+                //       }
 
-                      else {
-                        temp.seq_code_split = 1;
-                      }
-                    }
-                  }
+                //       else {
+                //         temp.seq_code_split = 1;
+                //       }
+                //     }
+                //   }
 
-                  else {
-                    temp.seq_code_split = -1;
-                    temp.loop_split = temp.loop_split/2;
-                  }
-                }
+                //   else {
+                //     temp.seq_code_split = -1;
+                //     temp.loop_split = temp.loop_split/2;
+                //   }
+                // }
 
                 bool split_check = LoopSplit_2(ltemp, temp.loop_split, -1, -1, counter,MA);
                 temp.total_inst = addSeqCallsInLoop(F,ltemp,-1,-1,counter,temp.seq_code_split,MA,false);
