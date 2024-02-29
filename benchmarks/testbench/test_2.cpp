@@ -9,6 +9,7 @@ typedef struct loop_details_pass {
   long int total_inst;
   unsigned long int wcet_ns;
   int total_threads;
+  int fns;
   int unique_function_ids[500];
 } loop_details_pass;
 
@@ -20,6 +21,7 @@ typedef struct para_details {
   long int total_inst;
   unsigned long int wcet_ns;
   int total_threads;
+  int fns;
   int unique_function_ids[500];
 } para_details;
 
