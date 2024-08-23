@@ -283,21 +283,21 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_
 
   errs()<<"\n\n\n\n---------------------------------------Loop is -------------------------------"<<Func->getName()<<" "<<parallel_id<<" "<<loop_id<<" "<<Header->getName()<<"\n";
 
-  Loop::LocRange t = L->getLocRange();
+  // Loop::LocRange t = L->getLocRange();
 
   
-    DebugLoc StartLoc = t.getStart();
-    DebugLoc EndLoc = t.getEnd();
+  //   DebugLoc StartLoc = t.getStart();
+  //   DebugLoc EndLoc = t.getEnd();
 
 
-    std::string test_str;
-    raw_string_ostream stream(test_str);
-    StartLoc->print(stream);
+  //   std::string test_str;
+  //   raw_string_ostream stream(test_str);
+  //   StartLoc->print(stream);
 
-    errs()<< StartLoc.getLine() << " to " << EndLoc.getLine() << " in file \n";
-    errs()<<test_str;
+  //   errs()<< StartLoc.getLine() << " to " << EndLoc.getLine() << " in file \n";
+  //   errs()<<test_str;
 
-  errs()<<"\n\n\n\n";
+  // errs()<<"\n\n\n\n";
   
 
   //attr_set.addAttribute(CTX, AttributeSet::FunctionIndex, Attribute::NoInline);
@@ -1419,7 +1419,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
 
     // auto &Options = cl::getRegisteredOptions();
     if (Options.count("check_file") && input_file){
-      std::ifstream inFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt",std::ios::binary);
+      std::ifstream inFile("/home/swastik/dev/ttex_benchmark/data_log_to_pass.txt",std::ios::binary);
 
       errs()<<" Reading from a file llvm\n";
 
@@ -1888,7 +1888,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     //   }  
     // }
 
-    std::ofstream outFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log.txt",std::ios::binary);
+    std::ofstream outFile("/home/swastik/dev/ttex_benchmark/data_log.txt",std::ios::binary);
 
     if (outFile) {
         // Write the number of rows
