@@ -38,7 +38,7 @@ int main(){
   std::vector< std::vector<loop_details_pass> > l_data_temp;
   std::vector< std::vector<para_details> > p_data_temp;
 
-  std::ifstream inFile("/home/swastik/dev/ttex/llvm/ttex_implementation/benchmarks/testbench/data_log_to_pass.txt", std::ios::binary);
+  std::ifstream inFile("/home/swastik/dev/ttex_benchmark/data_log_to_pass.txt", std::ios::binary);
 
   std::cout<<"file data read"<<std::endl;
 

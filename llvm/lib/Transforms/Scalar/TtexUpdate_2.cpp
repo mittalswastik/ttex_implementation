@@ -95,11 +95,11 @@ static cl::opt<int> nthreads("nthreads",
 
 static cl::opt<unsigned long int> secure_wcet("threshold",
   cl::desc("threshold for security"),
-  cl::init(60000)); // 500us = 500000ns
+  cl::init(60000)); // 60000 ns
 
 static cl::opt<int> splitval("splitval",
   cl::desc("loopsplit val"),
-  cl::init(50000)); // 500us = 500000ns
+  cl::init(50000)); // 50000 iterations
 
 static cl::opt<bool> values_set("set_val",
   cl::desc("true if no updates to metrics are needed"),
@@ -306,19 +306,36 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_
   Value* ctr_val;
   Value* temp;
   Value* compare;
+  Value* itr_threshold;
+  auto &Options = cl::getRegisteredOptions();
 
   if (!phase){
     ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
-    temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
-    compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
-    compare = security.CreateICmpEQ(temp,compare_to_zero);
+    itr_threshold = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
+
+    if (!(Options.count("check_file") && input_file)){
+      temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
+      compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1,false);
+      compare = security.CreateICmpEQ(temp,compare_to_zero);
+    }
+    else {
+      compare = security.CreateICmpEQ(ctr_val,itr_threshold);
+    }
+    
   }
 
   else { // once wcet of loop is evaluated we can revert back to not injecting loop entry on first call
     ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
-    temp = security.CreateSRem(ctr_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
-    compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
-    compare = security.CreateICmpEQ(temp,compare_to_zero);
+    itr_threshold = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false);
+
+    if (!(Options.count("check_file") && input_file)){
+      temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
+      compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1,false);
+      compare = security.CreateICmpEQ(temp,compare_to_zero);
+    }
+    else {
+      compare = security.CreateICmpEQ(ctr_val,itr_threshold);
+    }
   }
 
   // ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
@@ -1640,6 +1657,8 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
 
     /**End of comment*/
 
+    //// Code Outside Parallel Region - For proof of concept //////
+
     for (Module::iterator func_iter = M.begin(), func_iter_end = M.end(); func_iter != func_iter_end; ++func_iter) {
     
       Function &F = *func_iter;
@@ -1668,13 +1687,13 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
               for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
                 Instruction &I = *instr_iter;
 
-                errs()<<"Basic block name "<<B.getName()<<"\n";
+                //errs()<<"Basic block name "<<B.getName()<<"\n";
 
                 if(&I == nullptr){
                   continue; // null instruction?
                 }
 
-                errs()<<"found an instruction\n";
+                //errs()<<"found an instruction\n";
 
                 if(temp_count){
                   if(PHINode *Pi = dyn_cast<PHINode>(&I)){
@@ -1689,7 +1708,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                   }
                 }
 
-                errs()<<"not a phi node\n";
+                //errs()<<"not a phi node\n";1
 
                 if(count == split_id) {
 
@@ -1707,13 +1726,13 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                   }
                 } // check this out
 
-                errs()<<"checking for call instructions\n";
+                //errs()<<"checking for call instructions\n";
 
                 if(CallInst* call_inst = dyn_cast<CallInst>(&I)){
-                  errs()<<"got a call instruction\n";
+                  //errs()<<"got a call instruction\n";
                   Function* fn = call_inst->getCalledFunction();
                   if (fn && !fn->isDeclaration()) {
-                    errs()<<"not a declaration\n";
+                    //errs()<<"not a declaration\n";
                     if(!fn->getName().contains(".omp_outlined.") && !fn->getName().contains("ompt")){
                       if(secure_functions.find(fn) == secure_functions.end()){
                         secure_functions[fn] = function_unique_id;
@@ -1728,10 +1747,10 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                 }
 
                 else if (InvokeInst *CI= dyn_cast<InvokeInst>(&I)){
-                  errs()<<"got and invoke instruction\n";
+                  //errs()<<"got and invoke instruction\n";
                   Function *fn = CI->getCalledFunction();
                   if (fn && !fn->isDeclaration()) {
-                    errs()<<"not a declaration invokation function\n";
+                    //errs()<<"not a declaration invokation function\n";
                     if(!fn->getName().contains(".omp_outlined.") && !fn->getName().contains("ompt")){
                       if(secure_functions.find(fn) == secure_functions.end()){
                         secure_functions[fn] = function_unique_id;
@@ -1745,7 +1764,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
                 
                 count++;
 
-                errs()<<"not a call instruction\n";
+                //errs()<<"not a call instruction\n";
               }
             }
         
@@ -1756,7 +1775,7 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
           llvm::LLVMContext &CTX = M->getContext();
           std::vector<Loop*> allLoops_2 = retrieveLoopsFunc(F,MA);
           auto &Options = cl::getRegisteredOptions();
-          errs()<<"all loops generated\n";
+          //errs()<<"all loops generated\n";
           int counter = 0;
           for(int i = 0 ; i < allLoops_2.size(); i++) {
             Loop* ltemp = allLoops_2[i];
@@ -1842,6 +1861,8 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
         }  
       }
     }
+
+    //// Code Outside Parallel Region - For proof of concept //////
 
     // function to read the file for loop details  
     // before updating look up table here, update the sequential iteration based on wcet
