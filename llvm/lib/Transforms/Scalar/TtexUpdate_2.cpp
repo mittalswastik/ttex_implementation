@@ -310,7 +310,7 @@ bool LoopSplit_2(Loop *L, unsigned count, int parallel_id, int sub_id, int loop_
   Value* ind_notzero;
   auto &Options = cl::getRegisteredOptions();
 
-  if (!phase){
+  if (!phase || L->getLoopDepth() == 1){
     ctr_val = security.CreateNSWAdd(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),1, false), "");  
     temp = security.CreateSRem(counter_val, llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),count, false)); // I want the call to be made atleast once for sure (Else loop is not recorded and never secured) : hence referencing counter_val instead of ctr_val
     compare_to_zero = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),0,false);
@@ -1169,7 +1169,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           }
 
           if(region_details_profiler[p_id][i].seq_split == 0){
-            region_details_profiler[p_id][i].seq_split == 1;
+            region_details_profiler[p_id][i].seq_split = 1;
           }
         }
       }
