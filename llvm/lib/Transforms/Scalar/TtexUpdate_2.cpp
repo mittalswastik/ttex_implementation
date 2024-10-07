@@ -1325,9 +1325,9 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
         }
 
         count++; // if neither a call on invoke instruction instruction is to be added
-        if(test_check){
-          break;
-        }
+        //if(test_check){
+        //  break;
+        //} // with test_check complete basic block after the kmpc calls which will be in another sub region will be avoided - we do not want that
       }
     }
   }
