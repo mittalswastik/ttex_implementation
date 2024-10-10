@@ -1025,38 +1025,38 @@ void splittingLoops(Function &F, int parallel_region_id, ModuleAnalysisManager &
               }
 
               secure_loops_2[loop_unique_id].split_factor = 1; // split_factor cannot be 0
-          }
-
-          else {
-            int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
-            if(secure_loops_2[loop_unique_id].split_factor == splitval){
-              // updating split factor for the first time
-              /**
-               * x iterations (x is splitval set by user) have a wcet
-               * wcet / security_threshold -> how many times further the x iterations should be divided
-              */
-              secure_loops_2[loop_unique_id].split_factor = splitval/val;
             }
-            
+
             else {
-              // if above logic still proves wrong - just divide the split factor further by same concept
-              secure_loops_2[loop_unique_id].split_factor /= val;
+              int val = (secure_loops_2[loop_unique_id].wcet_ns/secure_wcet_ns)+1;
+              if(secure_loops_2[loop_unique_id].split_factor == splitval){
+                // updating split factor for the first time
+                /**
+                 * x iterations (x is splitval set by user) have a wcet
+                 * wcet / security_threshold -> how many times further the x iterations should be divided
+                */
+                secure_loops_2[loop_unique_id].split_factor = splitval/val;
+              }
+              
+              else {
+                // if above logic still proves wrong - just divide the split factor further by same concept
+                secure_loops_2[loop_unique_id].split_factor /= val;
+              }
+
+              if(secure_loops_2[loop_unique_id].split_factor == 0){
+                secure_loops_2[loop_unique_id].split_factor = 1;
+              } // just in case val is higher than splitval -- don't think it is true
             }
-
-            if(secure_loops_2[loop_unique_id].split_factor == 0){
-              secure_loops_2[loop_unique_id].split_factor = 1;
-            } // just in case val is higher than splitval -- don't think it is true
           }
-        }
 
-        LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA,true);
-        secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
-        secure_loops[ltemp] = loop_unique_id;
-        loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
-        loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
-        loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
-        loop_counter_2++;
-        loop_unique_id++;
+          LoopSplit_2(ltemp, secure_loops_2[loop_unique_id].split_factor, parallel_region_id, -1, loop_counter_2,MA,true);
+          secure_loops_2[loop_unique_id].total_inst = addSeqCallsInLoop(F,ltemp,parallel_region_id,-1,loop_counter_2,secure_loops_2[loop_unique_id].seq_split,MA,false);
+          secure_loops[ltemp] = loop_unique_id;
+          loop_details_profiler[parallel_region_id][loop_counter_2] = secure_loops_2[loop_unique_id];
+          loop_details_profiler[parallel_region_id][loop_counter_2].parallel_id = parallel_region_id;
+          loop_details_profiler[parallel_region_id][loop_counter_2].loop_id = loop_counter_2;
+          loop_counter_2++;
+          loop_unique_id++;
 
           errs()<<"compelted split for higher wcet value\n";
         }
@@ -1186,6 +1186,8 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
   bool temp_count = false;
   int split_id = region_details_profiler[p_id][ctr-1].seq_split;
 
+  bool finish = false; // kmpc_fini called - then function is done - no need to protect further blocks within omp outlined function
+
   for (Function::iterator block_iter = F.begin(), block_iter_end = F.end(); block_iter != block_iter_end; ++block_iter) {
     BasicBlock &B = *block_iter;
 
@@ -1290,6 +1292,11 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
                 temp_count = false;
             }
 
+            else if(fn->getName() == "__kmpc_for_static_fini"){
+              finish = true;
+              break;
+            }
+
             else {
               if (!fn->isDeclaration()) {
                 if(!fn->getName().contains(".omp_outlined.")){
@@ -1328,6 +1335,13 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
         //if(test_check){
         //  break;
         //} // with test_check complete basic block after the kmpc calls which will be in another sub region will be avoided - we do not want that
+        if(finish){
+          break;
+        }
+      }
+
+      if(finish){
+        break;
       }
     }
   }
