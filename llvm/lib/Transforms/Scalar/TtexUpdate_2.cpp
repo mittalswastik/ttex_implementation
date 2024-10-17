@@ -97,6 +97,10 @@ static cl::opt<unsigned long int> secure_wcet("threshold",
   cl::desc("threshold for security"),
   cl::init(60000)); // 60000 ns
 
+static cl::opt<int> shared_lib_secruity("shared_threshold",
+  cl::desc("shared library secruity threshold"),
+  cl::init(1)); 
+
 static cl::opt<int> splitval("splitval",
   cl::desc("loopsplit val"),
   cl::init(50000)); // 50000 iterations
@@ -1269,7 +1273,9 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
           if(fn){
             if(fn->getName() == "__kmpc_for_static_init_4"){
                 llvm::ConstantInt *itr_ci = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),ctr, false);
+                llvm::ConstantInt *secure_shared_val = llvm::ConstantInt::get(llvm::IntegerType::getInt32Ty(CTX),shared_lib_secruity, false);
                 call_inst->setOperand(9,itr_ci);
+                call_inst->setOperand(10,secure_shared_val);
                 region_details_profiler[p_id][ctr-1].total_inst = count;
                 // errs()<<"total instruction for parallel region "<<p_id<<" and sub region "<<ctr-1<<"\n";
                 // errs()<<"set region details profiler with counter in for with instruction count till now is "<<region_details_profiler[p_id][ctr-1].total_inst<<" "<<count<<"\n";

@@ -30,6 +30,8 @@
 #include "ompt-specific.h"
 #endif
 
+#define KMP_DEBUG 0
+
 #ifdef KMP_DEBUG
 //-------------------------------------------------------------------------
 // template for debug prints specification ( d, u, lld, llu )
@@ -70,6 +72,18 @@ static inline void check_loc(ident_t *&loc) {
     loc = &loc_stub; // may need to report location info to ittnotify
 }
 
+kmp_int32 ttex_utility(kmp_int32 shared_security_factor, kmp_int32 sub_parallel_id, kmp_int32 val){
+  if(shared_security_factor != 0){
+    if(ompt_enabled.ompt_callback_ompt_test){
+      ompt_callbacks.ompt_callback(ompt_callback_ompt_test)(
+        -2, sub_parallel_id, -1, 1000+val); //parallel id: -1 is sequential regions - for different reference set it to -2
+      shared_security_factor--;  
+    }
+  }
+
+  return shared_security_factor;
+}
+
 template <typename T>
 static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
                                   kmp_int32 schedtype, kmp_int32 *plastiter,
@@ -80,13 +94,22 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
 #if OMPT_SUPPORT && OMPT_OPTIONAL
                                   ,
                                   void *codeptr,
-                                  kmp_int32 sub_parallel_id
+                                  kmp_int32 sub_parallel_id,
+                                  kmp_int32 shared_security_factor
 #endif
 ) {
   __kmp_printf("&&&&&&&&&&---------------- checking id value in static init------------%d\n",sub_parallel_id);
+  __kmp_printf("++++++++++++++ checking shared security factor +++++++++++++++++++++%d\n",shared_security_factor);
+  
+  kmp_int32 counter = 1;
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 1);
+  counter++;
+
   KMP_COUNT_BLOCK(OMP_LOOP_STATIC);
   KMP_PUSH_PARTITIONED_TIMER(OMP_loop_static);
   KMP_PUSH_PARTITIONED_TIMER(OMP_loop_static_scheduling);
+
+  //shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id);
 
   typedef typename traits_t<T>::unsigned_t UT;
   typedef typename traits_t<T>::signed_t ST;
@@ -98,6 +121,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
   kmp_team_t *team;
   __kmp_assert_valid_gtid(gtid);
   kmp_info_t *th = __kmp_threads[gtid];
+
+  //shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id);
 
 #if OMPT_SUPPORT && OMPT_OPTIONAL
   ompt_team_info_t *team_info = NULL;
@@ -129,6 +154,9 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
   }
 #endif
 
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 2);
+  counter++;
+
   KMP_DEBUG_ASSERT(plastiter && plower && pupper && pstride);
   KE_TRACE(10, ("__kmpc_for_static_init called (%d)\n", global_tid));
 #ifdef KMP_DEBUG
@@ -145,6 +173,9 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
     __kmp_str_free(&buff);
   }
 #endif
+
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 3);
+counter++;
 
   if (__kmp_env_consistency_check) {
     __kmp_push_workshare(global_tid, ct_pdo, loc);
@@ -180,6 +211,9 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
 #endif
     KE_TRACE(10, ("__kmpc_for_static_init: T#%d return\n", global_tid));
 
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 4);
+counter++;
+
 #if OMPT_SUPPORT && OMPT_OPTIONAL
     if (ompt_enabled.ompt_callback_work) {
       // __kmp_printf("Is this callback start 1\n");
@@ -207,6 +241,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
     team = th->th.th_team;
   }
 
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 5);
+  counter++;
   /* determine if "for" loop is an active worksharing construct */
   if (team->t.t_serialized) {
     /* serialized parallel, each thread executes whole iteration space */
@@ -274,6 +310,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
     return;
   }
 
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 6);
+counter++;
   /* compute trip count */
   if (incr == 1) {
     trip_count = *pupper - *plower + 1;
@@ -286,6 +324,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
     trip_count = (UT)(*plower - *pupper) / (-incr) + 1;
   }
 
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 7);
+counter++;
 #if KMP_STATS_ENABLED
   if (KMP_MASTER_GTID(gtid)) {
     KMP_COUNT_VALUE(OMP_loop_static_total_iterations, trip_count);
@@ -319,9 +359,9 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
       }
       if (plastiter != NULL)
         *plastiter = (tid == trip_count - 1);
-
       // __kmp_printf("++++++++++++++thread id is %d and plower and pupper value is %d, %d\n", tid, *plower, *pupper);
-
+     shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 8);
+     counter++;
     } else {
       if (__kmp_static == kmp_sch_static_balanced) {
         // __kmp_printf("!!!!!!!!!!!kmp static == kmp_sch_static_balanced!!!!!!!\n");
@@ -332,6 +372,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
         if (plastiter != NULL)
           *plastiter = (tid == nth - 1);
         // __kmp_printf("@@@@@@@@@@@@@@thread id is %d and plower and pupper value is %d, %d\n", tid, *plower, *pupper);
+        shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 9);
+        counter++;
       } else {
         // __kmp_printf("!!!!!!!!!!!else!!!!!!!\n");
         T big_chunk_inc_count =
@@ -358,6 +400,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
           if (*pupper < old_upper)
             *pupper = old_upper; // tracker C73258
         }
+        shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 10);
+        counter++;
       }
     }
     *pstride = trip_count;
@@ -388,6 +432,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
     }
     if (plastiter != NULL)
       *plastiter = (tid == (nchunks - 1) % nth);
+    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 11);
+    counter++;
     break;
   }
   case kmp_sch_static_balanced_chunked: {
@@ -410,6 +456,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
 
     if (plastiter != NULL)
       *plastiter = (tid == ((trip_count - 1) / (UT)chunk));
+    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 12);
+    counter++;
     break;
   }
   default:
@@ -431,21 +479,24 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
     }
     // 0 - "static" schedule
     __kmp_itt_metadata_loop(loc, 0, trip_count, cur_chunk);
+    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 13);
+    counter++;
   }
 #endif
-#ifdef KMP_DEBUG
-  {
-    char *buff;
-    // create format specifiers before the debug output
-    buff = __kmp_str_format("__kmpc_for_static_init: liter=%%d lower=%%%s "
-                            "upper=%%%s stride = %%%s signed?<%s>\n",
-                            traits_t<T>::spec, traits_t<T>::spec,
-                            traits_t<ST>::spec, traits_t<T>::spec);
-    KD_TRACE(100, (buff, *plastiter, *plower, *pupper, *pstride));
-    __kmp_str_free(&buff);
-  }
-#endif
-  KE_TRACE(10, ("__kmpc_for_static_init: T#%d return\n", global_tid));
+// #ifdef KMP_DEBUG
+//   {
+//     __kmp_printf("&&&&&&&&&&&&&&&&&&&&&&& OpenMP Debugging is Enabled &&&&&&&&&&&&&&&&& \n");
+//     char *buff;
+//     // create format specifiers before the debug output
+//     buff = __kmp_str_format("__kmpc_for_static_init: liter=%%d lower=%%%s "
+//                             "upper=%%%s stride = %%%s signed?<%s>\n",
+//                             traits_t<T>::spec, traits_t<T>::spec,
+//                             traits_t<ST>::spec, traits_t<T>::spec);
+//     KD_TRACE(100, (buff, *plastiter, *plower, *pupper, *pstride));
+//     __kmp_str_free(&buff);
+//   }
+// #endif
+//   KE_TRACE(10, ("__kmpc_for_static_init: T#%d return\n", global_tid));
 
 // if((task_info->task_data).ptr == NULL){
 //  if((loc->flags & KMP_IDENT_WORK_SECTIONS) != 0){
@@ -470,6 +521,9 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
 
   // trip count is not needed so change it to reflect section executed and -1 in case of no section
 
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 14);
+counter++;
+
   kmp_int32 trip_count_temp;
   if(*pupper < *plower){
     trip_count_temp = -1;
@@ -478,6 +532,9 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
   else {
     trip_count_temp = *pupper;
   }
+
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 15);
+counter++;
 
 #if OMPT_SUPPORT && OMPT_OPTIONAL
   if (ompt_enabled.ompt_callback_work) {
@@ -489,6 +546,8 @@ static void __kmp_for_static_init(ident_t *loc, kmp_int32 global_tid,
 #endif
 
   KMP_STATS_LOOP_END(OMP_loop_static_iterations);
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 16);
+  counter++;
   return;
 }
 
@@ -875,7 +934,8 @@ void __kmpc_for_static_init_4(ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype,
                               kmp_int32 incr, kmp_int32 chunk
                               #if OMPT_SUPPORT && OMPT_OPTIONAL
                                    ,
-                                   kmp_uint32 sub_parallel_id
+                                   kmp_uint32 sub_parallel_id,
+                                   kmp_uint32 shared_security_factor
                               #endif
                               ) {
   __kmp_for_static_init<kmp_int32>(loc, gtid, schedtype, plastiter, plower,
@@ -883,7 +943,8 @@ void __kmpc_for_static_init_4(ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype,
 #if OMPT_SUPPORT && OMPT_OPTIONAL
                                    ,
                                    OMPT_GET_RETURN_ADDRESS(0),
-                                   sub_parallel_id
+                                   sub_parallel_id,
+                                   shared_security_factor
 #endif
   );
 }
@@ -898,7 +959,8 @@ void __kmpc_for_static_init_4u(ident_t *loc, kmp_int32 gtid,
                                kmp_int32 chunk
                                #if OMPT_SUPPORT && OMPT_OPTIONAL
                                    ,
-                                   kmp_uint32 sub_parallel_id
+                                   kmp_uint32 sub_parallel_id,
+                                   kmp_uint32 shared_security_factor
                               #endif
                               ) {
   __kmp_for_static_init<kmp_uint32>(loc, gtid, schedtype, plastiter, plower,
@@ -906,7 +968,8 @@ void __kmpc_for_static_init_4u(ident_t *loc, kmp_int32 gtid,
 #if OMPT_SUPPORT && OMPT_OPTIONAL
                                     ,
                                     OMPT_GET_RETURN_ADDRESS(0),
-                                    sub_parallel_id
+                                    sub_parallel_id,
+                                    shared_security_factor
 #endif
   );
 }
@@ -920,7 +983,8 @@ void __kmpc_for_static_init_8(ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype,
                               kmp_int64 incr, kmp_int64 chunk
                               #if OMPT_SUPPORT && OMPT_OPTIONAL
                                    ,
-                                   kmp_uint32 sub_parallel_id
+                                   kmp_uint32 sub_parallel_id,
+                                   kmp_uint32 shared_security_factor
                               #endif
                               ) {
   __kmp_for_static_init<kmp_int64>(loc, gtid, schedtype, plastiter, plower,
@@ -928,7 +992,8 @@ void __kmpc_for_static_init_8(ident_t *loc, kmp_int32 gtid, kmp_int32 schedtype,
 #if OMPT_SUPPORT && OMPT_OPTIONAL
                                    ,
                                    OMPT_GET_RETURN_ADDRESS(0),
-                                   sub_parallel_id
+                                   sub_parallel_id,
+                                   shared_security_factor
 #endif
   );
 }
@@ -943,7 +1008,8 @@ void __kmpc_for_static_init_8u(ident_t *loc, kmp_int32 gtid,
                                kmp_int64 chunk
                                #if OMPT_SUPPORT && OMPT_OPTIONAL
                                    ,
-                                   kmp_uint32 sub_parallel_id
+                                   kmp_uint32 sub_parallel_id,
+                                   kmp_uint32 shared_security_factor
                               #endif
                               ) {
   __kmp_for_static_init<kmp_uint64>(loc, gtid, schedtype, plastiter, plower,
@@ -951,7 +1017,8 @@ void __kmpc_for_static_init_8u(ident_t *loc, kmp_int32 gtid,
 #if OMPT_SUPPORT && OMPT_OPTIONAL
                                     ,
                                     OMPT_GET_RETURN_ADDRESS(0),
-                                    sub_parallel_id
+                                    sub_parallel_id,
+                                    shared_security_factor
 #endif
   );
 }

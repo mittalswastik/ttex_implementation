@@ -1583,7 +1583,8 @@ CGOpenMPRuntime::createForStaticInitFunction(unsigned IVSize, bool IVSigned,
     PtrTy,                                     // p_stride
     ITy,                                       // incr
     ITy,                                        // chunk
-    CGM.Int32Ty //id
+    CGM.Int32Ty, //id
+    CGM.Int32Ty // security factor
   };
   auto *FnTy =
       llvm::FunctionType::get(CGM.VoidTy, TypeParams, /*isVarArg*/ false);
@@ -2859,7 +2860,8 @@ static void emitForStaticInitCall(
       Values.ST.getPointer(),                           // &Stride
       CGF.Builder.getIntN(Values.IVSize, 1),            // Incr
       Chunk,                                            // Chunk
-      CGF.Builder.getInt32(sub_id)                      // sub parallel id
+      CGF.Builder.getInt32(sub_id),                      // sub parallel id
+      CGF.Builder.getInt32(0)
   };
   CGF.EmitRuntimeCall(ForStaticInitFunction, Args);
 }

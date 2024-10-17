@@ -264,13 +264,13 @@ __OMP_RTL(__kmpc_ordered, false, Void, IdentPtr, Int32)
 __OMP_RTL(__kmpc_end_ordered, false, Void, IdentPtr, Int32)
 
 __OMP_RTL(__kmpc_for_static_init_4, false, Void, IdentPtr, Int32, Int32,
-          Int32Ptr, Int32Ptr, Int32Ptr, Int32Ptr, Int32, Int32)
+          Int32Ptr, Int32Ptr, Int32Ptr, Int32Ptr, Int32, Int32, Int32)
 __OMP_RTL(__kmpc_for_static_init_4u, false, Void, IdentPtr, Int32, Int32,
-          Int32Ptr, Int32Ptr, Int32Ptr, Int32Ptr, Int32, Int32)
+          Int32Ptr, Int32Ptr, Int32Ptr, Int32Ptr, Int32, Int32, Int32)
 __OMP_RTL(__kmpc_for_static_init_8, false, Void, IdentPtr, Int32, Int32,
-          Int32Ptr, Int64Ptr, Int64Ptr, Int64Ptr, Int64, Int64)
+          Int32Ptr, Int64Ptr, Int64Ptr, Int64Ptr, Int64, Int64, Int64)
 __OMP_RTL(__kmpc_for_static_init_8u, false, Void, IdentPtr, Int32, Int32,
-          Int32Ptr, Int64Ptr, Int64Ptr, Int64Ptr, Int64, Int64)
+          Int32Ptr, Int64Ptr, Int64Ptr, Int64Ptr, Int64, Int64, Int64)
 __OMP_RTL(__kmpc_for_static_fini, false, Void, IdentPtr, Int32)
 __OMP_RTL(__kmpc_distribute_static_init_4, false, Void, IdentPtr, Int32, Int32,
           Int32Ptr, Int32Ptr, Int32Ptr, Int32Ptr, Int32, Int32)
