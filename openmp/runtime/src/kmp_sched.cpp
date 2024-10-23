@@ -30,8 +30,6 @@
 #include "ompt-specific.h"
 #endif
 
-#define KMP_DEBUG 0
-
 #ifdef KMP_DEBUG
 //-------------------------------------------------------------------------
 // template for debug prints specification ( d, u, lld, llu )
@@ -184,6 +182,10 @@ counter++;
                             loc);
     }
   }
+
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 4);
+counter++;
+
   /* special handling for zero-trip loops */
   if (incr > 0 ? (*pupper < *plower) : (*plower < *pupper)) {
     if (plastiter != NULL)
@@ -211,7 +213,7 @@ counter++;
 #endif
     KE_TRACE(10, ("__kmpc_for_static_init: T#%d return\n", global_tid));
 
-shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 4);
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 5);
 counter++;
 
 #if OMPT_SUPPORT && OMPT_OPTIONAL
@@ -241,7 +243,10 @@ counter++;
     team = th->th.th_team;
   }
 
-  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 5);
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 6);
+  counter++;
+
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 7);
   counter++;
   /* determine if "for" loop is an active worksharing construct */
   if (team->t.t_serialized) {
@@ -310,7 +315,7 @@ counter++;
     return;
   }
 
-  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 6);
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 8);
 counter++;
   /* compute trip count */
   if (incr == 1) {
@@ -324,7 +329,7 @@ counter++;
     trip_count = (UT)(*plower - *pupper) / (-incr) + 1;
   }
 
-  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 7);
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 9);
 counter++;
 #if KMP_STATS_ENABLED
   if (KMP_MASTER_GTID(gtid)) {
@@ -360,7 +365,7 @@ counter++;
       if (plastiter != NULL)
         *plastiter = (tid == trip_count - 1);
       // __kmp_printf("++++++++++++++thread id is %d and plower and pupper value is %d, %d\n", tid, *plower, *pupper);
-     shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 8);
+     shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 10);
      counter++;
     } else {
       if (__kmp_static == kmp_sch_static_balanced) {
@@ -372,7 +377,7 @@ counter++;
         if (plastiter != NULL)
           *plastiter = (tid == nth - 1);
         // __kmp_printf("@@@@@@@@@@@@@@thread id is %d and plower and pupper value is %d, %d\n", tid, *plower, *pupper);
-        shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 9);
+        shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 11);
         counter++;
       } else {
         // __kmp_printf("!!!!!!!!!!!else!!!!!!!\n");
@@ -400,7 +405,7 @@ counter++;
           if (*pupper < old_upper)
             *pupper = old_upper; // tracker C73258
         }
-        shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 10);
+        shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 12);
         counter++;
       }
     }
@@ -432,7 +437,7 @@ counter++;
     }
     if (plastiter != NULL)
       *plastiter = (tid == (nchunks - 1) % nth);
-    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 11);
+    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 13);
     counter++;
     break;
   }
@@ -456,7 +461,7 @@ counter++;
 
     if (plastiter != NULL)
       *plastiter = (tid == ((trip_count - 1) / (UT)chunk));
-    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 12);
+    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 14);
     counter++;
     break;
   }
@@ -479,10 +484,12 @@ counter++;
     }
     // 0 - "static" schedule
     __kmp_itt_metadata_loop(loc, 0, trip_count, cur_chunk);
-    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 13);
+    shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 15);
     counter++;
   }
 #endif
+
+/**Commenting debugging statements*/
 // #ifdef KMP_DEBUG
 //   {
 //     __kmp_printf("&&&&&&&&&&&&&&&&&&&&&&& OpenMP Debugging is Enabled &&&&&&&&&&&&&&&&& \n");
@@ -521,32 +528,60 @@ counter++;
 
   // trip count is not needed so change it to reflect section executed and -1 in case of no section
 
-shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 14);
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 16);
 counter++;
 
-  kmp_int32 trip_count_temp;
-  if(*pupper < *plower){
-    trip_count_temp = -1;
-  }
+kmp_int32 trip_count_temp;
+if(*pupper < *plower){
+  trip_count_temp = -1;
+}
 
-  else {
-    trip_count_temp = *pupper;
-  }
+else {
+  trip_count_temp = *pupper;
+}
 
-shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 15);
+shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 17);
 counter++;
 
-#if OMPT_SUPPORT && OMPT_OPTIONAL
-  if (ompt_enabled.ompt_callback_work) {
-    // __kmp_printf("Is this callback end\n");
-    ompt_callbacks.ompt_callback(ompt_callback_work)(
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 18);
+// counter++;
+
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 19);
+// counter++;
+
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 20);
+// counter++;
+
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 21);
+// counter++;
+
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 22);
+// counter++;
+
+ompt_callbacks.ompt_callback(ompt_callback_work)(
         ompt_work_type, ompt_scope_begin, &(team_info->parallel_data),
         &(task_info->task_data), trip_count_temp, codeptr, sub_parallel_id);
-  }
-#endif
+
+// #if OMPT_SUPPORT && OMPT_OPTIONAL
+//   if (ompt_enabled.ompt_callback_work) {
+//     // __kmp_printf("Is this callback end\n");
+//     ompt_callbacks.ompt_callback(ompt_callback_work)(
+//         ompt_work_type, ompt_scope_begin, &(team_info->parallel_data),
+//         &(task_info->task_data), trip_count_temp, codeptr, sub_parallel_id);
+//   }
+// #endif
+
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 23);
+counter++;
+
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 24);
+// counter++;
+
+// shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 25);
+// counter++;
 
   KMP_STATS_LOOP_END(OMP_loop_static_iterations);
-  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 16);
+  shared_security_factor = ttex_utility(shared_security_factor, sub_parallel_id, 26);
   counter++;
   return;
 }
