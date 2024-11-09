@@ -451,6 +451,10 @@ std::vector<int> temp_unique_fns;
 std::pair<int,int> returnInstCount(Function *F, ModuleAnalysisManager &MA, int parallel_region_id, int sub_id, int loop_id, int split_id, int split_factor, int count, bool temp_count){
   errs()<<"Function name inside returnInstCount is ----"<<F->getName()<<"\n";
 
+  // if(F->getName().contains(".omp_outlined.") || (F->getNameOrAsOperand().find("ompt", 0) != std::string::npos)){
+  //   return std::make_pair(count,split_id);
+  // }
+
   if(secure_functions_2.find(secure_functions[F]) != secure_functions_2.end()){
     if(parallel_region_id == -1){
       return std::make_pair(count,split_id);
@@ -548,6 +552,7 @@ std::pair<int,int> returnInstCount(Function *F, ModuleAnalysisManager &MA, int p
               temp_count = false;
               split_id = count+split_factor;
               test_check = true;
+              //break;
             }
             
           }
@@ -573,7 +578,7 @@ std::pair<int,int> returnInstCount(Function *F, ModuleAnalysisManager &MA, int p
 
             else {
               //AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,&I,ConstantValue); // sub id in add function is -1 to actual id (send some value in end that is why I get -1)
-              AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,BB.getTerminator(),nullptr);  // T-SYS
+              AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,BB.getTerminator(),ConstantValue);  // T-SYS
               split_id = count+split_factor;
               temp_count = false;
               test_check =true;
@@ -670,10 +675,12 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
           }
 
           else {
-            AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,LoopBlock->getTerminator(),nullptr);  // T-SYS
+            //AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,Inst,ConstantValue);
+            AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,LoopBlock->getTerminator(),ConstantValue);  // T-SYS
             split_id = count+split_factor;
             temp_count = false;
             test_check =true;
+            //break;
           }
         }
       }
@@ -696,8 +703,9 @@ int addSeqCallsInLoop(Function &F, Loop *L, int parallel_region_id, int sub_id, 
             }
 
             else {
-              AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,LoopBlock->getTerminator(),nullptr);  // T-SYS
+              AddFunction(M,parallel_region_id,sub_id,loop_id,nullptr,LoopBlock->getTerminator(),ConstantValue);  // T-SYS
               split_id = count+split_factor;
+              temp_count = false;
               test_check =true;
             }
           }
@@ -1203,7 +1211,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
     if(temp_loop == nullptr) {
       //std::cout<<"basic block is part of the loop for parallel id "<<B.getName().str()<<" "<<p_id<<std::endl;
       //continue; // if instruction belongs to a basic block which is the part of a loop then don't process it
-        bool test_check =false; //T-SYS
+      bool test_check =false; //T-SYS
       for(BasicBlock::iterator instr_iter = B.begin(), instr_iter_end = B.end(); instr_iter != instr_iter_end; ++instr_iter){
         Instruction &I = *instr_iter;
 
@@ -1225,7 +1233,6 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
 
             else {
               ConstantInt *ConstantValue = ConstantInt::get(Type::getInt32Ty(CTX), count);
-              //AddFunction(&M,p_id,ctr-1,-1,nullptr,&I,ConstantValue);
               AddFunction(&M,p_id,ctr-1,-1,nullptr,B.getTerminator(),ConstantValue); //T-SYS
               temp_count = false;
               split_id = count+region_details_profiler[p_id][ctr-1].seq_split;
@@ -1249,7 +1256,6 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
             // AddFunction(&M,p_id,ctr-1,-1,nullptr,B.getTerminator(),ConstantValue); // T-SYS level
               split_id = count+region_details_profiler[p_id][ctr-1].seq_split;
               temp_count = false;
-              //break; // remove if not T-SYS
             }
 
             else {
@@ -1305,8 +1311,10 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
 
             else {
               if (!fn->isDeclaration()) {
-                if(!fn->getName().contains(".omp_outlined.")){
+                if(!fn->getName().contains(".omp_outlined.") && !fn->getName().contains("ompt")){
                   if(secure_functions.find(fn) == secure_functions.end()){
+                    bool debug_bool = fn->getName().contains("ompt");
+                    errs() << "print bool: " << debug_bool <<"\n";
                     secure_functions[fn] = function_unique_id;
                     function_unique_id+=1;
                     std::pair<int,int> result = returnInstCount(fn, MA, p_id, ctr-1, -1, split_id, region_details_profiler[p_id][ctr-1].seq_split ,count, temp_count);
@@ -1325,7 +1333,7 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
         else if (InvokeInst *CI= dyn_cast<InvokeInst>(&I)){
           Function *fn = CI->getCalledFunction();
           if (fn && !fn->isDeclaration()) {
-            if(!fn->getName().contains(".omp_outlined.")){
+            if(!fn->getName().contains(".omp_outlined.") && !fn->getName().contains("ompt")){
               if(secure_functions.find(fn) == secure_functions.end()){
                 secure_functions[fn] = function_unique_id;
                 function_unique_id+=1;
@@ -1338,12 +1346,14 @@ void updateWorkId_2(Module &M, Function &F, LLVMContext &CTX, ModuleAnalysisMana
         }
 
         count++; // if neither a call on invoke instruction instruction is to be added
-        //if(test_check){
-        //  break;
-        //} // with test_check complete basic block after the kmpc calls which will be in another sub region will be avoided - we do not want that
+        
         if(finish){
           break;
         }
+
+        if(test_check){
+         break;
+        } // with test_check complete basic block after the kmpc calls which will be in another sub region will be avoided - we do not want that
       }
 
       if(finish){
@@ -1439,7 +1449,10 @@ PreservedAnalyses TtexUpdatePassV2::run(Module &M, ModuleAnalysisManager &MA) {
     secure_wcet_ns = secure_wcet;
 
     auto &Options = cl::getRegisteredOptions();
-    errs()<<"Options value is: "<<Options.count("set_ttex")<<" \n";
+    std::cout<<"Testing tsys option value: "<<Options.count("tsys")<<" "<<Options.count("values_set")<<std::endl;  
+    errs()<<"Options value for set_ttex is: "<<Options.count("set_ttex")<<" \n";
+    errs()<<"Options value tsys is: "<<Options.count("tsys")<<" \n";
+    errs()<<"Options value values_set is: "<<Options.count("values_set")<<" \n";
     if ((Options.count("set_ttex") && input_ttex)){
       return PreservedAnalyses::all();
     }
