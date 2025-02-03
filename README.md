@@ -108,6 +108,16 @@ This is a document to help you set up LLVM/Clang along with OpenMP and T-Tex sec
    * ``chmod +x scr``
    * ``./scr``
 
+### Configuring the file paths in the T-Tex pass to sync with T-Tex runtime profiler
+
+T-Tex is a multiphase security model. Execution time analysis is conveyed via the profiler to the llvm pass using binary files.
+
+1. Modify the file path in ``ttex_implementation/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp``
+   * [path of the file modified by the profiler](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1462) to any comfortable path.
+       * This is the file updated by the profiler after execution time analysis which is read by the llvm pass during subsequent phases of compilation
+   * [path of file modified by the compiler](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
+
+
 Consult the
 [Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
 page for detailed information on configuring and compiling LLVM. You can visit
