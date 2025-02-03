@@ -25,6 +25,7 @@
 #include "kmp_io.h"
 
 #define OMPT_SUPPORT 1 //- how is ompt disabled?
+#define KMP_DEBUG 0
 
 #if OMPT_SUPPORT
 #include "ompt-specific.h"

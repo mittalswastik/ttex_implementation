@@ -263,7 +263,7 @@ Do the actual fork and call the microtask in the relevant number of threads.
 void __kmpc_fork_call(ident_t *loc, kmp_int32 argc, kmpc_micro microtask, ...) {
   int gtid = __kmp_entry_gtid();
 
-  __kmp_printf("Checking for ompt support\n");
+ // __kmp_printf("Checking for ompt support\n");
 
 #if (KMP_STATS_ENABLED)
   // If we were in a serial region, then stop the serial timer, record
@@ -308,7 +308,7 @@ void __kmpc_fork_call(ident_t *loc, kmp_int32 argc, kmpc_micro microtask, ...) {
 #endif
     kmp_int32 id;
     id = va_arg(ap, int);
-    __kmp_printf("############### id value is --------------- %d\n", id);
+    //__kmp_printf("############### id value is --------------- %d\n", id);
     __kmp_fork_call(loc, gtid, fork_context_intel, argc,
                     VOLATILE_CAST(microtask_t) microtask, // "wrapped" task
                     VOLATILE_CAST(launch_t) __kmp_invoke_task_func,
