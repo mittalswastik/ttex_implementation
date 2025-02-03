@@ -99,16 +99,11 @@ This is an example work-flow and configuration to get and build the LLVM source:
 
       * For more information see [CMake](https://llvm.org/docs/CMake.html)
   
-### T-Tex Installation Guide
+### T-Tex
 
-This is a document to help you set up LLVM/Clang along with OpenMP and T-Tex security in built.
-
-1. Clone the respository
-2. Modify the BUILD_PATH (according to your LLVM cloned path) in "scr" script in the same folder as README and execute
-   * ``chmod +x scr``
-   * ``./scr``
-
-### Configuring the file paths in the T-Tex pass to sync with T-Tex runtime profiler
+1. Clone the repository and switch to branch [ttex_update](https://github.ncsu.edu/smittal6/ttex_implementation/tree/ttex_update)
+  
+## T-Tex Setup: configuring the file paths in the T-Tex pass to sync with T-Tex runtime profiler
 
 T-Tex is a multiphase security model. Execution time analysis is conveyed via the profiler to the llvm pass using binary files.
 
@@ -116,7 +111,13 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
    * [path of the file modified by the profiler](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1462) to any comfortable path.
        * This is the file updated by the profiler after execution time analysis which is read by the llvm pass during subsequent phases of compilation
    * [path of file modified by the compiler](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
+  
+## T-Tex Setup: Installing Llvm/Clang with T-Tex security
 
+1. Clone the respository
+2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/scr) and execute
+   * ``chmod +x scr``
+   * ``./scr``
 
 Consult the
 [Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
