@@ -101,7 +101,7 @@ This is an example work-flow and configuration to get and build the LLVM source:
   
 ### T-Tex
 
-1. Clone the repository and switch to branch [ttex_update](https://github.ncsu.edu/smittal6/ttex_implementation/tree/ttex_update)
+Clone the repository and switch to branch [ttex_update](https://github.ncsu.edu/smittal6/ttex_implementation/tree/ttex_update)
   
 ## T-Tex Setup: configuring the file paths in the T-Tex pass to sync with T-Tex runtime profiler
 
