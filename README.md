@@ -98,6 +98,15 @@ This is an example work-flow and configuration to get and build the LLVM source:
           CPUs you have.
 
       * For more information see [CMake](https://llvm.org/docs/CMake.html)
+  
+### T-Tex Installation Guide
+
+This is a document to help you set up LLVM/Clang along with OpenMP and T-Tex security in built.
+
+1. Clone the respository
+2. Modify the BUILD_PATH (according to your LLVM cloned path) in "scr" script in the same folder as README and execute
+   * ``chmod +x scr``
+   * ``./scr``
 
 Consult the
 [Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
