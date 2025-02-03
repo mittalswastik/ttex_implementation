@@ -125,4 +125,4 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
    * ``chmod +x scr``
    * ``./scr``
   
-#### Follow (ttex_benchmark)[https://github.ncsu.edu/smittal6/ttex_benchmark] for Testing
+#### Follow [ttex_benchmark](https://github.ncsu.edu/smittal6/ttex_benchmark) for Testing
