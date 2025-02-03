@@ -99,6 +99,12 @@ This is an example work-flow and configuration to get and build the LLVM source:
 
       * For more information see [CMake](https://llvm.org/docs/CMake.html)
   
+Consult the
+[Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
+page for detailed information on configuring and compiling LLVM. You can visit
+[Directory Layout](https://llvm.org/docs/GettingStarted.html#directory-layout)
+to learn about the layout of the source code tree.
+  
 ## T-Tex
 
 Clone the repository and switch to branch [ttex_update](https://github.ncsu.edu/smittal6/ttex_implementation/tree/ttex_update)
@@ -118,9 +124,3 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/scr) and execute
    * ``chmod +x scr``
    * ``./scr``
-
-Consult the
-[Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-started-with-llvm)
-page for detailed information on configuring and compiling LLVM. You can visit
-[Directory Layout](https://llvm.org/docs/GettingStarted.html#directory-layout)
-to learn about the layout of the source code tree.
