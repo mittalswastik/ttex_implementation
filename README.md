@@ -114,9 +114,9 @@ Clone the repository and if required switch to branch [ttex_update](https://gith
 T-Tex is a multiphase security model. Execution time analysis is conveyed via the profiler to the llvm pass using binary files.
 
 1. Modify the file path in the T-Tex pass [code](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp)
-   * [path of the file modified by the profiler](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1462) to any comfortable path.
+   * [path of the file modified by the profiler](https://github.com/mittalswastik/ttex_implementation/blob/d85b8bf9cf635960661d5cccce35c339d75316e6/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1462) to any comfortable path.
        * This is the file updated by the profiler after execution time analysis which is read by the llvm pass during subsequent phases of compilation
-   * [path of file modified by the compiler](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
+   * [path of file modified by the compiler](https://github.com/mittalswastik/ttex_implementation/blob/d85b8bf9cf635960661d5cccce35c339d75316e6/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
   
 ### T-Tex Setup: Installing Llvm/Clang with T-Tex security
 
