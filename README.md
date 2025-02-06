@@ -107,21 +107,21 @@ to learn about the layout of the source code tree.
   
 ## T-Tex
 
-Clone the repository and switch to branch [ttex_update](https://github.ncsu.edu/smittal6/ttex_implementation/tree/ttex_update)
+Clone the repository and if required switch to branch [ttex_update](https://github.com/mittalswastik/ttex_implementation/tree/ttex_update)
   
 ### T-Tex Setup: configuring the file paths in the T-Tex pass to sync with T-Tex runtime profiler
 
 T-Tex is a multiphase security model. Execution time analysis is conveyed via the profiler to the llvm pass using binary files.
 
-1. Modify the file path in the T-Tex pass [code](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp)
-   * [path of the file modified by the profiler](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1462) to any comfortable path.
+1. Modify the file path in the T-Tex pass [code](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp)
+   * [path of the file modified by the profiler](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1462) to any comfortable path.
        * This is the file updated by the profiler after execution time analysis which is read by the llvm pass during subsequent phases of compilation
-   * [path of file modified by the compiler](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
+   * [path of file modified by the compiler](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
   
 ### T-Tex Setup: Installing Llvm/Clang with T-Tex security
 
 1. Clone the respository
-2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.ncsu.edu/smittal6/ttex_implementation/blob/ttex_update/scr) and execute
+2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr) and execute
    * ``chmod +x scr``
    * ``./scr``
   
