@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BUILD_PATH="/home/swastik/dev/realtimesys/ttex/llvm-project/build"
+git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils
 
 if [ -d "$BUILD_PATH" ]; then
     cd "$BUILD_PATH"
