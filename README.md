@@ -124,5 +124,6 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr) and execute
    * ``chmod +x scr``
    * ``./scr``
+   * Compilation error generally suggest missing packages which will require explicit installation.
   
 #### Follow [ttex_benchmark](https://github.ncsu.edu/smittal6/ttex_benchmark) for Testing
