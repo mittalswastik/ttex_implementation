@@ -107,7 +107,7 @@ to learn about the layout of the source code tree.
   
 ## T-Tex
 
-Clone the repository and if required switch to branch [ttex_update](https://github.com/mittalswastik/ttex_implementation/tree/ttex_update)
+Clone the repository and switch to branch [ttex_update](https://github.com/mittalswastik/ttex_implementation/tree/ttex_update)
   
 ### T-Tex Setup: configuring the file paths in the T-Tex pass to sync with T-Tex runtime profiler
 
