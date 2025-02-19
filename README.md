@@ -149,4 +149,4 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 13. ``../binutils/configure --enable-gold --enable-plugins --disable-werror``
 14. ``make all-gold``
   
-#### Follow [ttex_benchmark](https://github.ncsu.edu/smittal6/ttex_benchmark) for Testing
+#### Follow [ttex_benchmark](https://github.com/mittalswastik/ttex_benchmark) for Testing
