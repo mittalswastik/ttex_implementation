@@ -142,6 +142,8 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 9. ``../binutils/configure --enable-gold --enable-plugins --disable-werror``
 10. ``sudo ninja -j4`` \
    *``-jn``, n is number of threads used to build llvm (more n results in faster build but slower linking)
-11. ``make all-gold``
+   *g++ version issue:
+        ** ``unintptr_t`` was not declared error: Fix - add [``#include <cstdint>``](https://github.com/mittalswastik/ttex_implementation/blob/e7740356386e840ddadd91d502daf8a8ef612f21/llvm/include/llvm/Support/Signals.h#L18)
+12. ``make all-gold``
   
 #### Follow [ttex_benchmark](https://github.ncsu.edu/smittal6/ttex_benchmark) for Testing
