@@ -121,7 +121,9 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 ### T-Tex Setup: Installing Llvm/Clang with T-Tex security
 
 1. Clone the respository
-2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr) and execute
+2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr)
+   * Eg: If cloned repository is /home/ttex_implementation - then BUILD_PATH is /home/ttex_implementation/llvm-project/build  
+4. execute
    * ``chmod +x scr``
    * ``./scr``
    * Compilation error generally suggest missing packages which will require explicit installation.
