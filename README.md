@@ -134,17 +134,18 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 1. ``sudo apt update``
 2. ``sudo apt install libgmp-dev libmpfr-dev``
 3. ``sudo apt install texinfo``
-4. ``git clone https://github.com/mittalswastik/ttex_implementation.git``
-5. ``cd ttex_implementation/``
-6. ``mkdir build``
-7. ``git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils``
-8. ``cd build``
-9. ``CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm``
-10. ``sudo ninja -j4`` \
+4. ``sudo apt install bison``
+5. ``git clone https://github.com/mittalswastik/ttex_implementation.git``
+6. ``cd ttex_implementation/``
+7. ``mkdir build``
+8. ``git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils``
+9. ``cd build``
+10. ``CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm``
+11. ``sudo ninja -j4`` \
    *``-jn``, n is number of threads used to build llvm (more n results in faster build but slower linking) \
    *g++ version issue:
         ** ``unintptr_t`` was not declared error: Fix - add [``#include <cstdint>``](https://github.com/mittalswastik/ttex_implementation/blob/e7740356386e840ddadd91d502daf8a8ef612f21/llvm/include/llvm/Support/Signals.h#L18)
-11. ``../binutils/configure --enable-gold --enable-plugins --disable-werror``
-12. ``make all-gold``
+12. ``../binutils/configure --enable-gold --enable-plugins --disable-werror``
+13. ``make all-gold``
   
 #### Follow [ttex_benchmark](https://github.ncsu.edu/smittal6/ttex_benchmark) for Testing
