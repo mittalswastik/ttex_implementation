@@ -122,7 +122,8 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 
 1. Clone the respository
 2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr)
-   * Eg: If cloned repository is /home/ttex_implementation - then BUILD_PATH is /home/ttex_implementation/llvm-project/build  
+   * Eg: If cloned repository is /home/ttex_implementation - then BUILD_PATH is /home/ttex_implementation/llvm-project/build
+   * command (``sudo ninja -j4``)[https://github.com/mittalswastik/ttex_implementation/blob/39e2e21eb371cf1a7e0d9d9c41dc87b3714daf3c/scr#L18] can be modified to ``sudo ninja -jn`` where n is the number of threads compiling llvm (Higher n results in faster build but slower linking)
 4. execute
    * ``chmod +x scr``
    * ``./scr``
