@@ -128,5 +128,15 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
    * ``chmod +x scr``
    * ``./scr``
    * Compilation error generally suggest missing packages which will require explicit installation.
+
+### T-Tex Setup: Manual installation (if scr script runs into issues)
+
+1. ``git clone https://github.com/mittalswastik/ttex_implementation.git``
+2. ``cd ttex_implementation/``
+3. ``mkdir build``
+4. ``git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils``
+5. ``cd build``
+6. ``CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm``
+7. ``make all-gold``
   
 #### Follow [ttex_benchmark](https://github.ncsu.edu/smittal6/ttex_benchmark) for Testing
