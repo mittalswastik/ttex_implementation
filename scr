@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo apt update
+sudo apt install libgmp-dev libmpfr-dev
+
 BUILD_PATH="/home/swastik/dev/realtimesys/ttex/llvm-project/build"
 git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils
 
@@ -12,7 +15,6 @@ fi
 
 #-DLLVM_ENABLE_RUNTIMES="libc;libcxx;libcxxabi;libunwind"
 ../binutils/configure --enable-gold --enable-plugins --disable-werror
-make all-gold
 CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm
-
 sudo ninja -j4
+make all-gold
