@@ -138,7 +138,7 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
 5. ``mkdir build``
 6. ``git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils``
 7. ``cd build``
-8. ``CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm``
+8. ``CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm``
 9. ``../binutils/configure --enable-gold --enable-plugins --disable-werror``
 10. ``sudo ninja -j4`` \
    *``-jn``, n is number of threads used to build llvm (more n results in faster build but slower linking) \
