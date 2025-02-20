@@ -2,8 +2,11 @@
 
 sudo apt update
 sudo apt install libgmp-dev libmpfr-dev
+sudo apt install texinfo
+sudo apt install bison
+sudo apt install m4
 
-BUILD_PATH="/home/swastik/dev/realtimesys/ttex/llvm-project/build"
+BUILD_PATH="~/ttex/ttex_implementation/build"
 git clone --depth 1 git://sourceware.org/git/binutils-gdb.git binutils
 
 if [ -d "$BUILD_PATH" ]; then
@@ -14,7 +17,6 @@ else
 fi
 
 #-DLLVM_ENABLE_RUNTIMES="libc;libcxx;libcxxabi;libunwind"
-../binutils/configure --enable-gold --enable-plugins --disable-werror
 CC='gcc' CXX='g++' cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_LINKER=gold  -DLLVM_BINUTILS_INCDIR=../binutils/include -DLLVM_ENABLE_PROJECTS="clang;lld;openmp" DLIBOMP_OMPT_OPTIONAL=ON DLIBIOMP_OMPT_SUPPORT=ON DLIBOMP_USE_DEBUGGER=ON -G "Ninja" ../llvm
 sudo ninja -j4
 make all-gold
