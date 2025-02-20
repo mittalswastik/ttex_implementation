@@ -118,17 +118,6 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
        * This is the file updated by the profiler after execution time analysis which is read by the llvm pass during subsequent phases of compilation
    * [path of file modified by the compiler](https://github.com/mittalswastik/ttex_implementation/blob/d85b8bf9cf635960661d5cccce35c339d75316e6/llvm/lib/Transforms/Scalar/TtexUpdate_2.cpp#L1939)
   
-### T-Tex Setup: Installing Llvm/Clang with T-Tex security
-
-1. Clone the respository
-2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr)
-   * Eg: If cloned repository is /home/ttex_implementation - then BUILD_PATH is /home/ttex_implementation/llvm-project/build
-   * command [``sudo ninja -j4``](https://github.com/mittalswastik/ttex_implementation/blob/39e2e21eb371cf1a7e0d9d9c41dc87b3714daf3c/scr#L18) can be modified to ``sudo ninja -jn`` where n is the number of threads compiling llvm (Higher n results in faster build but slower linking)
-4. execute
-   * ``chmod +x scr``
-   * ``./scr``
-   * Compilation error generally suggest missing packages which will require explicit installation.
-
 ### T-Tex Setup: Manual installation (if scr script runs into issues)
 
 1. ``sudo apt update``
@@ -148,5 +137,16 @@ T-Tex is a multiphase security model. Execution time analysis is conveyed via th
         ** ``unintptr_t`` was not declared error: Fix - add [``#include <cstdint>``](https://github.com/mittalswastik/ttex_implementation/blob/e7740356386e840ddadd91d502daf8a8ef612f21/llvm/include/llvm/Support/Signals.h#L18)
 13. ``../binutils/configure --enable-gold --enable-plugins --disable-werror``
 14. ``make all-gold``
+  
+### T-Tex Setup: Installing Llvm/Clang with T-Tex security
+
+1. Clone the respository
+2. Modify the BUILD_PATH (according to your LLVM cloned path) in ["scr" script](https://github.com/mittalswastik/ttex_implementation/blob/ttex_update/scr)
+   * Eg: If cloned repository is /home/ttex_implementation - then BUILD_PATH is /home/ttex_implementation/llvm-project/build
+   * command [``sudo ninja -j4``](https://github.com/mittalswastik/ttex_implementation/blob/39e2e21eb371cf1a7e0d9d9c41dc87b3714daf3c/scr#L18) can be modified to ``sudo ninja -jn`` where n is the number of threads compiling llvm (Higher n results in faster build but slower linking)
+4. execute
+   * ``chmod +x scr``
+   * ``./scr``
+   * Compilation error generally suggest missing packages which will require explicit installation.
   
 #### Follow [ttex_benchmark](https://github.com/mittalswastik/ttex_benchmark) for Testing
